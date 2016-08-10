@@ -1,0 +1,22 @@
+[package]
+name = "mon_artiste"
+version = "0.1.0"
+authors = ["pnkfelix"]
+build = "tango-build.rs"
+
+[build-dependencies]
+tango = "0.5.0"
+
+# Since the lib starts as a tango file stored in `src/lib.md`,
+# explicitly specify that this is a library project with a
+# `[lib]` section (which then requires an explicit name).
+
+[lib]
+name = "lib"
+
+[dependencies]
+treexml = "0.3.0"
+regex = "0.1"
+lazy_static = "0.2"
+log = "0.3.6"
+env_logger = "0.3.3"
