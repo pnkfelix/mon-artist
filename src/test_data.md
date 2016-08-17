@@ -1,7 +1,7 @@
 ```rust
-pub const ALL: [&'static str; 12] = [
+pub const ALL: [(&'static str, &'static str); 12] = [
     BASIC,
-    LINE.1,
+    LINE,
     VERT_LINE,
     DASHED,
     VERT_DASH,
@@ -28,81 +28,84 @@ def_test! { LINE, r#"
  below
 "# }
 
-pub const VERT_LINE: &'static str = r#"
+def_test! { VERT_LINE, r#"
 | top
 |
 | bottom
-"#;
+"# }
 
-pub const DASHED: &'static str = r#"
+def_test! { DASHED, r#"
  above
 -=-=-=
  below
-"#;
+"# }
 
-pub const VERT_DASH: &'static str = r#"
+def_test! { VERT_DASH, r#"
 : top
 |
 : bottom
-"#;
+"# }
 
-pub const CURVES: &'static str = r#"
+def_test! { CURVES, r#"
 --.  +--+      +--.      .----+  +---------.  .------+
   |  |   \    /    \    /    /    \       /    \     |
   +--'    +--+      '--'    +------+     '------'    end
-"#;
+"# }
+// 00000011111111112222222222333333333344444444445555555555
+// 45678901234567890123456789012345678901234567890123456789
 
-pub const LEFT_ARROW: &'static str = r#"
+def_test! { LEFT_ARROW, r#"
  above
 <-----
  below
-"#;
+"# }
 
-pub const RIGHT_ARROW: &'static str = r#"
+def_test! { RIGHT_ARROW, r#"
 above
 ----->
 below
-"#;
+"# }
 
-pub const BASIC: &'static str =
-    ".----.  top\n\
-     |    |\n\
-     '----'  bottom\n";
-//   00000000011111
-//   12345678901234
+def_test! { BASIC,
+            ".----.  top\n\
+             |    |\n\
+             '----'  bottom\n" }
+//           00000000011111
+//           12345678901234
+
 pub const BASIC_WIDTH: u32 = 14;
 pub const BASIC_HEIGHT: u32 = 3;
 
-pub const BASIC_WO_BOX: &'static str =
-    "\u{7f}\u{7f}\u{7f}\u{7f}\u{7f}\u{7f}  top\n\
-     \u{7f}    \u{7f}\n\
-     \u{7f}\u{7f}\u{7f}\u{7f}\u{7f}\u{7f}  bottom\n";
+def_test! { BASIC_WO_BOX,
+            "______  top\n\
+             _    _\n\
+             ______  bottom\n" }
 
-pub const BASIC_UL_PLUS: &'static str =
-    "+----.  top\n\
-     |    |\n\
-     '----'  bottom\n";
-//   00000000011111
-//   12345678901234
+def_test! { BASIC_UL_PLUS,
+            "+----.  top\n\
+             |    |\n\
+             '----'  bottom\n" }
+//           00000000011111
+//           12345678901234
 
-pub const BASIC_UR_PLUS: &'static str =
-    ".----+  top\n\
-     |    |\n\
-     '----'  bottom\n";
-//   00000000011111
-//   12345678901234
+def_test! { BASIC_UR_PLUS,
+            ".----+  top\n\
+             |    |\n\
+             '----'  bottom\n" }
+//           00000000011111
+//           12345678901234
 
-pub const BASIC_ALL_PLUS: &'static str =
-    "+----+  top\n\
-     |    |\n\
-     +----+  bottom\n";
-//   00000000011111
-//   12345678901234
+def_test! { BASIC_ALL_PLUS,
+            "+----+  top\n\
+             |    |\n\
+             +----+  bottom\n" }
+//           00000000011111
+//           12345678901234
 
-pub const MULTI_RECTS: &'static str =
-    // 00111111111122222222223333333333444444444455555555556
-    // 89012345678901234567890123456789012345678901234567890
-        r#"\n
+def_test! { MULTI_RECTS,
+            // 111122222222223333333333444444444455555555556
+            // 678901234567890123456789012345678901234567890
+            r#"\n
 .-------------.
 |             |
 |   A Box!    |<----.   .-------------.
@@ -120,11 +123,11 @@ pub const MULTI_RECTS: &'static str =
                                   |                    |
                                   |                    |
                                   +--------------------+
-"#;
+"# }
 
-pub const ISSUE_15_DESC: &'static str =
-    // 00111111111122222222223333333333444444444455555555556
-    // 89012345678901234567890123456789012345678901234567890
+def_test! { ISSUE_15_DESC,
+            // 111122222222223333333333444444444455555555556
+            // 678901234567890123456789012345678901234567890
         r#"\n
 .-------------.
 |             |
@@ -143,5 +146,5 @@ pub const ISSUE_15_DESC: &'static str =
                                   |                    |
                                   |                    |
                                   +--------------------+
-"#;
+"# }
 ```

@@ -5,7 +5,8 @@ Finding a path involves accumulating state (e.g. the series of
 points that make up the path).
 
 ```rust
-use grid::{Direction, DIRECTIONS, DirVector, Elem, Grid, Pt};
+use directions::{Direction, DIRECTIONS};
+use grid::{Elem, Grid, Pt, DirVector};
 use path::{Closed, Path};
 
 #[derive(Clone, Hash)]
@@ -248,7 +249,7 @@ Some day, It may be worthwhile to make an exercise out of why.
     fn find_closed_path_from(&mut self, dv: DirVector, fc: FindContext) -> Option<Path> {
         use self::Continue::*;
         use path::Closed::*;
-        use grid::Turn;
+        use directions::Turn;
         debug!("find_closed_path_from self: {:?} dv: {:?} {:?}", self, dv, fc);
         assert!(self.grid.holds(dv.0));
         assert!(!self.steps.contains(&dv.0));
@@ -390,7 +391,7 @@ impl Continue {
     /// given direction `dir`.
     pub fn matches(&self, dir: Direction) -> bool {
         use self::Continue::*;
-        use grid::Direction::*;
+        use directions::Direction::*;
         match *self {
             Vertical => match dir { N | S => true, _ => false },
             Horizontal => match dir { W | E => true, _ => false },

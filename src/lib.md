@@ -67,6 +67,14 @@ definitions.
 
 First we have basic modules.
 
+The `directions` module defines the eight compass directions one can
+traverse from a point on the grid. It defines them both in a single
+enum `Direction`, as well as in corresponding static types (for use
+for trait trickery when encoding data).
+```rust
+pub mod directions;
+```
+
 The `grid` module defines the core `Grid` data type: it represents the
 grid of characters that we initially read in, as well as intermediate
 states of that grid as it is repeatedly processed in our attempt to
@@ -169,6 +177,16 @@ writing unit tests of routines as I write them.
 pub mod test_data;
 ```
 
+The `format` module handles the user-customizable
+formatting description. It currently is tailored to SVG
+descriptions and only affects the rendering step, but
+eventually I want it to drive the input parsing as well
+(allowing for arbitrary unicode to be used in interesting ways).
+
+```rust
+pub mod format;
+```
+
 The `render` module holds the core routines for rendering grids.
 
 ```rust
@@ -185,11 +203,14 @@ fn end_to_end_basics() {
     use std::fs::{File};
     use std::io::{Write};
     let _ = ::env_logger::init();
-    let r = SvgRender { x_scale: 9, y_scale: 12, show_gridlines: true };
     let mut html_doc = Document::default();
     let mut html_body = Element::new("body");
     html_body.children.push({ let mut p = Element::new("p"); p.text = Some(format!("Hello World")); p });
-    for d in &test_data::ALL {
+    for &(name, d) in &test_data::ALL {
+        let r = SvgRender {
+            x_scale: 9, y_scale: 12, show_gridlines: true,
+            name: name.to_string(),
+        };
         let s = d.parse::<Grid>().unwrap().into_scene();
         let elem = r.render_s(&s);
         html_body.children.push(elem.into_element());

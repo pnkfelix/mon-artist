@@ -5,9 +5,12 @@ A drawing is essentially a set of paths on a backdrop.
  want to work at a higher, more abstract level.)
 
 ```rust
+use directions::Direction;
 use Scene;
 use path::{self, Path};
 use grid::{Pt};
+
+use format;
 ```
 
 The `RenderS` impl renders into an instance of the `Svg` structure
@@ -53,7 +56,12 @@ for `x_scale` and `y_scale`.
 
 ```rust
     pub show_gridlines: bool,
+```
 
+And since I'm adding state anyway, I might as well provide
+a place to include additional contextual information.
+```rust
+    pub(crate) name: String,
 }
 
 fn default<D: Default>() -> D { Default::default() }
@@ -161,12 +169,14 @@ corresponding to that pt." But that is actually not the right thing;
    intuitive property to enforce.
 
 ```rust
+#[allow(dead_code)]
 fn grid_middle(sr: &SvgRender, pt: Pt) -> (Dim, Dim) {
     let x = Dim::U(pt.col() as u32,0).sub_half() * sr.x_scale;
     let y = Dim::U(pt.row() as u32,0).sub_half() * sr.y_scale;
     (x, y)
 }
 
+#[allow(dead_code)]
 fn is_line(c: Option<char>) -> bool {
     match c {
         Some(c) => match c {
@@ -178,6 +188,8 @@ fn is_line(c: Option<char>) -> bool {
         None => false,
     }
 }
+
+#[allow(dead_code)]
 fn is_curve(c: Option<char>) -> bool {
     match c {
         Some(c) => match c { '.' | '\'' => true, _ => false, },
@@ -185,6 +197,7 @@ fn is_curve(c: Option<char>) -> bool {
     }
 }
 
+#[allow(dead_code)]
 fn midway(sr: &SvgRender, p1: Pt, p2: Pt) -> (Dim, Dim) {
     let x = Dim::U(p1.col() as u32 + p2.col() as u32,0).div_2() * sr.x_scale;
     let y = Dim::U(p1.row() as u32 + p2.row() as u32,0).div_2() * sr.y_scale;
@@ -221,8 +234,10 @@ to figure out how to render the middle (or edge) step.
 
     // assume undashed until proven otherwise.
     let mut pr = PathRender { sr: sr, last: Pt(0,0),
-                              closed: path.closed,
-                              dashed: false, cmd: String::new(), };
+                              dashed: false,
+                              cmd: String::new(),
+                              format_table: Default::default(),
+    };
 
     pr.render_first_step(steps[0], steps[1]);
 
@@ -239,10 +254,12 @@ to figure out how to render the middle (or edge) step.
 type Step = (Pt, char);
 struct PathRender<'a> {
     sr: &'a SvgRender,
+    #[allow(dead_code)]
     last: Pt,
     dashed: bool,
-    closed: path::Closed,
     cmd: String,
+    #[allow(dead_code)]
+    format_table: format::Table,
 }
 
 impl<'a> PathRender<'a> {
@@ -254,10 +271,10 @@ impl<'a> PathRender<'a> {
         let c = render_step(self, Some(prev), curr, Some(next));
         self.cmd.push_str(&c);
     }
-    fn render_last_step(&mut self, prev: Step, curr: Step, c: path::Closed) {
+    fn render_last_step(&mut self, prev: Step, curr: Step, cd: path::Closed) {
         let c = render_step(self, Some(prev), curr, None);
         self.cmd.push_str(&c);
-        if self.closed == path::Closed::Closed { self.cmd.push_str(" Z"); }
+        if cd == path::Closed::Closed { self.cmd.push_str(" Z"); }
     }
     fn into_shape(self) -> svg::Path {
         let mut attrs = vec![("fill".to_string(),"none".to_string()),
@@ -267,12 +284,104 @@ impl<'a> PathRender<'a> {
         }
         svg::Path { d: self.cmd, attrs: attrs }
     }
+
+    fn substitute_placeholders(&self,
+                               template: &str,
+                               curr: Step) -> String
+    {
+        let mut s = String::new();
+        let mut rest = &*template;
+        loop {
+            let (place, j) = match rest.find("{") {
+                None => { s.push_str(rest); return s; }
+                Some(i) => {
+                    s.push_str(&rest[..i]);
+                    let place = &rest[i..];
+                    match place.find("}") {
+                        None => { panic!("open { without matching close }"); }
+                        Some(j) => (place, j)
+                    }
+                }
+            };
+            rest = &place[(j+1)..]; // j+1: skip the "}"
+            let place = &place[1..j]; // 1: skip the "{"
+            let (value_x, value_y) = interpret_place(self.sr, &place, curr.0);
+            s.push_str(&format!("{},{}", value_x.to_string(), value_y.to_string()));
+        }
+    }
+}
+
+#[allow(warnings)]
+fn interpret_place(sr: &SvgRender, place: &str, curr: Pt) -> (Dim, Dim) {
+    // x- and y-lines for compass points if all grid cells were 1x1 unit.
+    let (ex, cx, wx) = {
+        let x = curr.col() as u32;
+        let ex = Dim::U(x,0);
+        let cx = ex.sub_half();
+        let wx = cx.sub_half();
+        (ex, cx, wx)
+    };
+    let (sy, cy, ny) = {
+        let y = curr.row() as u32;
+        let sy = Dim::U(y,0);
+        let cy = sy.sub_half();
+        let ny = cy.sub_half();
+        (sy, cy, ny)
+    };
+
+    // update lines of compass points according to scale provided by `sr`
+    let (ex, cx, wx) = (ex * sr.x_scale,
+                        cx * sr.x_scale,
+                        wx * sr.x_scale);
+    let (sy, cy, ny) = (sy * sr.y_scale,
+                        cy * sr.y_scale,
+                        ny * sr.y_scale);
+
+    // coordinates for actual compass points
+    let c = (cx, cy);
+    let n = (cx, ny);
+    let s = (cx, sy);
+    let e = (ex, cy);
+    let w = (wx, cy);
+    let ne = (ex, ny);
+    let se = (ex, sy);
+    let nw = (wx, ny);
+    let sw = (wx, sy);
+
+    match place {
+        "C" => c, "N" => n, "S" => s, "E" => e, "W" => w,
+        "NE" => ne, "SE" => se, "NW" => nw, "SW" => sw,
+        // FIXME: need to add support for points along lines as well.
+        _ => panic!("unrecognized place: {}", place),
+    }
+}
+
+fn to_incoming(prev: Option<Step>, curr: Step) -> Option<(char, Direction)> {
+    prev.map(|p| (p.1, p.0.towards(curr.0)))
+}
+
+fn to_outgoing(curr: Step, next: Option<Step>) -> Option<(Direction, char)> {
+    next.map(|n| (curr.0.towards(n.0), n.1))
 }
 
 fn render_step(pr: &mut PathRender, prev: Option<Step>, curr: Step, next: Option<Step>) -> String {
-    let sr = pr.sr;
-    let mut cmd = &mut pr.cmd;
+    use directions::Direction;
 
+    let sr = pr.sr;
+    let t = &pr.format_table;
+
+    let incoming: Option<(char, Direction)> = to_incoming(prev, curr);
+    let outgoing: Option<(Direction, char)> = to_outgoing(curr, next);
+
+    if let Some(s) = t.find(incoming, curr.1, outgoing) {
+        return pr.substitute_placeholders(s, curr);
+    } else {
+        panic!("no command template found for prev: {:?} curr: {:?} next: {:?} name: {}",
+               prev, curr, next, sr.name);
+    }
+
+/*
+    let mut cmd = &mut pr.cmd;
     // Where are we starting?
     // If we are continuing from a previous segment, then just the value stored in `pr`.
 
@@ -360,6 +469,7 @@ fn render_step(pr: &mut PathRender, prev: Option<Step>, curr: Step, next: Option
     pr.last = pt;
 
     unimplemented!()
+*/
 }
 
 fn render_rectangle(svg: &mut Svg,

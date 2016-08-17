@@ -1,5 +1,9 @@
 This module will define the representation for our grid of characters.
 
+```rust
+use directions::{Direction, Turn};
+```
+
 A `Pt` represents a point in 2d space; it may or may not fall on the grid.
 
 Regarding the choice of `usize` vs `u32` vs `i32`:
@@ -150,94 +154,6 @@ impl Iterator for PtCharRangeIterator {
         self.0.next().map(|p| (p, self.1))
     }
 }
-```
-
-A `Direction` is a simple compass direction. There are only
-eight of them because we only handle the eight directions
-that are immediately expressible via a grid:
-```
-\|/
-- -
-/|\
-```
-
-/// A `Direction` is a simple compass direction on the grid.
-```rust
-#[derive(PartialEq, Eq, Copy, Clone, Debug)]
-pub enum Direction { N, NE, E, SE, S, SW, W, NW }
-
-pub const DIRECTIONS: &'static [Direction] =
-    &[Direction::N, Direction::NE, Direction::E, Direction::SE,
-      Direction::S, Direction::SW, Direction::W, Direction::NW];
-
-/// A turn chooses between clockwise (`CW`) and counter-clockwise (`CCW`).
-#[derive(PartialEq, Eq, Copy, Clone, Debug)]
-pub enum Turn {
-    /// Clockwise
-    CW,
-    /// Counter-clockwise
-    CCW,
-}
-
-impl Turn {
-    pub fn reverse(&self) -> Self {
-        use self::Turn::*;
-        match *self {
-            CW => CCW,
-            CCW => CW,
-        }
-    }
-}
-
-impl Direction {
-    pub fn ver_north(&self) -> i32 {
-        use grid::Direction::*;
-        match *self {
-            N | NE | NW => 1,
-            S | SE | SW => -1,
-            E | W => 0,
-        }
-    }
-
-    pub fn ver_south(&self) -> i32 { -self.ver_north() }
-
-    pub fn hor_east(&self) -> i32 {
-        use grid::Direction::*;
-        match *self {
-            E | NE | SE => 1,
-            W | NW | SW => -1,
-            N | S => 0,
-        }
-    }
-
-    pub fn hor_west(&self) -> i32 { -self.hor_east() }
-
-    pub fn reverse(&self) -> Self {
-        use self::Direction::*;
-        match *self {
-            N => S, NE => SW, E => W, SE => NW,
-            S => N, SW => NE, W => E, NW => SE,
-        }
-    }
-
-    pub fn veer(&self, t: Turn) -> Self {
-        use self::Direction::*;
-        use self::Turn::*;
-        match (*self, t) {
-            (N, CW) => NE, (NE, CW) => E, (E, CW) => SE, (SE, CW) => S,
-            (S, CW) => SW, (SW, CW) => W, (W, CW) => NW, (NW, CW) => N,
-            (N, CCW) => NW, (NW, CCW) => W, (W, CCW) => SW, (SW, CCW) => S,
-            (S, CCW) => SE, (SE, CCW) => E, (E, CCW) => NE, (NE, CCW) => N,
-        }
-    }
-
-    pub fn sharp_turn(&self, t: Turn) -> Self {
-        // a sharp turn ends up being the same as reversing and then
-        // veering to the reverse direction (because reversing is like
-        // taking the sharpest turn one notch too far).
-        self.reverse().veer(t.reverse())
-    }
-}
 
 impl Pt {
     pub fn rowcol(r: i32, c: i32) -> Pt { Pt(c, r) }
@@ -248,17 +164,6 @@ impl Pt {
                    (self.col() + dir.hor_east()))
     }
 }
-
-#[test]
-fn dir_basics() {
-    use self::Direction::*;
-    assert_eq!(NE.ver_north(), 1);
-    assert_eq!(NW.ver_south(), -1);
-    assert_eq!(S.hor_east(), 0);
-    assert_eq!(NE.hor_east(), 1);
-    assert_eq!(SW.hor_west(), 1);
-}
-
 
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub struct DirVector(pub Pt, pub Direction);
@@ -440,7 +345,11 @@ impl Grid {
                     Elem::Pad => {
                         saw_pad = true;
                     }
-                    Elem::Used(_) | Elem::Clear => {
+                    Elem::Used(c) => {
+                        assert!(!saw_pad);
+                        s.push(c);
+                    }
+                    Elem::Clear => {
                         assert!(!saw_pad);
                         s.push('_');
                     }
@@ -459,17 +368,17 @@ mod tests {
 
     #[test]
     fn basics() {
-        let grid: Grid = test_data::BASIC.parse().unwrap();
+        let grid: Grid = test_data::BASIC.1.parse().unwrap();
         assert_eq!(grid.height, test_data::BASIC_HEIGHT);
         assert_eq!(grid.width, test_data::BASIC_WIDTH);
         for row in &grid.rows { assert_eq!(row.len(), grid.width as usize); }
-        assert_eq!(grid.to_string(), test_data::BASIC);
+        assert_eq!(grid.to_string(), test_data::BASIC.1);
     }
 
     #[test]
     fn issue_15() {
-        let grid: Grid = test_data::ISSUE_15_DESC.parse().unwrap();
-        assert_eq!(grid.to_string(), test_data::ISSUE_15_DESC);
+        let grid: Grid = test_data::ISSUE_15_DESC.1.parse().unwrap();
+        assert_eq!(grid.to_string(), test_data::ISSUE_15_DESC.1);
     }
 }
 ```

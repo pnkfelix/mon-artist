@@ -76,9 +76,10 @@ impl Dec {
     fn sub_half(&self) -> Dec {
         let Dec(nat, frac) = *self;
         let denom = denom(frac) / 10;
-        if frac > 5 * denom {
+        if frac >= 5 * denom {
             Dec(nat, frac - 5 * denom)
         } else {
+            assert!(nat >= 1, "Dec {}.{} sub_half() failed", nat, frac);
             Dec(nat - 1, 5 * denom + frac)
         }
     }
@@ -136,6 +137,12 @@ impl Dim {
         }
     }
 
+    #[allow(dead_code)]
+    pub(crate) fn sub_one(&self) -> Dim {
+        self.sub_half().sub_half()
+    }
+
+    #[allow(dead_code)]
     pub(crate) fn div_2(&self) -> Dim {
         match *self {
             Dim::U(n,0) if n % 2 == 0 => Dim::U(n/2,0),

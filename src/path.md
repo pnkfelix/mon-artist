@@ -139,7 +139,7 @@ pub enum Remove {
 impl Remove {
     fn cat(c: char) -> Remove {
         match c {
-            '+' | '\'' | '.' => Remove::Mark(c),
+            '+' | '*' => Remove::Mark(c),
             _ => Remove::Clear,
         }
     }
@@ -149,7 +149,7 @@ impl Grid {
     fn remove_steps(&mut self, steps: &[(Pt, char)])
     {
         for &(pt, c) in steps {
-            // assert_eq!(self[pt], Elem::C(c));
+            assert_eq!(self[pt], Elem::C(c));
         }
         for &(pt, c) in steps.iter() {
             match Remove::cat(c) {

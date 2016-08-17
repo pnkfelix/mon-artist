@@ -1,5 +1,6 @@
 ```rust
-use grid::{Grid, Pt, Direction, DirVector};
+use directions::{Direction};
+use grid::{Grid, Pt, DirVector};
 use grid::{PtRangeIter, PtCharIntoIterator}; // import methods on Pt...Pt and (Pt,char)
 use test_data::{BASIC, BASIC_WO_BOX, BASIC_UL_PLUS, BASIC_UR_PLUS, BASIC_ALL_PLUS};
 use test_data::{ISSUE_15_DESC};
@@ -75,7 +76,7 @@ fn simple_box_path(ul: (Pt, char), ur: (Pt, char),
 
 #[test]
 fn basic_single_box_upper_left() {
-    let grid = BASIC.parse::<Grid>().unwrap();
+    let grid = BASIC.1.parse::<Grid>().unwrap();
     let opt_p = {
         let mut pf = FindPaths::new(&grid);
         pf.find_closed_path(Pt(1,1))
@@ -85,12 +86,12 @@ fn basic_single_box_upper_left() {
                                (Pt(1,3), '\''), (Pt(6,3), '\'')));
     let mut grid = grid;
     grid.remove_path(&opt_p.unwrap());
-    assert_eq!(grid.to_string(), BASIC_WO_BOX);
+    assert_eq!(grid.to_string(), BASIC_WO_BOX.1);
 }
 
 #[test]
 fn basic_ul_plus_single_box_upper_left() {
-    let grid = BASIC_UL_PLUS.parse::<Grid>().unwrap();
+    let grid = BASIC_UL_PLUS.1.parse::<Grid>().unwrap();
     let mut pf = FindPaths::new(&grid);
     let opt_p = pf.find_closed_path(Pt(1,1));
     assert_eq!(opt_p.unwrap(),
@@ -101,7 +102,7 @@ fn basic_ul_plus_single_box_upper_left() {
 #[test]
 fn basic_ur_plus_single_box_upper_left() {
     // ::env_logger::init();
-    let grid = BASIC_UR_PLUS.parse::<Grid>().unwrap();
+    let grid = BASIC_UR_PLUS.1.parse::<Grid>().unwrap();
     let mut pf = FindPaths::new(&grid);
     let opt_p = pf.find_closed_path(Pt(1,1));
     assert_eq!(opt_p.unwrap(),
@@ -111,7 +112,7 @@ fn basic_ur_plus_single_box_upper_left() {
 
 #[test]
 fn basic_all_plus_single_box_upper_left() {
-    let grid = BASIC_ALL_PLUS.parse::<Grid>().unwrap();
+    let grid = BASIC_ALL_PLUS.1.parse::<Grid>().unwrap();
     let mut pf = FindPaths::new(&grid);
     let opt_p = pf.find_closed_path(Pt(1,1));
     assert_eq!(opt_p.unwrap(),
@@ -121,7 +122,7 @@ fn basic_all_plus_single_box_upper_left() {
 
 #[test]
 fn issue_15_box_big_upper_left() {
-    let grid = ISSUE_15_DESC.parse::<Grid>().unwrap();
+    let grid = ISSUE_15_DESC.1.parse::<Grid>().unwrap();
     let mut pf = FindPaths::new(&grid);
     let opt_p = pf.find_closed_path(Pt(1, 2));
     assert_eq!(opt_p.unwrap(),
@@ -143,7 +144,7 @@ fn issue_15_box_big_upper_left() {
 
 #[test]
 fn issue_15_box_lil_lower_left() {
-    let grid = ISSUE_15_DESC.parse::<Grid>().unwrap();
+    let grid = ISSUE_15_DESC.1.parse::<Grid>().unwrap();
     let mut pf = FindPaths::new(&grid);
     let opt_p = pf.find_closed_path(Pt(5, 11));
     assert_eq!(opt_p.unwrap(),
@@ -156,7 +157,7 @@ fn issue_15_box_lil_lower_left() {
 #[test]
 fn issue_15_box_big_upper_middle() {
     // ::env_logger::init();
-    let grid = ISSUE_15_DESC.parse::<Grid>().unwrap();
+    let grid = ISSUE_15_DESC.1.parse::<Grid>().unwrap();
     let mut pf = FindPaths::new(&grid);
     let opt_p = pf.find_closed_path(Pt(25, 4));
     assert_eq!(opt_p.unwrap(),
@@ -179,7 +180,7 @@ fn issue_15_box_big_upper_middle() {
 #[test]
 fn issue_15_box_big_lower_right() {
     // ::env_logger::init().ok(); // discard error since double-init is one.
-    let grid = ISSUE_15_DESC.parse::<Grid>().unwrap();
+    let grid = ISSUE_15_DESC.1.parse::<Grid>().unwrap();
     let mut pf = FindPaths::new(&grid);
     let opt_p = pf.find_closed_path(Pt(35, 13));
     assert_eq!(opt_p.unwrap(),
@@ -214,9 +215,9 @@ fn trivial_box_removal() {
     };
     grid.remove_path(&path);
     assert_eq!(grid.to_string(),
-               "\u{7f}\u{7f}\u{7f}\u{7f} top\n\
-                \u{7f}  \u{7f} mid\n\
-                \u{7f}\u{7f}\u{7f}\u{7f} bot\n");
+               "____ top\n\
+                _  _ mid\n\
+                ____ bot\n");
 }
 
 #[test]
@@ -230,9 +231,9 @@ fn box_removal_but_ul_corner() {
     };
     grid.remove_path(&path);
     assert_eq!(grid.to_string(),
-               "+\u{7f}\u{7f}\u{7f} top\n\
-                \u{7f}  \u{7f} mid\n\
-                \u{7f}\u{7f}\u{7f}\u{7f} bot\n");
+               "+___ top\n\
+                _  _ mid\n\
+                ____ bot\n");
 }
 
 #[test]
@@ -246,9 +247,9 @@ fn box_removal_but_ur_corner() {
     };
     grid.remove_path(&path);
     assert_eq!(grid.to_string(),
-               "\u{7f}\u{7f}\u{7f}+ top\n\
-                \u{7f}  \u{7f} mid\n\
-                \u{7f}\u{7f}\u{7f}\u{7f} bot\n");
+               "___+ top\n\
+                _  _ mid\n\
+                ____ bot\n");
 }
 
 #[test]
@@ -262,9 +263,9 @@ fn box_removal_but_bl_corner() {
     };
     grid.remove_path(&path);
     assert_eq!(grid.to_string(),
-               "\u{7f}\u{7f}\u{7f}\u{7f} top\n\
-                \u{7f}  \u{7f} mid\n\
-                +\u{7f}\u{7f}\u{7f} bot\n");
+               "____ top\n\
+                _  _ mid\n\
+                +___ bot\n");
 }
 
 #[test]
@@ -278,8 +279,8 @@ fn box_removal_but_br_corner() {
     };
     grid.remove_path(&path);
     assert_eq!(grid.to_string(),
-               "\u{7f}\u{7f}\u{7f}\u{7f} top\n\
-                \u{7f}  \u{7f} mid\n\
-                \u{7f}\u{7f}\u{7f}+ bot\n");
+               "____ top\n\
+                _  _ mid\n\
+                ___+ bot\n");
 }
 ```
