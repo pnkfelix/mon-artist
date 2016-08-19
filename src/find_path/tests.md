@@ -53,7 +53,89 @@ it extensively in the other tests that follow.
                           .chain((Pt(3,1), '-').into_iter())
                           .collect()));
 }
+
+#[test]
+fn eastward_arrow() {
+    let grid = "--> ".parse::<Grid>().unwrap();
+    let opt_p = super::find_unclosed_path_from(&grid, DirVector(Pt(1,1), Direction::E));
+    assert_eq!(opt_p.unwrap(),
+               Path::open((Pt(1,1)...Pt(2,1)).iter_char('-')
+                          .chain((Pt(3,1), '>').into_iter())
+                          .collect()));
+}
+
+#[test]
+fn reverse_westward_arrow() {
+    let grid = "<-- ".parse::<Grid>().unwrap();
+    let opt_p = super::find_unclosed_path_from(&grid, DirVector(Pt(1,1), Direction::E));
+    assert_eq!(opt_p.unwrap(),
+               Path::open((Pt(1,1), '<').into_iter()
+                          .chain((Pt(2,1)...Pt(3,1)).iter_char('-'))
+                          .collect()));
+}
+
+#[test]
+fn westward_arrow() {
+    let grid = "<-- ".parse::<Grid>().unwrap();
+    let opt_p = super::find_unclosed_path_from(&grid, DirVector(Pt(3,1), Direction::W));
+    assert_eq!(opt_p.unwrap(),
+               Path::open((Pt(3,1)...Pt(2,1)).iter_char('-')
+                          .chain((Pt(1,1), '<').into_iter())
+                          .collect()));
+}
+
+#[test]
+fn reverse_eastward_arrow() {
+    let grid = "--> ".parse::<Grid>().unwrap();
+    let opt_p = super::find_unclosed_path_from(&grid, DirVector(Pt(3,1), Direction::W));
+    assert_eq!(opt_p.unwrap(),
+               Path::open((Pt(3,1), '>').into_iter()
+                          .chain((Pt(2,1)...Pt(1,1)).iter_char('-'))
+                          .collect()));
+}
+
+#[test]
+fn reverse_northward_arrow() {
+    let grid = "^ \n| \n| ".parse::<Grid>().unwrap();
+    let opt_p = super::find_unclosed_path_from(&grid, DirVector(Pt(1,1), Direction::S));
+    assert_eq!(opt_p.unwrap(),
+               Path::open((Pt(1,1), '^').into_iter()
+                          .chain((Pt(1,2)...Pt(1,3)).iter_char('|'))
+                          .collect()));
+}
+
+#[test]
+fn southward_arrow() {
+    let grid = "| \n| \nV ".parse::<Grid>().unwrap();
+    let opt_p = super::find_unclosed_path_from(&grid, DirVector(Pt(1,1), Direction::S));
+    assert_eq!(opt_p.unwrap(),
+               Path::open((Pt(1,1)...Pt(1,2)).iter_char('|')
+                          .chain((Pt(1,3), 'V').into_iter())
+                          .collect()));
+}
+
+#[test]
+fn reverse_southward_arrow() {
+    let grid = "| \n| \nV ".parse::<Grid>().unwrap();
+    let opt_p = super::find_unclosed_path_from(&grid, DirVector(Pt(1,3), Direction::N));
+    assert_eq!(opt_p.unwrap(),
+               Path::open((Pt(1,3), 'V').into_iter()
+                          .chain((Pt(1,2)...Pt(1,1)).iter_char('|'))
+                          .collect()));
+}
+
+#[test]
+fn eastward_arrow_to_joiner() {
+    let grid = "-->+ ".parse::<Grid>().unwrap();
+    let opt_p = super::find_unclosed_path_from(&grid, DirVector(Pt(1,1), Direction::E));
+    assert_eq!(opt_p.unwrap(),
+               Path::open((Pt(1,1)...Pt(2,1)).iter_char('-')
+                          .chain((Pt(3,1), '>').into_iter())
+                          .chain((Pt(4,1), '+').into_iter())
+                          .collect()));
+}
 ```
+
 
 Several of the tests involve boxes. Here is a helper
 routine that, given the four corners of a box, makes
