@@ -354,9 +354,10 @@ impl Default for Table {
                 (Start, '>', E, '-', "M {C} l 0,-3 l 4,3 l -4,3 l 0,-3"),
                 ('-', W, '<', Finis, "L {C} l 0,-3 l -4,3 l 4,3 l 0,-3"),
                 (Start, '<', E, '-', "M {C} l 0,-3 l -4,3 l 4,3 l 0,-3"),
-                // veritcal arrow heads
+                // vertical arrow heads
                 (Start, '^', S, '|', "M {C} l -3,0 l 3,-5 l 3, 5 l -3,0"),
                 (Start, 'V', N, '|', "M {C} l -3,0 l 3, 5 l 3,-5 l -3,0"),
+                (Match::Any, S, 'V', Finis, "L {C} l -3,0 l 3, 5 l 3,-5 l -3,0"),
 
                 (Start, '.', E, '-', "M {S} Q {C} {E}"),
                 (Start, '.', W, '-', "M {S} Q {C} {W}"),
