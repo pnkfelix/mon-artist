@@ -1,5 +1,5 @@
 ```rust
-pub const ALL: [(&'static str, &'static str); 12] = [
+pub const ALL: [(&'static str, &'static str); 16] = [
     BASIC,
     LINE,
     VERT_LINE,
@@ -11,6 +11,10 @@ pub const ALL: [(&'static str, &'static str); 12] = [
     RIGHT_ARROW,
     BASIC_ALL_PLUS,
     BASIC_UL_PLUS,
+    ARROW_POINT_SOUTH_AT_BOX,
+    ARROW_POINT_SOUTH_TO_BOX,
+    DOUBLE_ARROW_POINT_SOUTH_AT_BOX,
+    DOUBLE_ARROW_POINT_SOUTH_TO_BOX,
     MULTI_RECTS,
 
     ISSUE_15_DESC
@@ -101,6 +105,51 @@ def_test! { BASIC_ALL_PLUS,
              +----+  bottom\n" }
 //           00000000011111
 //           12345678901234
+
+
+def_test! { ARROW_POINT_SOUTH_AT_BOX,
+            "  |     top\n\
+             ()|\n\
+             ()V\n\
+             +----+\n\
+             |    |\n\
+             +----+  bottom\n" }
+//           00000000011111
+//           12345678901234
+
+
+def_test! { ARROW_POINT_SOUTH_TO_BOX,
+            "  |     top\n\
+             ()|\n\
+             ()V\n\
+             +-+--+\n\
+             |    |\n\
+             +----+  bottom\n" }
+//           00000000011111
+//           12345678901234
+
+
+def_test! { DOUBLE_ARROW_POINT_SOUTH_AT_BOX,
+            "  ^     top\n\
+             ()|\n\
+             ()V\n\
+             +----+\n\
+             |    |\n\
+             +----+  bottom\n" }
+//           00000000011111
+//           12345678901234
+
+
+def_test! { DOUBLE_ARROW_POINT_SOUTH_TO_BOX,
+            "  ^     top\n\
+             ()|\n\
+             ()V\n\
+             +-+--+\n\
+             |    |\n\
+             +----+  bottom\n" }
+//           00000000011111
+//           12345678901234
+
 
 def_test! { MULTI_RECTS,
             // 111122222222223333333333444444444455555555556
