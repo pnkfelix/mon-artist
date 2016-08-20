@@ -176,6 +176,8 @@ impl ToElement for Scene {
     fn to_element(&self) -> Element {
         let mut s = String::new();
         let mut e = Element::new("pre");
+        e.attributes.insert("style".to_string(),
+                            "font-size: 25%;".to_string());
         s.push_str(&format!("width: {} height: {}\n", self.width(), self.height()));
         for (i, p) in self.paths().iter().enumerate() {
             s.push_str(&format!("path[{}]: Path {{ id: {:?}, closed: {:?}, attrs: {:?}\n",
@@ -233,7 +235,14 @@ fn end_to_end_basics() {
             name: name.to_string(),
         };
         html_body.children.push({
+            let mut e = Element::new("h3");
+            e.text = Some(name.to_string());
+            e
+        });
+        html_body.children.push({
             let mut e = Element::new("pre");
+            e.attributes.insert("style".to_string(),
+                                "border:1px dotted black;".to_string());
             e.text = Some(d.to_string());
             e
         });
@@ -241,6 +250,7 @@ fn end_to_end_basics() {
         html_body.children.push(s.to_element());
         let elem = r.render_s(&s);
         html_body.children.push(elem.into_element());
+        html_body.children.push(Element::new("hr"));
     }
     let mut html_elem = Element::new("html");
     html_elem.children.push(html_body);
