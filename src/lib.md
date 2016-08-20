@@ -168,6 +168,27 @@ mod scene {
     }
 }
 pub use scene::Scene;
+
+use treexml::{Element};
+use svg::{ToElement};
+
+impl ToElement for Scene {
+    fn to_element(&self) -> Element {
+        let mut s = String::new();
+        let mut e = Element::new("pre");
+        s.push_str(&format!("width: {} height: {}\n", self.width(), self.height()));
+        for (i, p) in self.paths().iter().enumerate() {
+            s.push_str(&format!("path[{}]: Path {{ id: {:?}, closed: {:?}, attrs: {:?}\n",
+                                i, p.id, p.closed, p.attrs));
+            for (j, step) in p.steps.iter().enumerate() {
+                s.push_str(&format!("    path[{}][{}]: {:?},\n", i, j, step));
+            }
+            s.push_str(&"}\n");
+        }
+        e.text = Some(s);
+        e
+    }
+}
 ```
 
 The `test_data` module holds various examples input grids, used for
@@ -197,7 +218,7 @@ fn end_to_end_basics() {
     use grid::{Grid};
     use render::{RenderS};
     use render::svg::{SvgRender};
-    use svg::{IntoElement};
+    use svg::{IntoElement, ToElement};
     use treexml::{Document, Element};
     use std::path::{Path};
     use std::fs::{File};
@@ -211,7 +232,13 @@ fn end_to_end_basics() {
             x_scale: 9, y_scale: 12, show_gridlines: true,
             name: name.to_string(),
         };
+        html_body.children.push({
+            let mut e = Element::new("pre");
+            e.text = Some(d.to_string());
+            e
+        });
         let s = d.parse::<Grid>().unwrap().into_scene();
+        html_body.children.push(s.to_element());
         let elem = r.render_s(&s);
         html_body.children.push(elem.into_element());
     }

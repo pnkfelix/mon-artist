@@ -207,6 +207,10 @@ pub struct Rect {
     pub rounded: Option<(Dim, Dim)>,
 }
 
+pub trait ToElement {
+    fn to_element(&self) -> Element;
+}
+
 pub trait IntoElement {
     fn into_element(self) -> Element;
 }
