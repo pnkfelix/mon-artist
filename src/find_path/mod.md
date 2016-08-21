@@ -98,8 +98,8 @@ Some day, It may be worthwhile to make an exercise out of why.
     fn find_unclosed_path(&mut self, curr: Pt) -> Option<Path> {
         let elem = self.grid[curr];
         debug!("find_unclosed_path self: {:?} curr: {:?} pt: {:?}", self, curr, elem);
-        // don't waste time on a search that starts on a blank (or, for now, previously used) cell
-        if elem.is_blank() || elem.is_used() {
+        // don't waste time on a search that starts on a blank cell
+        if elem.is_blank() {
             return None;
         }
         // don't waste time on a search that starts on a cell with no non-blank neighbors.
@@ -144,7 +144,7 @@ Some day, It may be worthwhile to make an exercise out of why.
         let elem: Elem = self.grid[dv.0];
         debug!("find_unclosed_path_from elem: {:?}", elem);
         return match elem {
-            Elem::C(c) => {
+            Elem::C(c) | Elem::Used(c) => {
                 let cont = self::Continue::cat(c);
                 debug!("find_unclosed_path_from elem: {:?} cont: {:?}", elem, cont);
                 if cont == AnyDir {
@@ -185,12 +185,6 @@ Some day, It may be worthwhile to make an exercise out of why.
                     debug!("find_unclosed_path self: {:?} unmatched trajectory; giving up.", self);
                     None
                 }
-            }
-            Elem::Used(c) => {
-                // hmm, I want to allow some amount of reuse in some cases, but for now it seems to complicate things too
-                // much, so don't let unclosed paths continue along used lines.
-                debug!("find_unclosed_path self: {:?} previously used c: {}; giving up.", self, c);
-                None
             }
             Elem::Pad | Elem::Clear => { // blank: Give up.
                 debug!("find_unclosed_path self: {:?} blank; giving up.", self);

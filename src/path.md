@@ -149,7 +149,7 @@ impl Grid {
     fn remove_steps(&mut self, steps: &[(Pt, char)])
     {
         for &(pt, c) in steps {
-            assert_eq!(self[pt], Elem::C(c));
+            assert!(self[pt] == Elem::C(c) || self[pt] == Elem::Used(c));
         }
         for &(pt, c) in steps.iter() {
             match Remove::cat(c) {
