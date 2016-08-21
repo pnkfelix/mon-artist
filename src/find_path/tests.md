@@ -134,6 +134,48 @@ fn eastward_arrow_to_joiner() {
                           .chain((Pt(4,1), '+').into_iter())
                           .collect()));
 }
+
+#[test]
+fn double_vertical_arrow_to_joiners() {
+    let input = r#"
++
+^
+|
+v
++
+"#;
+    let grid = input.parse::<Grid>().unwrap();
+    let opt_p = super::find_unclosed_path_from(&grid, DirVector(Pt(1,2), Direction::S));
+    assert_eq!(opt_p.unwrap(),
+               Path::open((Pt(1,2), '+').into_iter()
+                          .chain((Pt(1,3), '^').into_iter())
+                          .chain((Pt(1,4), '|').into_iter())
+                          .chain((Pt(1,5), 'v').into_iter())
+                          .chain((Pt(1,6), '+').into_iter())
+                          .collect()));
+}
+
+#[test]
+fn double_vertical_arrow_to_used_joiners() {
+    let input = r#"
++
+^
+|
+v
++
+"#;
+    let mut grid = input.parse::<Grid>().unwrap();
+    grid.mark_used(Pt(1,2));
+    grid.mark_used(Pt(1,6));
+    let opt_p = super::find_unclosed_path_from(&grid, DirVector(Pt(1,2), Direction::S));
+    assert_eq!(opt_p.unwrap(),
+               Path::open((Pt(1,2), '+').into_iter()
+                          .chain((Pt(1,3), '^').into_iter())
+                          .chain((Pt(1,4), '|').into_iter())
+                          .chain((Pt(1,5), 'v').into_iter())
+                          .chain((Pt(1,6), '+').into_iter())
+                          .collect()));
+}
 ```
 
 
