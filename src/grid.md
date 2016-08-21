@@ -273,6 +273,29 @@ impl Grid {
             pt.row() as u32 <= self.height &&
             pt.col() as u32 <= self.width
     }
+
+    fn assert_pt_valid(&self, pt: Pt) {
+        // we use one-based indexing in Pt, so subtract 1 to convert to zero-based indexing.
+        assert!(pt.row() >= 1);
+        assert!(pt.row_idx() < self.rows.len(), "row_idx: {} len: {}",
+                pt.row_idx(), self.rows.len());
+        assert!(pt.col_idx() < self.rows[pt.row_idx()].len());
+    }
+
+    pub fn set(&mut self, pt: Pt, value: Elem) {
+        self.assert_pt_valid(pt);
+        self.rows[pt.row_idx()][pt.col_idx()] = value;
+    }
+
+    pub fn mark_used(&mut self, pt: Pt) {
+        self.assert_pt_valid(pt);
+        let elem = self[pt];
+        let new_elem = match elem {
+            Elem::C(c) | Elem::Used(c) => Elem::Used(c),
+            Elem::Pad | Elem::Clear => panic!("cannot mark clear spot as used."),
+        };
+        self.set(pt, new_elem);
+    }
 }
 
 use std::ops::Index;
@@ -280,11 +303,7 @@ use std::ops::Index;
 impl Index<Pt> for Grid {
     type Output = Elem;
     fn index(&self, pt: Pt) -> &Elem {
-        // we use one-based indexing in Pt, so subtract 1 to convert to zero-based indexing.
-        assert!(pt.row() >= 1);
-        assert!(pt.row_idx() < self.rows.len(), "row_idx: {} len: {}",
-                pt.row_idx(), self.rows.len());
-        assert!(pt.col_idx() < self.rows[pt.row_idx()].len());
+        self.assert_pt_valid(pt);
         &self.rows[pt.row_idx()][pt.col_idx()]
     }
 }
