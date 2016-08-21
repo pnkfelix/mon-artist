@@ -379,7 +379,7 @@ impl Continue {
         match c {
             '\\' => NegSlope,
             '/' => PosSlope,
-            '|' | ':' | '^' | 'V' => Vertical,
+            '|' | ':' | '^' | 'v' => Vertical,
             '-' | '=' | '>' | '<' => Horizontal,
             '*' => Continue,
             '.' | '\'' | '+' => AnyDir,

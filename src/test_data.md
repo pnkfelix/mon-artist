@@ -1,5 +1,5 @@
 ```rust
-pub const ALL: [(&'static str, &'static str); 16] = [
+pub const ALL: [(&'static str, &'static str); 20] = [
     BASIC,
     LINE,
     VERT_LINE,
@@ -11,10 +11,16 @@ pub const ALL: [(&'static str, &'static str); 16] = [
     RIGHT_ARROW,
     BASIC_ALL_PLUS,
     BASIC_UL_PLUS,
+
     ARROW_POINT_SOUTH_AT_BOX,
     ARROW_POINT_SOUTH_TO_BOX,
     DOUBLE_ARROW_POINT_SOUTH_AT_BOX,
     DOUBLE_ARROW_POINT_SOUTH_TO_BOX,
+    BOX_AT_BOX,
+    BOX_TO_BOX,
+    RBOX_AT_RBOX,
+    RBOX_TO_RBOX,
+
     MULTI_RECTS,
 
     ISSUE_15_DESC
@@ -110,7 +116,7 @@ def_test! { BASIC_ALL_PLUS,
 def_test! { ARROW_POINT_SOUTH_AT_BOX,
             "  |     top\n\
              ()|\n\
-             ()V\n\
+             ()v\n\
              +----+\n\
              |    |\n\
              +----+  bottom\n" }
@@ -121,7 +127,7 @@ def_test! { ARROW_POINT_SOUTH_AT_BOX,
 def_test! { ARROW_POINT_SOUTH_TO_BOX,
             "  |     top\n\
              ()|\n\
-             ()V\n\
+             ()v\n\
              +-+--+\n\
              |    |\n\
              +----+  bottom\n" }
@@ -132,7 +138,7 @@ def_test! { ARROW_POINT_SOUTH_TO_BOX,
 def_test! { DOUBLE_ARROW_POINT_SOUTH_AT_BOX,
             "  ^     top\n\
              ()|\n\
-             ()V\n\
+             ()v\n\
              +----+\n\
              |    |\n\
              +----+  bottom\n" }
@@ -140,10 +146,62 @@ def_test! { DOUBLE_ARROW_POINT_SOUTH_AT_BOX,
 //           12345678901234
 
 
+def_test! { BOX_AT_BOX,
+            "() +---+ top    \n\
+             () |   |        \n\
+             () +---+        \n\
+             ()   ^          \n\
+             ()   |          \n\
+             ()   v          \n\
+             () +---+        \n\
+             () |   |        \n\
+             () +---+ bottom \n" }
+//           00000000011111111
+//           12345678901234567
+
+def_test! { BOX_TO_BOX,
+            "() +---+ top    \n\
+             () |   |        \n\
+             () +-+-+        \n\
+             ()   ^          \n\
+             ()   |          \n\
+             ()   v          \n\
+             () +-+-+        \n\
+             () |   |        \n\
+             () +---+ bottom \n" }
+//           00000000011111111
+//           12345678901234567
+
+def_test! { RBOX_AT_RBOX,
+            "() .---. top    \n\
+             () |   |        \n\
+             () '---'        \n\
+             ()   ^          \n\
+             ()   |          \n\
+             ()   v          \n\
+             () .---.        \n\
+             () |   |        \n\
+             () '---' bottom \n" }
+//           00000000011111111
+//           12345678901234567
+
+def_test! { RBOX_TO_RBOX,
+            "() .---. top    \n\
+             () |   |        \n\
+             () '-+-'        \n\
+             ()   ^          \n\
+             ()   |          \n\
+             ()   v          \n\
+             () .-+-.        \n\
+             () |   |        \n\
+             () '---' bottom \n" }
+//           00000000011111111
+//           12345678901234567
+
 def_test! { DOUBLE_ARROW_POINT_SOUTH_TO_BOX,
             "  ^     top\n\
              ()|\n\
-             ()V\n\
+             ()v\n\
              +-+--+\n\
              |    |\n\
              +----+  bottom\n" }

@@ -106,20 +106,20 @@ fn reverse_northward_arrow() {
 
 #[test]
 fn southward_arrow() {
-    let grid = "| \n| \nV ".parse::<Grid>().unwrap();
+    let grid = "| \n| \nv ".parse::<Grid>().unwrap();
     let opt_p = super::find_unclosed_path_from(&grid, DirVector(Pt(1,1), Direction::S));
     assert_eq!(opt_p.unwrap(),
                Path::open((Pt(1,1)...Pt(1,2)).iter_char('|')
-                          .chain((Pt(1,3), 'V').into_iter())
+                          .chain((Pt(1,3), 'v').into_iter())
                           .collect()));
 }
 
 #[test]
 fn reverse_southward_arrow() {
-    let grid = "| \n| \nV ".parse::<Grid>().unwrap();
+    let grid = "| \n| \nv ".parse::<Grid>().unwrap();
     let opt_p = super::find_unclosed_path_from(&grid, DirVector(Pt(1,3), Direction::N));
     assert_eq!(opt_p.unwrap(),
-               Path::open((Pt(1,3), 'V').into_iter()
+               Path::open((Pt(1,3), 'v').into_iter()
                           .chain((Pt(1,2)...Pt(1,1)).iter_char('|'))
                           .collect()));
 }
