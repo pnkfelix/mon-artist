@@ -177,7 +177,7 @@ impl ToElement for Scene {
         let mut s = String::new();
         let mut e = Element::new("pre");
         e.attributes.insert("style".to_string(),
-                            "font-size: 25%;".to_string());
+                            "font-size: 50%;".to_string());
         s.push_str(&format!("width: {} height: {}\n", self.width(), self.height()));
         for (i, p) in self.paths().iter().enumerate() {
             s.push_str(&format!("path[{}]: Path {{ id: {:?}, closed: {:?}, attrs: {:?}\n",
