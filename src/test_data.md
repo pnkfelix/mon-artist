@@ -114,34 +114,34 @@ def_test! { BASIC_ALL_PLUS,
 
 
 def_test! { ARROW_POINT_SOUTH_AT_BOX,
-            "  |     top\n\
-             ()|\n\
-             ()v\n\
-             +----+\n\
-             |    |\n\
-             +----+  bottom\n" }
+            "|   |     top\n\
+             |   |\n\
+             |   v\n\
+             | +----+\n\
+             | |    |\n\
+             | +----+  bottom\n" }
 //           00000000011111
 //           12345678901234
 
 
 def_test! { ARROW_POINT_SOUTH_TO_BOX,
-            "  |     top\n\
-             ()|\n\
-             ()v\n\
-             +-+--+\n\
-             |    |\n\
-             +----+  bottom\n" }
+            "|   |     top\n\
+             |   |\n\
+             |   v\n\
+             | +-+--+\n\
+             | |    |\n\
+             | +----+  bottom\n" }
 //           00000000011111
 //           12345678901234
 
 
 def_test! { DOUBLE_ARROW_POINT_SOUTH_AT_BOX,
-            "  ^     top\n\
-             ()|\n\
-             ()v\n\
-             +----+\n\
-             |    |\n\
-             +----+  bottom\n" }
+            "|   ^     top\n\
+             |   |\n\
+             |   v\n\
+             | +----+\n\
+             | |    |\n\
+             | +----+  bottom\n" }
 //           00000000011111
 //           12345678901234
 
@@ -199,12 +199,12 @@ def_test! { RBOX_TO_RBOX,
 //           12345678901234567
 
 def_test! { DOUBLE_ARROW_POINT_SOUTH_TO_BOX,
-            "  ^     top\n\
-             ()|\n\
-             ()v\n\
-             +-+--+\n\
-             |    |\n\
-             +----+  bottom\n" }
+            "|   ^     top\n\
+             |   |\n\
+             |   v\n\
+             | +-+--+\n\
+             | |    |\n\
+             | +----+  bottom\n" }
 //           00000000011111
 //           12345678901234
 
