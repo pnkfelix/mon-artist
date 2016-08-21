@@ -314,7 +314,7 @@ impl Default for Table {
                 (Match::Any, SW, '/', May((SW, Match::Any)), "L {SW}"),
                 (Match::Any, SE, '\\', May((SE, Match::Any)), "L {SE}"),
                 (Match::Any, NW, '\\', May((NW, Match::Any)), "L {NW}"),
-                (Match::Any, AnyDir, '+', AnyDir, Match::Any, "L {C}"),
+                (Match::Any, AnyDir, '+', May((AnyDir, Match::Any)), "L {C}"),
 
                 // The curves!  .-   .-  .-
                 // part 1:      |   /     \  et cetera
@@ -355,9 +355,19 @@ impl Default for Table {
                 ('-', W, '<', Finis, "L {C} l 0,-3 l -4,3 l 4,3 l 0,-3"),
                 (Start, '<', E, '-', "M {C} l 0,-3 l -4,3 l 4,3 l 0,-3"),
                 // vertical arrow heads
-                (Start, '^', S, '|', "M {C} l -3,0 l 3,-5 l 3, 5 l -3,0"),
-                (Start, 'v', N, '|', "M {C} l -3,0 l 3, 5 l 3,-5 l -3,0"),
+                (Start,  '^', S, '|', "M {C} l -3,0 l 3,-5 l 3, 5 l -3,0"),
+                (Start,  'v', N, '|', "M {C} l -3,0 l 3, 5 l 3,-5 l -3,0"),
                 (Match::Any, S, 'v', Finis, "L {C} l -3,0 l 3, 5 l 3,-5 l -3,0"),
+
+                // arrow heads that join with other paths
+                ('|', N, '^', N, '+', "L {N} l -3,0 l 3,-5 l 3, 5 l -3,0 m 0,-5"),
+                ('+', S, '^', S, '|', "M {N} l -3,0 l 3,-5 l 3, 5 l -3,0 M {N} L {C}"),
+                ('|', S, 'v', S, '+', "L {S} l -3,0 l 3, 5 l 3,-5 l -3,0 m 0, 5"),
+                ('+', N, 'v', N, '|', "L {S} l -3,0 l 3, 5 l 3,-5 l -3,0 m 0, 5 M {S} L {C}"),
+                ('-', E, '>', E, '+', "L {E} l 0,-3 l 4,3 l -4,3 l 0,-3 m  4,0"),
+                ('+', W, '>', W, '-', "M {E} l 0,-3 l 4,3 l -4,3 l 0,-3 m  4,0  M {E} L {C}"),
+                ('-', W, '<', W, '+', "L {W} l 0,-3 l -4,3 l 4,3 l 0,-3 m -4,0"),
+                ('+', E, '<', E, '-', "M {W} l 0,-3 l -4,3 l 4,3 l 0,-3 m -4,0  M {W} L {C}"),
 
                 (Start, '.', E, '-', "M {S} Q {C} {E}"),
                 (Start, '.', W, '-', "M {S} Q {C} {W}"),
