@@ -217,6 +217,8 @@ pub mod render;
 
 #[test]
 fn end_to_end_basics() {
+    const PRINT_INTERMEDIATE_SCENE_STRUCTURE: bool = false;
+
     use grid::{Grid};
     use render::{RenderS};
     use render::svg::{SvgRender};
@@ -247,7 +249,11 @@ fn end_to_end_basics() {
             e
         });
         let s = d.parse::<Grid>().unwrap().into_scene();
-        html_body.children.push(s.to_element());
+
+        if PRINT_INTERMEDIATE_SCENE_STRUCTURE {
+            html_body.children.push(s.to_element());
+        }
+
         let elem = r.render_s(&s);
         html_body.children.push(elem.into_element());
         html_body.children.push(Element::new("hr"));
