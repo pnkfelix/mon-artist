@@ -135,8 +135,8 @@ mod scene {
             use find_path::{find_closed_path, find_unclosed_path};
             use grid::{Pt};
             let mut paths = vec![];
-            for col in 1...self.width {
-                for row in 1...self.height {
+            for row in 1...self.height {
+                for col in 1...self.width {
                     loop {
                         let pt = Pt(col as i32, row as i32);
                         if let Some(p) = find_closed_path(&self, pt) {
@@ -149,8 +149,8 @@ mod scene {
                     }
                 }
             }
-            for col in 1...self.width {
-                for row in 1...self.height {
+            for row in 1...self.height {
+                for col in 1...self.width {
                     loop {
                         let pt = Pt(col as i32, row as i32);
                         if let Some(p) = find_unclosed_path(&self, pt) {
