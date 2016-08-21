@@ -230,7 +230,6 @@ fn end_to_end_basics() {
     let _ = ::env_logger::init();
     let mut html_doc = Document::default();
     let mut html_body = Element::new("body");
-    html_body.children.push({ let mut p = Element::new("p"); p.text = Some(format!("Hello World")); p });
     for &(name, d) in &test_data::ALL {
         let r = SvgRender {
             x_scale: 9, y_scale: 12, show_gridlines: true,
