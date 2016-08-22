@@ -265,7 +265,7 @@ fn end_to_end_basics() {
     let mut html_body = Element::new("body");
     for &(name, d) in &test_data::ALL {
         let r = SvgRender {
-            x_scale: 9, y_scale: 12,
+            x_scale: 9, y_scale: 15,
             font_family: "Menlo".to_string(), font_size: 15,
             show_gridlines: true,
             name: name.to_string(),
