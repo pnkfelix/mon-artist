@@ -263,7 +263,7 @@ to figure out how to render the middle (or edge) step.
 fn render_text(svg: &mut Svg, sr: &SvgRender, text: &text::Text) {
     use svg::text as svg_text;
     let place = interpret_place(sr, "SW", text.pt);
-    println!("rendering text: {:?} starting at place: {:?}", text, place);
+    debug!("rendering text: {:?} starting at place: {:?}", text, place);
     // FIXME:  incorporate in the `text.attrs` and `text.id` in the appropriate manner.
     let rendered = svg_text::Text {
         x: place.0,
