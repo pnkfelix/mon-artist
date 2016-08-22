@@ -11,6 +11,7 @@ use path::{self, Path};
 use grid::{Pt};
 
 use format;
+use text;
 ```
 
 The `RenderS` impl renders into an instance of the `Svg` structure
@@ -44,6 +45,8 @@ in the output SVG.
     pub x_scale: u32,
     // An output y-coordinate is an input times `y_scale`.
     pub y_scale: u32,
+
+    pub font_size: u32,
 ```
 
 In addition, we may well want to customize other aspects
@@ -89,6 +92,11 @@ fn render_svg(sr: &SvgRender, scene: &Scene) -> Svg {
     debug!("rendering paths: {:?}", scene.paths());
     for path in scene.paths() {
         render_path(&mut svg, sr, path);
+    }
+
+    debug!("rendering texts: {:?}", scene.texts());
+    for text in scene.texts() {
+        render_text(&mut svg, sr, text);
     }
 
     svg
@@ -249,6 +257,22 @@ to figure out how to render the middle (or edge) step.
 
     debug!("Path {:?} yields cmd: {:?}", path, pr.cmd);
     svg.add_child_shape(pr.into_shape())
+}
+
+fn render_text(svg: &mut Svg, sr: &SvgRender, text: &text::Text) {
+    use svg::text as svg_text;
+    let place = interpret_place(sr, "SW", text.pt);
+    println!("rendering text: {:?} starting at place: {:?}", text, place);
+    // FIXME:  incorporate in the `text.attrs` and `text.id` in the appropriate manner.
+    let rendered = svg_text::Text {
+        x: place.0,
+        y: place.1,
+        font_size: svg::Dim::U(sr.font_size,0),
+        text_anchor: svg_text::TextAnchor::Start,
+        fill: Color::Black,
+        content: text.content.clone(),
+    };
+    svg.add_child_shape(rendered);
 }
 
 type Step = (Pt, char);

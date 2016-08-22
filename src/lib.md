@@ -102,6 +102,14 @@ pub use path::Path;
 pub mod find_path;
 ```
 
+The `text` and `find_text` modules are analogous to `path` and `find_path`,
+except they search for blocks of `<text>` rather than paths to draw.
+
+```rust
+pub mod text;
+pub mod find_text;
+```
+
 Finding paths on a grid yields a "scene", which holds the
 paths themselves and the stage on which they are drawn.
 
@@ -116,9 +124,11 @@ horizontally.
 mod scene {
     use path::{Path};
     use grid::{Grid};
+    use text::{Text};
 
     pub struct Scene {
         paths: Vec<Path>,
+        texts: Vec<Text>,
         /// The number of elements that need to fit horizontally in the scene.
         width: u32,
         height: u32,
@@ -126,6 +136,7 @@ mod scene {
 
     impl Scene {
         pub fn paths(&self) -> &[Path] { &self.paths }
+        pub fn texts(&self) -> &[Text] { &self.texts }
         pub fn width(&self) -> u32 { self.width }
         pub fn height(&self) -> u32 { self.height }
     }
@@ -133,8 +144,10 @@ mod scene {
     impl Grid {
         pub fn into_scene(mut self) -> Scene {
             use find_path::{find_closed_path, find_unclosed_path};
+            use find_text::{find_text};
             use grid::{Pt};
             let mut paths = vec![];
+            let mut texts = vec![];
             for row in 1...self.height {
                 for col in 1...self.width {
                     loop {
@@ -163,7 +176,21 @@ mod scene {
                     }
                 }
             }
-            Scene { paths: paths, width: self.width, height: self.height }
+            for row in 1...self.height {
+                for col in 1...self.width {
+                    loop {
+                        let pt = Pt(col as i32, row as i32);
+                        if let Some(txt) = find_text(&self, pt) {
+                            debug!("txt {:?} => text {:?}", pt, txt);
+                            self.remove_text(&txt);
+                            texts.push(txt);
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
+            Scene { paths: paths, texts: texts, width: self.width, height: self.height }
         }
     }
 }
@@ -186,6 +213,12 @@ impl ToElement for Scene {
                 s.push_str(&format!("    path[{}][{}]: {:?},\n", i, j, step));
             }
             s.push_str(&"}\n");
+        }
+        for (i, t) in self.texts().iter().enumerate() {
+            s.push_str(&format!("text[{}]: Text {{ \
+                                     id: {:?} pt: ({},{}), content: {}, attrs: {:?} \
+                                 }}\n",
+                                i, t.id, t.pt.col(), t.pt.row(), t.content, t.attrs));
         }
         e.text = Some(s);
         e
@@ -232,7 +265,8 @@ fn end_to_end_basics() {
     let mut html_body = Element::new("body");
     for &(name, d) in &test_data::ALL {
         let r = SvgRender {
-            x_scale: 9, y_scale: 12, show_gridlines: true,
+            x_scale: 9, y_scale: 12, font_size: 15,
+            show_gridlines: true,
             name: name.to_string(),
         };
         html_body.children.push({
@@ -244,7 +278,7 @@ fn end_to_end_basics() {
             let mut e = Element::new("pre");
             e.attributes.insert("style".to_string(),
                                 "border:1px dotted black;".to_string());
-            e.text = Some(d.to_string());
+            e.text = Some(format!("{}", d));
             e
         });
         let s = d.parse::<Grid>().unwrap().into_scene();

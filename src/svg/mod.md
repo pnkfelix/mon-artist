@@ -87,7 +87,7 @@ impl Dec {
 
 /// `Dim` is a measure of dimension. They are meant to carry units,
 /// though it can be omitted via the `U` variant.
-#[derive(Copy, Clone, PartialEq, Eq)] // if we ever impl PartialOrd, do it explicitly.
+#[derive(Copy, Clone, PartialEq, Eq, Debug)] // if we ever impl PartialOrd, do it explicitly.
 pub enum Dim {
     /// Unit-less; e.g. U(50,1) is "50.1"
     U(u32, u32),
@@ -256,9 +256,11 @@ impl IntoElement for Text {
         let mut e = Element::new("text");
         e.insert_attribute("x", self.x.to_string());
         e.insert_attribute("y", self.y.to_string());
+        e.insert_attribute("font-family", "Monaco".to_string());
         e.insert_attribute("font-size", self.font_size.to_string());
         e.insert_attribute("text-anchor", self.text_anchor.to_string());
         e.insert_attribute("fill", self.fill.into_string());
+        e.text = Some(self.content);
         e
     }
 }
@@ -280,13 +282,17 @@ pub mod text {
     use super::{Color, Dim};
 
     pub enum TextAnchor {
+        Start,
         Middle,
+        End,
     }
 
     impl TextAnchor {
         pub fn to_string(&self) -> String {
             match *self {
                 TextAnchor::Middle => "middle".to_string(),
+                TextAnchor::Start => "start".to_string(),
+                TextAnchor::End => "end".to_string(),
             }
         }
     }
