@@ -256,7 +256,7 @@ impl IntoElement for Text {
         let mut e = Element::new("text");
         e.insert_attribute("x", self.x.to_string());
         e.insert_attribute("y", self.y.to_string());
-        e.insert_attribute("font-family", "Monaco".to_string());
+        e.insert_attribute("font-family", self.font_family);
         e.insert_attribute("font-size", self.font_size.to_string());
         e.insert_attribute("text-anchor", self.text_anchor.to_string());
         e.insert_attribute("fill", self.fill.into_string());
@@ -300,6 +300,7 @@ pub mod text {
     pub struct Text {
         pub x: Dim,
         pub y: Dim,
+        pub font_family: String,
         pub font_size: Dim,
         pub text_anchor: TextAnchor,
         pub fill: Color,
@@ -461,6 +462,7 @@ mod tests {
                                    fill: Color::Green });
         s.add_child_shape(Text { x: Dim::U(150,0),
                                  y: Dim::U(125,0),
+                                 font_family: "Monaco".to_string(),
                                  font_size: Dim::U(60,0),
                                  text_anchor: text::TextAnchor::Middle,
                                  fill: Color::White,

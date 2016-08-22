@@ -46,6 +46,7 @@ in the output SVG.
     // An output y-coordinate is an input times `y_scale`.
     pub y_scale: u32,
 
+    pub font_family: String,
     pub font_size: u32,
 ```
 
@@ -267,6 +268,7 @@ fn render_text(svg: &mut Svg, sr: &SvgRender, text: &text::Text) {
     let rendered = svg_text::Text {
         x: place.0,
         y: place.1,
+        font_family: sr.font_family.clone(),
         font_size: svg::Dim::U(sr.font_size,0),
         text_anchor: svg_text::TextAnchor::Start,
         fill: Color::Black,
