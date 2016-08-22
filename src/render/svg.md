@@ -314,6 +314,9 @@ impl<'a> PathRender<'a> {
         if attrs.iter().find(|a|a.0 == "stroke").is_none() {
             attrs.push(("stroke".to_string(), "green".to_string()));
         }
+        if attrs.iter().find(|a|a.0 == "stroke-width").is_none() {
+            attrs.push(("stroke-width".to_string(), "2".to_string()));
+        }
         if self.dashed && attrs.iter().find(|a|a.0 == "stroke-dasharray").is_none() {
             attrs.push(("stroke-dasharray".to_string(), "1,1".to_string()));
         }
@@ -541,7 +544,7 @@ fn render_rectangle(svg: &mut Svg,
             width: width,
             height: height,
             fill: Fill::None,
-            stroke: Some((Fill::Color(Color::Red), Dim::U(4,0))),
+            stroke: Some((Fill::Color(Color::Red), Dim::U(2,0))),
             rounded: if rounded {
                 Some((Dim::U(0,5) * sr.x_scale, Dim::U(0,5) * sr.y_scale))
             } else {
