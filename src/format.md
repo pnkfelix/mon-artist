@@ -486,6 +486,7 @@ impl Default for Table {
                 (Start, '<', E, '-', "M {C} l -4,0 m 4,-3 l -4,3 l 4,3 m 0,-3"),
                 // vertical arrow heads
                 (Start,  '^', S, '|', "M {C} l 0,-5 m -3,5 l 3,-5 l 3, 5 m -3,0"),
+                (Start,  '^', S, ':', "M {C} l 0,-5 m -3,5 l 3,-5 l 3, 5 m -3,0", [("stroke-dasharray", "5,2")]),
                 (Start,  'v', N, '|', "M {C} l 0,5 m -3,-5 l 3, 5 l 3,-5 m -3,0"),
                 (Match::Any, S, 'v', Finis, "L {C} l 0,5 m -3,-5 l 3, 5 l 3,-5 m -3,0"),
 
