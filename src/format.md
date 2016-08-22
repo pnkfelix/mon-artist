@@ -41,7 +41,6 @@ pub enum Neighbor<T> {
     May(T),
 }
 
-#[allow(dead_code)]
 /// Each Entry describes how to render a character along a path,
 /// based on the context in which it appears.
 ///
@@ -65,6 +64,10 @@ pub struct Entry {
 
     /// The template to use when rendering `curr`.
     template: String,
+
+    /// attribute(s) that should be present on element if this pattern
+    /// is matched along the path.
+    include_attributes: Vec<(String, String)>,
 }
 
 impl Entry {
@@ -99,6 +102,14 @@ impl Entry {
     }
 }
 
+pub trait IntoAttributes { fn into_attributes(self) -> Vec<(String, String)>; }
+impl IntoAttributes for () { fn into_attributes(self) -> Vec<(String, String)> { vec![] } }
+impl IntoAttributes for [(&'static str, &'static str); 1] {
+    fn into_attributes(self) -> Vec<(String, String)> {
+        self.into_iter().map(|&(a,b)|(a.to_string(), b.to_string())).collect()
+    }
+}
+
 pub trait IntoEntry { fn into_entry(self) -> Entry; }
 
 /// Use `All` to match either the end of the path or any non-blank character.
@@ -117,6 +128,22 @@ impl<'a, C0, D0, C1, D1, C2> IntoEntry for (C0, D0, C1, D1, C2, &'a str) where
             curr: self.2.into_match(),
             outgoing: Must((self.3.to_directions(), self.4.into_match())),
             template: self.5.to_string(),
+            include_attributes: vec![],
+        }
+    }
+}
+
+impl<'a, C0, D0, C1, D1, C2, A> IntoEntry for (C0, D0, C1, D1, C2, &'a str, A) where
+    C0: IntoMatch, D0: ToDirections, C1: IntoMatch, D1: ToDirections, C2: IntoMatch, A: IntoAttributes
+{
+    fn into_entry(self) -> Entry {
+        use self::Neighbor::{Must};
+        Entry {
+            incoming: Must((self.0.into_match(), self.1.to_directions())),
+            curr: self.2.into_match(),
+            outgoing: Must((self.3.to_directions(), self.4.into_match())),
+            template: self.5.to_string(),
+            include_attributes: self.6.into_attributes(),
         }
     }
 }
@@ -132,6 +159,23 @@ impl<'a, C0, D0, C1, D1, C2> IntoEntry for (May<(C0, D0)>, C1, D1, C2, &'a str) 
             curr: self.1.into_match(),
             outgoing: Must((self.2.to_directions(), self.3.into_match())),
             template: self.4.to_string(),
+            include_attributes: vec![],
+        }
+    }
+}
+
+impl<'a, C0, D0, C1, D1, C2, A> IntoEntry for (May<(C0, D0)>, C1, D1, C2, &'a str, A) where
+    C0: IntoMatch, D0: ToDirections, C1: IntoMatch, D1: ToDirections, C2: IntoMatch, A: IntoAttributes
+{
+    fn into_entry(self) -> Entry {
+        use self::Neighbor::{Must, May};
+        Entry {
+            incoming: May((((self.0).0).0.into_match(),
+                           ((self.0).0).1.to_directions())),
+            curr: self.1.into_match(),
+            outgoing: Must((self.2.to_directions(), self.3.into_match())),
+            template: self.4.to_string(),
+            include_attributes: self.5.into_attributes(),
         }
     }
 }
@@ -147,6 +191,23 @@ impl<'a, C0, D0, C1, D1, C2> IntoEntry for (C0, D0, C1, May<(D1, C2)>, &'a str) 
             outgoing: May((((self.3).0).0.to_directions(),
                            ((self.3).0).1.into_match())),
             template: self.4.to_string(),
+            include_attributes: vec![],
+        }
+    }
+}
+
+impl<'a, C0, D0, C1, D1, C2, A> IntoEntry for (C0, D0, C1, May<(D1, C2)>, &'a str, A) where
+    C0: IntoMatch, D0: ToDirections, C1: IntoMatch, D1: ToDirections, C2: IntoMatch, A: IntoAttributes
+{
+    fn into_entry(self) -> Entry {
+        use self::Neighbor::{Must, May};
+        Entry {
+            incoming: Must((self.0.into_match(), self.1.to_directions())),
+            curr: self.2.into_match(),
+            outgoing: May((((self.3).0).0.to_directions(),
+                           ((self.3).0).1.into_match())),
+            template: self.4.to_string(),
+            include_attributes: self.5.into_attributes(),
         }
     }
 }
@@ -162,6 +223,23 @@ impl<'a, C0, D0, C1, D1, C2> IntoEntry for (May<(C0, D0)>, C1, May<(D1, C2)>, &'
             curr: self.1.into_match(),
             outgoing: May((((self.2).0).0.to_directions(), ((self.2).0).1.into_match())),
             template: self.3.to_string(),
+            include_attributes: vec![],
+        }
+    }
+}
+
+impl<'a, C0, D0, C1, D1, C2, A> IntoEntry for (May<(C0, D0)>, C1, May<(D1, C2)>, &'a str, A)
+    where
+    C0: IntoMatch, D0: ToDirections, C1: IntoMatch, D1: ToDirections, C2: IntoMatch, A: IntoAttributes,
+{
+    fn into_entry(self) -> Entry {
+        use self::Neighbor::{May};
+        Entry {
+            incoming: May((((self.0).0).0.into_match(), ((self.0).0).1.to_directions())),
+            curr: self.1.into_match(),
+            outgoing: May((((self.2).0).0.to_directions(), ((self.2).0).1.into_match())),
+            template: self.3.to_string(),
+            include_attributes: self.4.into_attributes(),
         }
     }
 }
@@ -170,7 +248,7 @@ pub struct Start;
 pub struct Finis;
 
 impl<'a, C1, D1, C2> IntoEntry for (Start, C1, D1, C2, &'a str)
-    where C1: IntoMatch, D1: ToDirections, C2: IntoMatch,
+    where C1: IntoMatch, D1: ToDirections, C2: IntoMatch
 {
     fn into_entry(self) -> Entry {
         use self::Neighbor::{Blank, Must};
@@ -179,6 +257,22 @@ impl<'a, C1, D1, C2> IntoEntry for (Start, C1, D1, C2, &'a str)
             curr: self.1.into_match(),
             outgoing: Must((self.2.to_directions(), self.3.into_match())),
             template: self.4.to_string(),
+            include_attributes: vec![]
+        }
+    }
+}
+
+impl<'a, C1, D1, C2, A> IntoEntry for (Start, C1, D1, C2, &'a str, A)
+    where C1: IntoMatch, D1: ToDirections, C2: IntoMatch, A: IntoAttributes,
+{
+    fn into_entry(self) -> Entry {
+        use self::Neighbor::{Blank, Must};
+        Entry {
+            incoming: Blank,
+            curr: self.1.into_match(),
+            outgoing: Must((self.2.to_directions(), self.3.into_match())),
+            template: self.4.to_string(),
+            include_attributes: self.5.into_attributes(),
         }
     }
 }
@@ -193,6 +287,22 @@ impl<'a, C0, D0, C1> IntoEntry for (C0, D0, C1, Finis, &'a str)
             curr: self.2.into_match(),
             outgoing: Blank,
             template: self.4.to_string(),
+            include_attributes: vec![],
+        }
+    }
+}
+
+impl<'a, C0, D0, C1, A> IntoEntry for (C0, D0, C1, Finis, &'a str, A)
+    where C0: IntoMatch, D0: ToDirections, C1: IntoMatch, A: IntoAttributes
+{
+    fn into_entry(self) -> Entry {
+        use self::Neighbor::{Blank, Must};
+        Entry {
+            incoming: Must((self.0.into_match(), self.1.to_directions())),
+            curr: self.2.into_match(),
+            outgoing: Blank,
+            template: self.4.to_string(),
+            include_attributes: self.5.into_attributes(),
         }
     }
 }
@@ -207,6 +317,22 @@ impl<'a, C1> IntoEntry for (All, C1, All, &'a str) where
             curr: self.1.into_match(),
             outgoing: May((directions::Any.to_directions(), Match::Any)),
             template: self.3.to_string(),
+            include_attributes: vec![],
+        }
+    }
+}
+
+impl<'a, C1, A> IntoEntry for (All, C1, All, &'a str, A) where
+    C1: IntoMatch, A: IntoAttributes
+{
+    fn into_entry(self) -> Entry {
+        use self::Neighbor::{May};
+        Entry {
+            incoming: May((Match::Any, directions::Any.to_directions())),
+            curr: self.1.into_match(),
+            outgoing: May((directions::Any.to_directions(), Match::Any)),
+            template: self.3.to_string(),
+            include_attributes: self.4.into_attributes(),
         }
     }
 }
@@ -222,10 +348,10 @@ impl Table {
     pub fn find(&self,
                 incoming: Option<(char, Direction)>,
                 curr: char,
-                outgoing: Option<(Direction, char)>) -> Option<&str> {
+                outgoing: Option<(Direction, char)>) -> Option<(&str, &[(String, String)])> {
         for e in &self.entries {
             if e.matches(incoming, curr, outgoing) {
-                return Some(&e.template);
+                return Some((&e.template, &e.include_attributes[..]));
             }
         }
 
@@ -300,15 +426,16 @@ impl Default for Table {
                 // FIXME should these be included right now, in absence of
                 // extension to augment attributes to switch to dashed
                 // mode?
-                (Start, '=', E, Match::Any, "M {W} L {E}"),
-                (Start, '=', W, Match::Any, "M {E} L {W}"),
-                (Start, ':', N, Match::Any, "M {S} L {N}"),
-                (Start, ':', S, Match::Any, "M {N} L {S}"),
+                (Start, '=', E, Match::Any, "M {W} L {E}", [("stroke-dasharray", "3,2")]),
+                (Start, '=', W, Match::Any, "M {E} L {W}", [("stroke-dasharray", "3,2")]),
+                (Start, ':', N, Match::Any, "M {S} L {N}", [("stroke-dasharray", "3,2")]),
+                (Start, ':', S, Match::Any, "M {N} L {S}", [("stroke-dasharray", "3,2")]),
+                (Match::Any, E, '=', May((E, Match::Any)), "L {E}", [("stroke-dasharray", "3,2")]),
+                (Match::Any, W, '=', May((W, Match::Any)), "L {W}", [("stroke-dasharray", "3,2")]),
+                (Match::Any, N, ':', May((N, Match::Any)), "L {N}", [("stroke-dasharray", "3,2")]),
+                (Match::Any, S, ':', May((S, Match::Any)), "L {S}", [("stroke-dasharray", "3,2")]),
+
                 (Start, '+', AnyDir, Match::Any, "M {C}"),
-                (Match::Any, E, '=', May((E, Match::Any)), "L {E}"),
-                (Match::Any, W, '=', May((W, Match::Any)), "L {W}"),
-                (Match::Any, N, ':', May((N, Match::Any)), "L {N}"),
-                (Match::Any, S, ':', May((S, Match::Any)), "L {S}"),
 
                 (Match::Any, NE, '/', May((NE, Match::Any)), "L {NE}"),
                 (Match::Any, SW, '/', May((SW, Match::Any)), "L {SW}"),

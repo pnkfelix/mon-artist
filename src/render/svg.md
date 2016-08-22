@@ -246,6 +246,7 @@ to figure out how to render the middle (or edge) step.
                               dashed: false,
                               cmd: String::new(),
                               format_table: Default::default(),
+                              attrs: Vec::new(),
     };
 
     pr.render_first_step(steps[0], steps[1]);
@@ -284,28 +285,36 @@ struct PathRender<'a> {
     last: Pt,
     dashed: bool,
     cmd: String,
-    #[allow(dead_code)]
     format_table: format::Table,
+    attrs: Vec<(String, String)>,
 }
 
 impl<'a> PathRender<'a> {
     fn render_first_step(&mut self, curr: Step, next: Step) {
-        let c = render_step(self, None, curr, Some(next));
+        let (c, attrs) = render_step(self, None, curr, Some(next));
         self.cmd.push_str(&c);
+        for attr in attrs { if !self.attrs.contains(&attr) { self.attrs.push(attr) } }
     }
     fn render_middle_step(&mut self, prev: Step, curr: Step, next: Step) {
-        let c = render_step(self, Some(prev), curr, Some(next));
+        let (c, attrs) = render_step(self, Some(prev), curr, Some(next));
         self.cmd.push_str(&c);
+        for attr in attrs { if !self.attrs.contains(&attr) { self.attrs.push(attr) } }
     }
     fn render_last_step(&mut self, prev: Step, curr: Step, cd: path::Closed) {
-        let c = render_step(self, Some(prev), curr, None);
+        let (c, attrs) = render_step(self, Some(prev), curr, None);
         self.cmd.push_str(&c);
         if cd == path::Closed::Closed { self.cmd.push_str(" Z"); }
+        for attr in attrs { if !self.attrs.contains(&attr) { self.attrs.push(attr) } }
     }
     fn into_shape(self) -> svg::Path {
-        let mut attrs = vec![("fill".to_string(),"none".to_string()),
-                             ("stroke".to_string(),"green".to_string())];
-        if self.dashed {
+        let mut attrs = self.attrs.clone();
+        if attrs.iter().find(|a|a.0 == "fill").is_none() {
+            attrs.push(("fill".to_string(), "none".to_string()));
+        }
+        if attrs.iter().find(|a|a.0 == "stroke").is_none() {
+            attrs.push(("stroke".to_string(), "green".to_string()));
+        }
+        if self.dashed && attrs.iter().find(|a|a.0 == "stroke-dasharray").is_none() {
             attrs.push(("stroke-dasharray".to_string(), "1,1".to_string()));
         }
         svg::Path { d: self.cmd, attrs: attrs }
@@ -390,7 +399,8 @@ fn to_outgoing(curr: Step, next: Option<Step>) -> Option<(Direction, char)> {
     next.map(|n| (curr.0.towards(n.0), n.1))
 }
 
-fn render_step(pr: &mut PathRender, prev: Option<Step>, curr: Step, next: Option<Step>) -> String {
+fn render_step(pr: &mut PathRender, prev: Option<Step>, curr: Step, next: Option<Step>)
+               -> (String, Vec<(String, String)>) {
     use directions::Direction;
 
     let sr = pr.sr;
@@ -399,8 +409,9 @@ fn render_step(pr: &mut PathRender, prev: Option<Step>, curr: Step, next: Option
     let incoming: Option<(char, Direction)> = to_incoming(prev, curr);
     let outgoing: Option<(Direction, char)> = to_outgoing(curr, next);
 
-    if let Some(s) = t.find(incoming, curr.1, outgoing) {
-        return pr.substitute_placeholders(s, curr);
+    if let Some((template, attributes)) = t.find(incoming, curr.1, outgoing) {
+        return (pr.substitute_placeholders(template, curr),
+                attributes.iter().cloned().collect());
     } else {
         panic!("no command template found for prev: {:?} curr: {:?} next: {:?} name: {}",
                prev, curr, next, sr.name);
