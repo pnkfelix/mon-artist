@@ -266,7 +266,7 @@ fn end_to_end_basics() {
     for &(name, d) in &test_data::ALL {
         let r = SvgRender {
             x_scale: 9, y_scale: 12,
-            font_family: "Monaco".to_string(), font_size: 15,
+            font_family: "Menlo".to_string(), font_size: 15,
             show_gridlines: true,
             name: name.to_string(),
         };
