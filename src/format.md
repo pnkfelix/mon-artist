@@ -462,12 +462,15 @@ impl Default for Table {
                 // rather than the current closed ones.
                 //
                 // Perhaps more importantly, this code builds in an
-                // assumption that each grid cell is 9x12. An
-                // assumption along these lines is perhaps inevitable
-                // (I think its probably better to make such an
-                // assumption up front rather than pretend that the
-                // cell is a NxN square and thus have the user be
-                // surprised when it turns out to be non-square).
+                // assumption that each grid cell is 9x12 (or at least
+                // WxH for W>9 and H>12).
+                //
+                // An assumption along these lines is perhaps
+                // inevitable (I think its probably better to make
+                // such an assumption up front rather than pretend
+                // that the cell is a NxN square and thus have the
+                // user be surprised when it turns out to be
+                // non-square).
                 //
                 // But the question remains: is building in the
                 // numbers 9 and 12 a good idea?  Or should they be
@@ -477,24 +480,24 @@ impl Default for Table {
                 // fractions).
                 //
                 // horizontal arrow heads
-                ('-', E, '>', Finis, "L {C} l 0,-3 l 4,3 l -4,3 l 0,-3"),
-                (Start, '>', E, '-', "M {C} l 0,-3 l 4,3 l -4,3 l 0,-3"),
-                ('-', W, '<', Finis, "L {C} l 0,-3 l -4,3 l 4,3 l 0,-3"),
-                (Start, '<', E, '-', "M {C} l 0,-3 l -4,3 l 4,3 l 0,-3"),
+                ('-', E, '>', Finis, "L {C} l 4,0 m -4,-3 l 4,3 l -4,3 m 0,-3"),
+                (Start, '>', E, '-', "M {C} l 4,0 m -4,-3 l 4,3 l -4,3 m 0,-3"),
+                ('-', W, '<', Finis, "L {C} l -4,0 m 4,-3 l -4,3 l 4,3 m 0,-3"),
+                (Start, '<', E, '-', "M {C} l -4,0 m 4,-3 l -4,3 l 4,3 m 0,-3"),
                 // vertical arrow heads
-                (Start,  '^', S, '|', "M {C} l -3,0 l 3,-5 l 3, 5 l -3,0"),
-                (Start,  'v', N, '|', "M {C} l -3,0 l 3, 5 l 3,-5 l -3,0"),
-                (Match::Any, S, 'v', Finis, "L {C} l -3,0 l 3, 5 l 3,-5 l -3,0"),
+                (Start,  '^', S, '|', "M {C} l 0,-5 m -3,5 l 3,-5 l 3, 5 m -3,0"),
+                (Start,  'v', N, '|', "M {C} l 0,5 m -3,-5 l 3, 5 l 3,-5 m -3,0"),
+                (Match::Any, S, 'v', Finis, "L {C} l 0,5 m -3,-5 l 3, 5 l 3,-5 m -3,0"),
 
                 // arrow heads that join with other paths
-                ('|', N, '^', N, '+', "L {N} l -3,0 l 3,-5 l 3, 5 l -3,0 m 0,-5"),
-                ('+', S, '^', S, '|', "M {N} l -3,0 l 3,-5 l 3, 5 l -3,0 M {N} L {C}"),
-                ('|', S, 'v', S, '+', "L {S} l -3,0 l 3, 5 l 3,-5 l -3,0 m 0, 5"),
-                ('+', N, 'v', N, '|', "L {S} l -3,0 l 3, 5 l 3,-5 l -3,0 m 0, 5 M {S} L {C}"),
-                ('-', E, '>', E, '+', "L {E} l 0,-3 l 4,3 l -4,3 l 0,-3 m  4,0"),
-                ('+', W, '>', W, '-', "M {E} l 0,-3 l 4,3 l -4,3 l 0,-3 m  4,0  M {E} L {C}"),
-                ('-', W, '<', W, '+', "L {W} l 0,-3 l -4,3 l 4,3 l 0,-3 m -4,0"),
-                ('+', E, '<', E, '-', "M {W} l 0,-3 l -4,3 l 4,3 l 0,-3 m -4,0  M {W} L {C}"),
+                ('|', N, '^', N, '+', "L {N} l 0,-5 m -3,5 l 3,-5 l 3, 5 m -3,0 m 0,-5"),
+                ('+', S, '^', S, '|', "M {N} l 0,-5 m -3,5 l 3,-5 l 3, 5 m -3,0 M {N} L {C}"),
+                ('|', S, 'v', S, '+', "L {S} l 0,5 m -3,-5 l 3, 5 l 3,-5 m -3,0 m 0, 5"),
+                ('+', N, 'v', N, '|', "L {S} l 0,5 m -3,-5 l 3, 5 l 3,-5 m -3,0 m 0, 5 M {S} L {C}"),
+                ('-', E, '>', E, '+', "L {E} l 4,0 m -4,-3 l 4,3 l -4,3 m 0,-3 m  4,0"),
+                ('+', W, '>', W, '-', "M {E} l 4,0 m -4,-3 l 4,3 l -4,3 m 0,-3 m  4,0  M {E} L {C}"),
+                ('-', W, '<', W, '+', "L {W} l -4,0 m 4,-3 l -4,3 l 4,3 m 0,-3 m -4,0"),
+                ('+', E, '<', E, '-', "M {W} l -4,0 m 4,-3 l -4,3 l 4,3 m 0,-3 m -4,0  M {W} L {C}"),
 
                 (Start, '.', E, '-', "M {S} Q {C} {E}"),
                 (Start, '.', W, '-', "M {S} Q {C} {W}"),
