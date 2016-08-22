@@ -426,14 +426,14 @@ impl Default for Table {
                 // FIXME should these be included right now, in absence of
                 // extension to augment attributes to switch to dashed
                 // mode?
-                (Start, '=', E, Match::Any, "M {W} L {E}", [("stroke-dasharray", "3,2")]),
-                (Start, '=', W, Match::Any, "M {E} L {W}", [("stroke-dasharray", "3,2")]),
-                (Start, ':', N, Match::Any, "M {S} L {N}", [("stroke-dasharray", "3,2")]),
-                (Start, ':', S, Match::Any, "M {N} L {S}", [("stroke-dasharray", "3,2")]),
-                (Match::Any, E, '=', May((E, Match::Any)), "L {E}", [("stroke-dasharray", "3,2")]),
-                (Match::Any, W, '=', May((W, Match::Any)), "L {W}", [("stroke-dasharray", "3,2")]),
-                (Match::Any, N, ':', May((N, Match::Any)), "L {N}", [("stroke-dasharray", "3,2")]),
-                (Match::Any, S, ':', May((S, Match::Any)), "L {S}", [("stroke-dasharray", "3,2")]),
+                (Start, '=', E, Match::Any, "M {W} L {E}", [("stroke-dasharray", "5,2")]),
+                (Start, '=', W, Match::Any, "M {E} L {W}", [("stroke-dasharray", "5,2")]),
+                (Start, ':', N, Match::Any, "M {S} L {N}", [("stroke-dasharray", "5,2")]),
+                (Start, ':', S, Match::Any, "M {N} L {S}", [("stroke-dasharray", "5,2")]),
+                (Match::Any, E, '=', May((E, Match::Any)), "L {E}", [("stroke-dasharray", "5,2")]),
+                (Match::Any, W, '=', May((W, Match::Any)), "L {W}", [("stroke-dasharray", "5,2")]),
+                (Match::Any, N, ':', May((N, Match::Any)), "L {N}", [("stroke-dasharray", "5,2")]),
+                (Match::Any, S, ':', May((S, Match::Any)), "L {S}", [("stroke-dasharray", "5,2")]),
 
                 (Start, '+', AnyDir, Match::Any, "M {C}"),
 
