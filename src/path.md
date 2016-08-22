@@ -115,9 +115,9 @@ impl Path {
 
             // if its not on an edge, we don't have a rectangle
             if s.row() == top_row || s.row() == bot_row {
-                if c != '-' { return None; }
+                if c != '-' && c != '+' { return None; }
             } else if s.col() == lft_col || s.col() == rgt_col {
-                if c != '|' { return None; }
+                if c != '|' && c != '+' { return None; }
             } else {
                 return None; 
             }
