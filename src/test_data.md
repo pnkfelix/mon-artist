@@ -144,7 +144,7 @@ def_test! { BASIC_NAMED_UNCLOSED_FIXME,
     -+  bottom          [note]
 
 [b]: stroke='blue'
-[note]: font-size='10' font-style='italic'
+[note]: font-size='10' font-style='italic' font-family='Trattatello'
 "# }
 //           00000000011111
 //           12345678901234
