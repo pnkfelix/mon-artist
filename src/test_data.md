@@ -1,6 +1,7 @@
 ```rust
-pub const ALL: [(&'static str, &'static str); 22] = [
+pub const ALL: [(&'static str, &'static str); 23] = [
     BASIC,
+    BASIC_ATTRS,
     LINE,
     LINE_WITH_ID,
     VERT_LINE,
@@ -107,6 +108,14 @@ def_test! { BASIC_WO_BOX,
              _    _\n\
              ______  bottom\n" }
 
+def_test! { BASIC_NAMED,
+            ".----.  top\n\
+             |[b] |\n\
+             '----'  bottom\n" }
+//           00000000011111
+//           12345678901234
+
+
 def_test! { BASIC_UL_PLUS,
             "+----.  top\n\
              |    |\n\
@@ -125,6 +134,14 @@ def_test! { BASIC_ALL_PLUS,
             "+----+  top\n\
              |[b] |\n\
              +----+  bottom\n" }
+//           00000000011111
+//           12345678901234
+
+def_test! { BASIC_ATTRS,
+            ".----.  top\n\
+             |[b] |\n\
+             '----'  bottom\n\
+             [b]: fill='yellow'\n" }
 //           00000000011111
 //           12345678901234
 

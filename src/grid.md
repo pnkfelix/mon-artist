@@ -412,6 +412,9 @@ impl Grid {
             }
             s.push('\n');
         }
+        for &(ref key, ref val) in &self.attrs {
+            s.push_str(&format!("[{}]: {}\n", key, val));
+        }
         s
     }
 }
@@ -428,6 +431,15 @@ mod tests {
         assert_eq!(grid.width, test_data::BASIC_WIDTH);
         for row in &grid.rows { assert_eq!(row.len(), grid.width as usize); }
         assert_eq!(grid.to_string(), test_data::BASIC.1);
+    }
+
+    #[test]
+    fn basic_attrs() {
+        let grid: Grid = test_data::BASIC_ATTRS.1.parse().unwrap();
+        assert_eq!(grid.height, test_data::BASIC_HEIGHT);
+        assert_eq!(grid.width, test_data::BASIC_WIDTH);
+        for row in &grid.rows { assert_eq!(row.len(), grid.width as usize); }
+        assert_eq!(grid.to_string(), test_data::BASIC_ATTRS.1);
     }
 
     #[test]
