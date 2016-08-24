@@ -298,6 +298,22 @@ impl Grid {
     }
 }
 
+impl Grid {
+    pub fn find_attr(&self, key: &str) -> Option<&str> {
+        for &(ref k, ref v) in &self.attrs {
+            if k == key {
+                return Some(v)
+            }
+        }
+        return None;
+    }
+
+    pub fn find_pt_attr(&self, pt: Pt) -> Option<&str> {
+        let key = format!("{},{}", pt.col(), pt.row());
+        self.find_attr(&key)
+    }
+}
+
 use std::ops::Index;
 
 impl Index<Pt> for Grid {

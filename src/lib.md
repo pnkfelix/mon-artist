@@ -84,6 +84,45 @@ derive a high-level picture from it.
 pub mod grid;
 ```
 
+The `attrs` module is a grab bag of utility functions for parsing
+and manipulating the key=value attributes that one sees in XML
+elements.
+
+```rust
+mod attrs {
+    use regex::Regex;
+
+    fn split_attr(attr: &str) -> Vec<(String, String)> {
+        lazy_static! {
+            static ref KV: Regex =
+                Regex::new(r#"([a-zA-Z0-9_-]*)='([^']*)'|([a-zA-Z0-9_-]*)="([^"]*)""#)
+                .unwrap_or_else(|e| panic!("ill-formatted regex: {}", e));
+        }
+
+        let mut attrs = Vec::new();
+        for cap in KV.captures_iter(attr) {
+            debug!("cap: '{:?}' cap.at(0): '{:?}'", cap, cap.at(0));
+            attrs.push((cap.at(1).unwrap().to_string(),
+                        cap.at(2).unwrap().to_string()));
+        }
+        attrs
+    }
+
+    pub fn input_attr(attrs: &mut Option<Vec<(String, String)>>, attr: &str) {
+        let new = split_attr(attr);
+        if new.is_empty() { return; }
+        match *attrs {
+            Some(ref mut attrs) => {
+                attrs.extend(new);
+            }
+            None => {
+                *attrs = Some(new);
+            }
+        }
+    }
+}
+```
+
 The `svg` module defines the interface for building up the output SVG.
 
 ```rust
@@ -154,6 +193,7 @@ mod scene {
                         let pt = Pt(col as i32, row as i32);
                         if let Some(mut p) = find_closed_path(&self, pt) {
                             p.infer_id(&self);
+                            p.attach_attributes(pt, &self);
                             debug!("pt {:?} => closed path {:?}", pt, p);
                             self.remove_path(&p);
                             paths.push(p);
@@ -169,6 +209,7 @@ mod scene {
                         let pt = Pt(col as i32, row as i32);
                         if let Some(mut p) = find_unclosed_path(&self, pt) {
                             p.infer_id(&self);
+                            p.attach_attributes(pt, &self);
                             debug!("pt {:?} => unclosed path {:?}", pt, p);
                             self.remove_path(&p);
                             paths.push(p);
@@ -184,6 +225,7 @@ mod scene {
                         let pt = Pt(col as i32, row as i32);
                         if let Some(mut txt) = find_text(&self, pt) {
                             txt.infer_id(&self);
+                            txt.attach_attributes(pt, &self);
                             debug!("txt {:?} => text {:?}", pt, txt);
                             self.remove_text(&txt);
                             texts.push(txt);

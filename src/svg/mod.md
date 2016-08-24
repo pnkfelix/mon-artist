@@ -206,6 +206,7 @@ pub struct Rect {
     pub stroke: Option<(Fill, Dim)>,
     pub rounded: Option<(Dim, Dim)>,
     pub id: Option<String>,
+    pub attrs: Vec<(String, String)>,
 }
 
 pub trait ToElement {
@@ -219,7 +220,7 @@ pub trait IntoElement {
 impl IntoElement for Rect {
     fn into_element(self) -> Element {
         let mut e = Element::new("rect");
-        let Rect { x, y, width, height, fill, stroke, rounded, id } = self;
+        let Rect { x, y, width, height, fill, stroke, rounded, id, attrs } = self;
         e.insert_attribute("x", x.to_string());
         e.insert_attribute("y", y.to_string());
         e.insert_attribute("width", width.to_string());
@@ -235,6 +236,9 @@ impl IntoElement for Rect {
         }
         if let Some(id) = id {
             e.insert_attribute("id", id);
+        }
+        for (k,v) in attrs {
+            e.insert_attribute(k, v);
         }
         e
     }
@@ -265,6 +269,12 @@ impl IntoElement for Text {
         e.insert_attribute("text-anchor", self.text_anchor.to_string());
         e.insert_attribute("fill", self.fill.into_string());
         e.insert_attribute("dominant-baseline", "middle".to_string());
+        if let Some(id) = self.id {
+            e.insert_attribute("id", id);
+        }
+        for (k, v) in self.attrs {
+            e.insert_attribute(k, v);
+        }
         e.text = Some(self.content);
         e
     }
@@ -286,6 +296,7 @@ impl IntoElement for Path {
 pub mod text {
     use super::{Color, Dim};
 
+    #[derive(Debug)]
     pub enum TextAnchor {
         Start,
         Middle,
@@ -302,6 +313,7 @@ pub mod text {
         }
     }
 
+    #[derive(Debug)]
     pub struct Text {
         pub x: Dim,
         pub y: Dim,
@@ -310,6 +322,8 @@ pub mod text {
         pub text_anchor: TextAnchor,
         pub fill: Color,
         pub content: String,
+        pub id: Option<String>,
+        pub attrs: Vec<(String, String)>,
     }
 }
 
@@ -461,6 +475,7 @@ mod tests {
                                  stroke: None,
                                  rounded: None,
                                  id: None,
+                                 attrs: vec![],
         });
         s.add_child_shape(Circle { cx: Dim::U(150,0),
                                    cy: Dim::U(100,0),
@@ -472,7 +487,10 @@ mod tests {
                                  font_size: Dim::U(60,0),
                                  text_anchor: text::TextAnchor::Middle,
                                  fill: Color::White,
-                                 content: "SVG".to_string() });
+                                 content: "SVG".to_string(),
+                                 id: None,
+                                 attrs: vec![],
+        });
     }
 }
 ```

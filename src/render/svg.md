@@ -117,6 +117,7 @@ fn render_gridlines(svg: &mut Svg, sr: &SvgRender) {
             stroke: Some((Fill::Color(Color::Gray), Dim::U(0,25))),
             rounded: None,
             id: None,
+            attrs: vec![],
         })],
     };
     let grid = svg::Pattern {
@@ -132,6 +133,7 @@ fn render_gridlines(svg: &mut Svg, sr: &SvgRender) {
             stroke: Some((Fill::Color(Color::DarkGray), Dim::U(0,5))),
             rounded: None,
             id: None,
+            attrs: vec![],
         })],
     };
     svg.add_def(grid_cell);
@@ -145,6 +147,7 @@ fn render_gridlines(svg: &mut Svg, sr: &SvgRender) {
         stroke: None,
         rounded: None,
         id: None,
+        attrs: vec![],
     });
 }
 ```
@@ -229,7 +232,7 @@ all clients would prefer the former when possible.
     debug!("rendering path: {:?} rectangular: {:?}", path, path.is_rectangular());
     if let Some(corners) = path.is_rectangular() {
         let opt_id = path.id.as_ref().map(|&(_, ref s)|s.clone());
-        match render_rectangle(svg, sr, opt_id, corners) {
+        match render_rectangle(svg, sr, opt_id, &path.attrs, corners) {
             Ok(_) => return,
             Err(_) => {} // fall through to general case below.
         }
@@ -265,6 +268,12 @@ to figure out how to render the middle (or edge) step.
         pr.attrs.push(("id".to_string(), id.clone()));
     }
 
+    if let Some(ref attrs) = path.attrs {
+        for &(ref k, ref v) in attrs {
+            pr.attrs.push((k.to_string(), v.to_string()));
+        }
+    }
+
     debug!("Path {:?} yields cmd: {:?}", path, pr.cmd);
     svg.add_child_shape(pr.into_shape())
 }
@@ -273,7 +282,6 @@ fn render_text(svg: &mut Svg, sr: &SvgRender, text: &text::Text) {
     use svg::text as svg_text;
     let place = interpret_place(sr, "W", text.pt);
     debug!("rendering text: {:?} starting at place: {:?}", text, place);
-    // FIXME:  incorporate in the `text.attrs` and `text.id` in the appropriate manner.
     let rendered = svg_text::Text {
         x: place.0,
         y: place.1,
@@ -282,7 +290,10 @@ fn render_text(svg: &mut Svg, sr: &SvgRender, text: &text::Text) {
         text_anchor: svg_text::TextAnchor::Start,
         fill: Color::Black,
         content: text.content.clone(),
+        id: text.id.clone().map(|(_, s)|s),
+        attrs: text.attrs.clone().unwrap_or(vec![]),
     };
+    debug!("rendered text: {:?} to {:?}", text, rendered);
     svg.add_child_shape(rendered);
 }
 
@@ -523,6 +534,7 @@ fn render_step(pr: &mut PathRender, prev: Option<Step>, curr: Step, next: Option
 fn render_rectangle(svg: &mut Svg,
                     sr: &SvgRender,
                     id: Option<String>,
+                    attrs: &Option<Vec<(String, String)>>,
                     corners: [(Pt, char); 4]) -> Result<(), ()> {
     if let Some((ul, ur, bl, rounded)) = match corners {
         // simple rectangle with sharp corners
@@ -547,6 +559,12 @@ fn render_rectangle(svg: &mut Svg,
         let height = (bl.row() - ul.row()) as u32;
         let height = Dim::U(height,0);
         let height = height * sr.y_scale;
+        let mut new_attrs = vec![];
+        if let Some(ref attrs) = *attrs {
+            for &(ref k, ref v) in attrs {
+                new_attrs.push((k.clone(), v.clone()));
+            }
+        }
         let rect = svg::Rect {
             x: x,
             y: y,
@@ -560,6 +578,7 @@ fn render_rectangle(svg: &mut Svg,
                 None
             },
             id: id,
+            attrs: new_attrs,
         };
         svg.add_child_shape(rect);
         return Ok(());

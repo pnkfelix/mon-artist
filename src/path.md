@@ -159,6 +159,26 @@ impl Path {
         }
     }
 }
+```
+
+Some path attributes are inferred based on the content of their characters,
+but others can be attached based on either the id or the location
+of the path.
+
+```rust
+impl Path {
+    pub fn attach_attributes(&mut self, pt: Pt, grid: &Grid) {
+        if let Some((_, ref id)) = self.id {
+            if let Some(attr) = grid.find_attr(id) {
+                ::attrs::input_attr(&mut self.attrs, attr);
+            }
+        }
+        if let Some(attr) = grid.find_pt_attr(pt) {
+            ::attrs::input_attr(&mut self.attrs, attr);
+        }
+    }
+
+}
 
 #[derive(PartialEq, Eq, Debug)]
 pub enum Remove {

@@ -1,11 +1,15 @@
 ```rust
-pub const ALL: [(&'static str, &'static str); 23] = [
+pub const ALL: [(&'static str, &'static str); 27] = [
     BASIC,
+    BASIC_NAMED_RECT,
+    BASIC_NAMED_CLOSED,
+    BASIC_NAMED_UNCLOSED_FIXME,
     BASIC_ATTRS,
     LINE,
     LINE_WITH_ID,
     VERT_LINE,
     VERT_LINE_WITH_ID,
+    TEXT_WITH_ATTRS,
     DASHED,
     VERT_DASH,
     CURVES,
@@ -60,6 +64,12 @@ def_test! { VERT_LINE_WITH_ID, r#"
 |[line_id]
 "# }
 
+def_test! { TEXT_WITH_ATTRS, r#"
+hello world
+[h]
+
+[h]: font-style='italic'
+"# }
 
 def_test! { DASHED, r#"
  above
@@ -108,10 +118,34 @@ def_test! { BASIC_WO_BOX,
              _    _\n\
              ______  bottom\n" }
 
-def_test! { BASIC_NAMED,
+def_test! { BASIC_NAMED_RECT,
             ".----.  top\n\
              |[b] |\n\
-             '----'  bottom\n" }
+             '----'  bottom\n\
+                           \n\
+             [b]: fill='yellow'\n" }
+//           00000000011111
+//           12345678901234
+
+def_test! { BASIC_NAMED_CLOSED,
+            ".----.  top\n\
+             |[b] |\n\
+             '----+  bottom\n\
+                           \n\
+             [b]: fill='yellow'\n" }
+//           00000000011111
+//           12345678901234
+
+
+def_test! { BASIC_NAMED_UNCLOSED_FIXME,
+            r#"
+.----.  top
+|[b] | <- one can see a problem in `find_path` here
+    -+  bottom          [note]
+
+[b]: stroke='blue'
+[note]: font-size='10' font-style='italic'
+"# }
 //           00000000011111
 //           12345678901234
 

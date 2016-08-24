@@ -31,6 +31,19 @@ impl Text {
     }
 }
 
+impl Text {
+    pub fn attach_attributes(&mut self, pt: Pt, grid: &Grid) {
+        if let Some((_, ref id)) = self.id {
+            if let Some(attr) = grid.find_attr(id) {
+                ::attrs::input_attr(&mut self.attrs, attr);
+            }
+        }
+        if let Some(attr) = grid.find_pt_attr(pt) {
+            ::attrs::input_attr(&mut self.attrs, attr);
+        }
+    }
+}
+
 impl Grid {
     pub fn remove_text(&mut self, t: &Text) {
         let r = t.pt.row();
