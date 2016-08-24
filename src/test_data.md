@@ -1,8 +1,10 @@
 ```rust
-pub const ALL: [(&'static str, &'static str); 20] = [
+pub const ALL: [(&'static str, &'static str); 22] = [
     BASIC,
     LINE,
+    LINE_WITH_ID,
     VERT_LINE,
+    VERT_LINE_WITH_ID,
     DASHED,
     VERT_DASH,
     CURVES,
@@ -38,11 +40,25 @@ def_test! { LINE, r#"
  below
 "# }
 
+def_test! { LINE_WITH_ID, r#"
+ above
+------[line_id]
+ below
+"# }
+
 def_test! { VERT_LINE, r#"
 | top
 |
 | bottom
 "# }
+
+def_test! { VERT_LINE_WITH_ID, r#"
+| top
+|
+| bottom
+|[line_id]
+"# }
+
 
 def_test! { DASHED, r#"
  above
@@ -100,36 +116,36 @@ def_test! { BASIC_UL_PLUS,
 
 def_test! { BASIC_UR_PLUS,
             ".----+  top\n\
-             |    |\n\
+             |[b] |\n\
              '----'  bottom\n" }
 //           00000000011111
 //           12345678901234
 
 def_test! { BASIC_ALL_PLUS,
             "+----+  top\n\
-             |    |\n\
+             |[b] |\n\
              +----+  bottom\n" }
 //           00000000011111
 //           12345678901234
 
 
 def_test! { ARROW_POINT_SOUTH_AT_BOX,
-            "|   |     top\n\
+            "|   |[a]  top\n\
              |   |\n\
              |   v\n\
              | +----+\n\
-             | |    |\n\
+             | |[b] |\n\
              | +----+  bottom\n" }
 //           00000000011111
 //           12345678901234
 
 
 def_test! { ARROW_POINT_SOUTH_TO_BOX,
-            "|   |     top\n\
+            "|   |[a]  top\n\
              |   |\n\
              |   v\n\
              | +-+--+\n\
-             | |    |\n\
+             | |[b] |\n\
              | +----+  bottom\n" }
 //           00000000011111
 //           12345678901234
@@ -149,11 +165,11 @@ def_test! { DOUBLE_ARROW_POINT_SOUTH_AT_BOX,
 def_test! { BOX_AT_BOX,
             "() +---+ top    \n\
              () |   |        \n\
-             () +---+        \n\
+             () +---+[t]     \n\
              ()   ^          \n\
              ()   |          \n\
              ()   v          \n\
-             () +---+        \n\
+             () +---+[b]     \n\
              () |   |        \n\
              () +---+ bottom \n" }
 //           00000000011111111
@@ -162,11 +178,11 @@ def_test! { BOX_AT_BOX,
 def_test! { BOX_TO_BOX,
             "() +---+ top    \n\
              () |   |        \n\
-             () +-+-+        \n\
+             () +-+-+[t]     \n\
              ()   ^          \n\
              ()   |          \n\
              ()   v          \n\
-             () +-+-+        \n\
+             () +-+-+[b]     \n\
              () |   |        \n\
              () +---+ bottom \n" }
 //           00000000011111111
@@ -175,11 +191,11 @@ def_test! { BOX_TO_BOX,
 def_test! { RBOX_AT_RBOX,
             "() .---. top    \n\
              () |   |        \n\
-             () '---'        \n\
+             () '---'[t]     \n\
              ()   ^          \n\
              ()   |          \n\
              ()   v          \n\
-             () .---.        \n\
+             () .---.[b]     \n\
              () |   |        \n\
              () '---' bottom \n" }
 //           00000000011111111
@@ -188,11 +204,11 @@ def_test! { RBOX_AT_RBOX,
 def_test! { RBOX_TO_RBOX,
             "() .---. top    \n\
              () |   |        \n\
-             () '-+-'        \n\
+             () '-+-'[t]     \n\
              ()   ^          \n\
              ()   |          \n\
              ()   v          \n\
-             () .-+-.        \n\
+             () .-+-.[b]     \n\
              () |   |        \n\
              () '---' bottom \n" }
 //           00000000011111111
@@ -203,7 +219,7 @@ def_test! { DOUBLE_ARROW_POINT_SOUTH_TO_BOX,
              |   |\n\
              |   v\n\
              | +-+--+\n\
-             | |    |\n\
+             | |[b] |\n\
              | +----+  bottom\n" }
 //           00000000011111
 //           12345678901234
@@ -214,18 +230,18 @@ def_test! { MULTI_RECTS,
             // 678901234567890123456789012345678901234567890
             r#"
 .-------------.
-|             |
+|[a]          |
 |   A Box!    |<----.   .-------------.
-|             |     |   |             |
+|             |     |   |[c]          |
 '-------------'     |   |   Another   |---------+
       ^             '-->|     Box     |         |
       :                 |             |         |
       |                 '-------------'         |
       v                    |                    |
-    .-+-.             o ---+                    |
+    .-+-.[b]          o ---+                    |
     |   |                  | .-.                |
     '---'                  | | |  +--------------------+
-                           '-' |  |                    |
+                           '-' |  |[d]                 |
                                |  :                    |
                                '->+                    |
                                   |                    |
@@ -237,18 +253,18 @@ def_test! { ISSUE_15_DESC,
             // 678901234567890123456789012345678901234567890
         r#"
 .-------------.
-|             |
+|[a]          |
 |   A Box!    +<----.   .-------------.
-|             |     |   |             |
+|             |     |   |[c]          |
 '-----+-------'     |   |   Another   +---------+
       ^             '-->+     Box     |         |
       |                 |             |         |
       |                 '-------------'         |
       v                                         |
-    .-+-.                                       |
+    .-+-.[b]                                    |
     |   |                                       |
     '---'                         +-------------+------+
-                                  |                    |
+                                  |[d]                 |
                                   |                    |
                                   |                    |
                                   |                    |

@@ -152,7 +152,8 @@ mod scene {
                 for col in 1...self.width {
                     loop {
                         let pt = Pt(col as i32, row as i32);
-                        if let Some(p) = find_closed_path(&self, pt) {
+                        if let Some(mut p) = find_closed_path(&self, pt) {
+                            p.infer_id(&self);
                             debug!("pt {:?} => closed path {:?}", pt, p);
                             self.remove_path(&p);
                             paths.push(p);
@@ -166,7 +167,8 @@ mod scene {
                 for col in 1...self.width {
                     loop {
                         let pt = Pt(col as i32, row as i32);
-                        if let Some(p) = find_unclosed_path(&self, pt) {
+                        if let Some(mut p) = find_unclosed_path(&self, pt) {
+                            p.infer_id(&self);
                             debug!("pt {:?} => unclosed path {:?}", pt, p);
                             self.remove_path(&p);
                             paths.push(p);
@@ -180,7 +182,8 @@ mod scene {
                 for col in 1...self.width {
                     loop {
                         let pt = Pt(col as i32, row as i32);
-                        if let Some(txt) = find_text(&self, pt) {
+                        if let Some(mut txt) = find_text(&self, pt) {
+                            txt.infer_id(&self);
                             debug!("txt {:?} => text {:?}", pt, txt);
                             self.remove_text(&txt);
                             texts.push(txt);

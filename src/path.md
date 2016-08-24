@@ -68,7 +68,7 @@ pub enum Closed { Closed, Open }
 pub struct Path {
     pub (crate) steps: Vec<(Pt, char)>,
     pub (crate) closed: Closed,
-    pub (crate) id: Option<String>,
+    pub (crate) id: Option<(Pt, String)>,
     pub (crate) attrs: Option<Vec<(String, String)>>,
 }
 
@@ -128,6 +128,37 @@ impl Path {
         return Some([ul, ur, br, bl]);
     }
 }
+```
+
+Paths can optionally carry an identifier, or `id`. It is encoded in
+the text by a markdown style `[name]` neighboring the path, either to
+the south or the east of one of its points.
+
+Rather than couple the identifier reading with the rest of the path
+parsing, I am making it a post-parse operation: you just traverse
+the points of the path and attempt to find an identifier.
+
+```rust
+impl Path {
+    pub fn infer_id(&mut self, grid: &Grid) {
+        for &(pt, _) in &self.steps {
+            {
+                let south = pt.s();
+                if let Some(id) = grid.match_id(south) {
+                    self.id = Some((south, id));
+                    return;
+                }
+            }
+            {
+                let east = pt.e();
+                if let Some(id) = grid.match_id(east) {
+                    self.id = Some((east, id));
+                    return;
+                }
+            }
+        }
+    }
+}
 
 #[derive(PartialEq, Eq, Debug)]
 pub enum Remove {
@@ -168,6 +199,9 @@ impl Grid {
 
     pub fn remove_path(&mut self, p: &Path) {
         self.remove_steps(&p.steps);
+        if let Some(ref pt_id) = p.id {
+            self.clear_id(pt_id);
+        }
     }
 }
 ```

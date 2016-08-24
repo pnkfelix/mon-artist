@@ -351,6 +351,42 @@ impl FromStr for Grid {
 }
 
 impl Grid {
+    pub fn match_id(&self, pt: Pt) -> Option<String> {
+        if !self.holds(pt) { return None; }
+        if self[pt] != Elem::C('[') { return None }
+        let mut pt = pt;
+        let mut id = String::new();
+        loop {
+            pt = pt.e();
+            if !self.holds(pt) { return None; }
+            match self[pt] {
+                Elem::C(']') => { if id.len() > 0 { return Some(id) } else { return None; } }
+                Elem::C(c) => { id.push(c); }
+                _ => return None,
+            }
+        }
+    }
+
+    pub fn clear_id(&mut self, &(pt, ref id): &(Pt, String)) {
+        let r = pt.row();
+        let c = pt.col();
+        let len = id.chars().count();
+        for c_i in c..(c+2+(len as i32)) {
+            self.set(Pt::rowcol(r,c_i), Elem::Clear);
+        }
+    }
+
+    pub fn mark_id_as_used(&mut self, &(pt, ref id): &(Pt, String)) {
+        let r = pt.row();
+        let c = pt.col();
+        let len = id.chars().count();
+        for c_i in c..(c+2+(len as i32)) {
+            self.mark_used(Pt::rowcol(r,c_i));
+        }
+    }
+}
+
+impl Grid {
     pub fn to_string(&self) -> String {
         let mut s = String::new();
         for row in &self.rows {

@@ -116,6 +116,7 @@ fn render_gridlines(svg: &mut Svg, sr: &SvgRender) {
             fill: Fill::None,
             stroke: Some((Fill::Color(Color::Gray), Dim::U(0,25))),
             rounded: None,
+            id: None,
         })],
     };
     let grid = svg::Pattern {
@@ -130,6 +131,7 @@ fn render_gridlines(svg: &mut Svg, sr: &SvgRender) {
             fill: Fill::Pattern { def_id: "grid_cell".to_string(), },
             stroke: Some((Fill::Color(Color::DarkGray), Dim::U(0,5))),
             rounded: None,
+            id: None,
         })],
     };
     svg.add_def(grid_cell);
@@ -142,6 +144,7 @@ fn render_gridlines(svg: &mut Svg, sr: &SvgRender) {
         fill: Fill::Pattern { def_id: "grid".to_string() },
         stroke: None,
         rounded: None,
+        id: None,
     });
 }
 ```
@@ -225,7 +228,8 @@ all clients would prefer the former when possible.
 ```rust
     debug!("rendering path: {:?} rectangular: {:?}", path, path.is_rectangular());
     if let Some(corners) = path.is_rectangular() {
-        match render_rectangle(svg, sr, corners) {
+        let opt_id = path.id.as_ref().map(|&(_, ref s)|s.clone());
+        match render_rectangle(svg, sr, opt_id, corners) {
             Ok(_) => return,
             Err(_) => {} // fall through to general case below.
         }
@@ -256,6 +260,10 @@ to figure out how to render the middle (or edge) step.
     }
 
     pr.render_last_step(steps[len-2], steps[len-1], path.closed);
+
+    if let Some((_, ref id)) = path.id {
+        pr.attrs.push(("id".to_string(), id.clone()));
+    }
 
     debug!("Path {:?} yields cmd: {:?}", path, pr.cmd);
     svg.add_child_shape(pr.into_shape())
@@ -514,6 +522,7 @@ fn render_step(pr: &mut PathRender, prev: Option<Step>, curr: Step, next: Option
 
 fn render_rectangle(svg: &mut Svg,
                     sr: &SvgRender,
+                    id: Option<String>,
                     corners: [(Pt, char); 4]) -> Result<(), ()> {
     if let Some((ul, ur, bl, rounded)) = match corners {
         // simple rectangle with sharp corners
@@ -550,6 +559,7 @@ fn render_rectangle(svg: &mut Svg,
             } else {
                 None
             },
+            id: id,
         };
         svg.add_child_shape(rect);
         return Ok(());

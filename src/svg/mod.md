@@ -205,6 +205,7 @@ pub struct Rect {
     pub fill: Fill,
     pub stroke: Option<(Fill, Dim)>,
     pub rounded: Option<(Dim, Dim)>,
+    pub id: Option<String>,
 }
 
 pub trait ToElement {
@@ -218,7 +219,7 @@ pub trait IntoElement {
 impl IntoElement for Rect {
     fn into_element(self) -> Element {
         let mut e = Element::new("rect");
-        let Rect { x, y, width, height, fill, stroke, rounded } = self;
+        let Rect { x, y, width, height, fill, stroke, rounded, id } = self;
         e.insert_attribute("x", x.to_string());
         e.insert_attribute("y", y.to_string());
         e.insert_attribute("width", width.to_string());
@@ -231,6 +232,9 @@ impl IntoElement for Rect {
         if let Some((rx, ry)) = rounded {
             e.insert_attribute("rx", rx.to_string());
             e.insert_attribute("ry", ry.to_string());
+        }
+        if let Some(id) = id {
+            e.insert_attribute("id", id);
         }
         e
     }
@@ -456,6 +460,7 @@ mod tests {
                                  fill: Fill::Color(Color::Red),
                                  stroke: None,
                                  rounded: None,
+                                 id: None,
         });
         s.add_child_shape(Circle { cx: Dim::U(150,0),
                                    cy: Dim::U(100,0),
