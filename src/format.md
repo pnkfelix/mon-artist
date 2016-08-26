@@ -43,12 +43,16 @@ pub enum Neighbor<T> {
 
 /// Each Entry describes how to render a character along a path,
 /// based on the context in which it appears.
-///
-/// FIXME in addition to the path template, should there also be a
-/// way for an entry to augment the attributes of the path? I am
-/// thinking specifically of how `:` and `=` are handled to generate
-/// dashed lines in a2s.
 pub struct Entry {
+    /// `loop_start` is true if this entry represents a starting point
+    /// for a closed polygon, e.g. a corner `+` is one such character.
+    ///
+    /// FIXME: there are impossible states (like Blank
+    /// incoming/outgoing + loop_start true).  would be better to
+    /// revise representation, e.g. with an enum {
+    /// Edge(in,curr,out,is_loop),
+    loop_start: bool,
+
     /// `Blank` if the first step in path; otherwise, the set of
     /// previous characters matched by this entry and direction from
     /// the previous step into `curr`.
@@ -57,7 +61,7 @@ pub struct Entry {
     /// The set of current characters matched by this entry.
     curr: Match,
 
-    /// `None` if the last step in path; otherwise, direction from
+    /// `Blank` if the last step in path; otherwise, direction from
     /// `curr` into next step, and the set of characters for next step
     /// matched by this entry.
     outgoing: Neighbor<(Vec<Direction>, Match)>,
@@ -112,18 +116,39 @@ impl IntoAttributes for [(&'static str, &'static str); 1] {
 
 pub trait IntoEntry { fn into_entry(self) -> Entry; }
 
+pub trait IntoCurr: IntoMatch { fn is_loop(&self) -> bool { false } }
+
 /// Use `All` to match either the end of the path or any non-blank character.
 pub struct All;
 
 /// Use `May` to match either the end of the path or a particular match
 pub struct May<C>(C);
 
+/// Use `Loop` to match a corner for a closed polygon.
+pub struct Loop<C>(C);
+
+
+impl<C:IntoMatch> IntoMatch for Loop<C> {
+    fn into_match(self) -> Match { self.0.into_match() }
+
+}
+impl<C:IntoMatch> IntoCurr for Loop<C> {
+    fn is_loop(&self) -> bool { true }
+}
+
+impl IntoCurr for Match { }
+impl IntoCurr for char { }
+impl IntoCurr for Vec<char> { }
+impl<'a> IntoCurr for &'a str { }
+impl IntoCurr for String { }
+
 impl<'a, C0, D0, C1, D1, C2> IntoEntry for (C0, D0, C1, D1, C2, &'a str) where
-    C0: IntoMatch, D0: ToDirections, C1: IntoMatch, D1: ToDirections, C2: IntoMatch
+    C0: IntoMatch, D0: ToDirections, C1: IntoCurr, D1: ToDirections, C2: IntoMatch
 {
     fn into_entry(self) -> Entry {
         use self::Neighbor::{Must};
         Entry {
+            loop_start: self.2.is_loop(),
             incoming: Must((self.0.into_match(), self.1.to_directions())),
             curr: self.2.into_match(),
             outgoing: Must((self.3.to_directions(), self.4.into_match())),
@@ -134,11 +159,12 @@ impl<'a, C0, D0, C1, D1, C2> IntoEntry for (C0, D0, C1, D1, C2, &'a str) where
 }
 
 impl<'a, C0, D0, C1, D1, C2, A> IntoEntry for (C0, D0, C1, D1, C2, &'a str, A) where
-    C0: IntoMatch, D0: ToDirections, C1: IntoMatch, D1: ToDirections, C2: IntoMatch, A: IntoAttributes
+    C0: IntoMatch, D0: ToDirections, C1: IntoCurr, D1: ToDirections, C2: IntoMatch, A: IntoAttributes
 {
     fn into_entry(self) -> Entry {
         use self::Neighbor::{Must};
         Entry {
+            loop_start: self.2.is_loop(),
             incoming: Must((self.0.into_match(), self.1.to_directions())),
             curr: self.2.into_match(),
             outgoing: Must((self.3.to_directions(), self.4.into_match())),
@@ -149,11 +175,12 @@ impl<'a, C0, D0, C1, D1, C2, A> IntoEntry for (C0, D0, C1, D1, C2, &'a str, A) w
 }
 
 impl<'a, C0, D0, C1, D1, C2> IntoEntry for (May<(C0, D0)>, C1, D1, C2, &'a str) where
-    C0: IntoMatch, D0: ToDirections, C1: IntoMatch, D1: ToDirections, C2: IntoMatch
+    C0: IntoMatch, D0: ToDirections, C1: IntoCurr, D1: ToDirections, C2: IntoMatch
 {
     fn into_entry(self) -> Entry {
         use self::Neighbor::{Must, May};
         Entry {
+            loop_start: self.1.is_loop(),
             incoming: May((((self.0).0).0.into_match(),
                            ((self.0).0).1.to_directions())),
             curr: self.1.into_match(),
@@ -165,11 +192,12 @@ impl<'a, C0, D0, C1, D1, C2> IntoEntry for (May<(C0, D0)>, C1, D1, C2, &'a str) 
 }
 
 impl<'a, C0, D0, C1, D1, C2, A> IntoEntry for (May<(C0, D0)>, C1, D1, C2, &'a str, A) where
-    C0: IntoMatch, D0: ToDirections, C1: IntoMatch, D1: ToDirections, C2: IntoMatch, A: IntoAttributes
+    C0: IntoMatch, D0: ToDirections, C1: IntoCurr, D1: ToDirections, C2: IntoMatch, A: IntoAttributes
 {
     fn into_entry(self) -> Entry {
         use self::Neighbor::{Must, May};
         Entry {
+            loop_start: self.1.is_loop(),
             incoming: May((((self.0).0).0.into_match(),
                            ((self.0).0).1.to_directions())),
             curr: self.1.into_match(),
@@ -181,11 +209,12 @@ impl<'a, C0, D0, C1, D1, C2, A> IntoEntry for (May<(C0, D0)>, C1, D1, C2, &'a st
 }
 
 impl<'a, C0, D0, C1, D1, C2> IntoEntry for (C0, D0, C1, May<(D1, C2)>, &'a str) where
-    C0: IntoMatch, D0: ToDirections, C1: IntoMatch, D1: ToDirections, C2: IntoMatch
+    C0: IntoMatch, D0: ToDirections, C1: IntoCurr, D1: ToDirections, C2: IntoMatch
 {
     fn into_entry(self) -> Entry {
         use self::Neighbor::{Must, May};
         Entry {
+            loop_start: self.2.is_loop(),
             incoming: Must((self.0.into_match(), self.1.to_directions())),
             curr: self.2.into_match(),
             outgoing: May((((self.3).0).0.to_directions(),
@@ -197,11 +226,12 @@ impl<'a, C0, D0, C1, D1, C2> IntoEntry for (C0, D0, C1, May<(D1, C2)>, &'a str) 
 }
 
 impl<'a, C0, D0, C1, D1, C2, A> IntoEntry for (C0, D0, C1, May<(D1, C2)>, &'a str, A) where
-    C0: IntoMatch, D0: ToDirections, C1: IntoMatch, D1: ToDirections, C2: IntoMatch, A: IntoAttributes
+    C0: IntoMatch, D0: ToDirections, C1: IntoCurr, D1: ToDirections, C2: IntoMatch, A: IntoAttributes
 {
     fn into_entry(self) -> Entry {
         use self::Neighbor::{Must, May};
         Entry {
+            loop_start: self.2.is_loop(),
             incoming: Must((self.0.into_match(), self.1.to_directions())),
             curr: self.2.into_match(),
             outgoing: May((((self.3).0).0.to_directions(),
@@ -214,11 +244,12 @@ impl<'a, C0, D0, C1, D1, C2, A> IntoEntry for (C0, D0, C1, May<(D1, C2)>, &'a st
 
 impl<'a, C0, D0, C1, D1, C2> IntoEntry for (May<(C0, D0)>, C1, May<(D1, C2)>, &'a str)
     where
-    C0: IntoMatch, D0: ToDirections, C1: IntoMatch, D1: ToDirections, C2: IntoMatch
+    C0: IntoMatch, D0: ToDirections, C1: IntoCurr, D1: ToDirections, C2: IntoMatch
 {
     fn into_entry(self) -> Entry {
         use self::Neighbor::{May};
         Entry {
+            loop_start: self.1.is_loop(),
             incoming: May((((self.0).0).0.into_match(), ((self.0).0).1.to_directions())),
             curr: self.1.into_match(),
             outgoing: May((((self.2).0).0.to_directions(), ((self.2).0).1.into_match())),
@@ -230,11 +261,12 @@ impl<'a, C0, D0, C1, D1, C2> IntoEntry for (May<(C0, D0)>, C1, May<(D1, C2)>, &'
 
 impl<'a, C0, D0, C1, D1, C2, A> IntoEntry for (May<(C0, D0)>, C1, May<(D1, C2)>, &'a str, A)
     where
-    C0: IntoMatch, D0: ToDirections, C1: IntoMatch, D1: ToDirections, C2: IntoMatch, A: IntoAttributes,
+    C0: IntoMatch, D0: ToDirections, C1: IntoCurr, D1: ToDirections, C2: IntoMatch, A: IntoAttributes,
 {
     fn into_entry(self) -> Entry {
         use self::Neighbor::{May};
         Entry {
+            loop_start: self.1.is_loop(),
             incoming: May((((self.0).0).0.into_match(), ((self.0).0).1.to_directions())),
             curr: self.1.into_match(),
             outgoing: May((((self.2).0).0.to_directions(), ((self.2).0).1.into_match())),
@@ -253,6 +285,7 @@ impl<'a, C1, D1, C2> IntoEntry for (Start, C1, D1, C2, &'a str)
     fn into_entry(self) -> Entry {
         use self::Neighbor::{Blank, Must};
         Entry {
+            loop_start: false,
             incoming: Blank,
             curr: self.1.into_match(),
             outgoing: Must((self.2.to_directions(), self.3.into_match())),
@@ -268,6 +301,7 @@ impl<'a, C1, D1, C2, A> IntoEntry for (Start, C1, D1, C2, &'a str, A)
     fn into_entry(self) -> Entry {
         use self::Neighbor::{Blank, Must};
         Entry {
+            loop_start: false,
             incoming: Blank,
             curr: self.1.into_match(),
             outgoing: Must((self.2.to_directions(), self.3.into_match())),
@@ -283,6 +317,7 @@ impl<'a, C0, D0, C1> IntoEntry for (C0, D0, C1, Finis, &'a str)
     fn into_entry(self) -> Entry {
         use self::Neighbor::{Blank, Must};
         Entry {
+            loop_start: false,
             incoming: Must((self.0.into_match(), self.1.to_directions())),
             curr: self.2.into_match(),
             outgoing: Blank,
@@ -298,6 +333,7 @@ impl<'a, C0, D0, C1, A> IntoEntry for (C0, D0, C1, Finis, &'a str, A)
     fn into_entry(self) -> Entry {
         use self::Neighbor::{Blank, Must};
         Entry {
+            loop_start: false,
             incoming: Must((self.0.into_match(), self.1.to_directions())),
             curr: self.2.into_match(),
             outgoing: Blank,
@@ -308,11 +344,12 @@ impl<'a, C0, D0, C1, A> IntoEntry for (C0, D0, C1, Finis, &'a str, A)
 }
 
 impl<'a, C1> IntoEntry for (All, C1, All, &'a str) where
-    C1: IntoMatch
+    C1: IntoCurr,
 {
     fn into_entry(self) -> Entry {
         use self::Neighbor::{May};
         Entry {
+            loop_start: self.1.is_loop(),
             incoming: May((Match::Any, directions::Any.to_directions())),
             curr: self.1.into_match(),
             outgoing: May((directions::Any.to_directions(), Match::Any)),
@@ -323,11 +360,12 @@ impl<'a, C1> IntoEntry for (All, C1, All, &'a str) where
 }
 
 impl<'a, C1, A> IntoEntry for (All, C1, All, &'a str, A) where
-    C1: IntoMatch, A: IntoAttributes
+    C1: IntoCurr, A: IntoAttributes
 {
     fn into_entry(self) -> Entry {
         use self::Neighbor::{May};
         Entry {
+            loop_start: self.1.is_loop(),
             incoming: May((Match::Any, directions::Any.to_directions())),
             curr: self.1.into_match(),
             outgoing: May((directions::Any.to_directions(), Match::Any)),
@@ -422,6 +460,8 @@ impl Default for Table {
                 (Match::Any, W, '-', May((W, Match::Any)), "L {W}"),
                 (Match::Any, N, '|', May((N, Match::Any)), "L {N}"),
                 (Match::Any, S, '|', May((S, Match::Any)), "L {S}"),
+
+                (Match::Any, AnyDir, Loop('+'), AnyDir, Match::Any, "M {C}"),
 
                 // FIXME should these be included right now, in absence of
                 // extension to augment attributes to switch to dashed
