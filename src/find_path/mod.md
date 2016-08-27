@@ -10,7 +10,7 @@ use grid::{Elem, Grid, Pt, DirVector};
 use path::{Closed, Path};
 
 #[derive(Clone, Hash)]
-pub struct FindPaths<'a> {
+struct FindPaths<'a> {
     grid: &'a Grid,
     steps: Vec<Pt>,
 }
@@ -332,7 +332,7 @@ Some day, It may be worthwhile to make an exercise out of why.
 /// Variants of `Continue` categorize how a given character can
 /// extend a path.
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
-pub enum Continue {
+enum Continue {
     /// A char like `|` or `:` requires continuing vertically.
     Vertical,
 
@@ -368,7 +368,7 @@ pub enum Continue {
 
 impl Continue {
     /// Categorize how the given char can extend a path.
-    pub fn cat(c: char) -> Continue {
+    fn cat(c: char) -> Continue {
         use self::Continue::*;
         match c {
             '\\' => NegSlope,
@@ -383,7 +383,7 @@ impl Continue {
 
     /// Answers whether this continuation category can extend in the
     /// given direction `dir`.
-    pub fn matches(&self, dir: Direction) -> bool {
+    fn matches(&self, dir: Direction) -> bool {
         use self::Continue::*;
         use directions::Direction::*;
         match *self {
