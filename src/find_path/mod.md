@@ -6,11 +6,15 @@ points that make up the path).
 
 ```rust
 use directions::{Direction, DIRECTIONS};
+use format::Table;
 use grid::{Elem, Grid, Pt, DirVector};
 use path::{Closed, Path};
 
-#[derive(Clone, Hash)]
+use std::borrow::Cow;
+
+#[derive(Clone)]
 struct FindPaths<'a> {
+    format: Cow<'a, Table>,
     grid: &'a Grid,
     steps: Vec<Pt>,
 }
@@ -69,12 +73,25 @@ enum FindContext {
 impl<'a> FindPaths<'a> {
 ```
 
-Exercise note: This return-type needs to be `FindPaths`, not `Self`.
+Exercise note: When taking only `&Grid`,
+the return-type needs to be `FindPaths`, not `Self`.
+
 Some day, It may be worthwhile to make an exercise out of why.
+(A strong hint is present in the signature of `fn with_grid_format`)
 
 ```rust
+    #[cfg(test)]
     fn new(grid: &Grid) -> FindPaths {
         FindPaths {
+            format: Default::default(),
+            grid: grid,
+            steps: vec![],
+        }
+    }
+
+    fn with_grid_format(grid: &'a Grid, format: &'a Table) -> Self {
+        FindPaths {
+            format: Cow::Borrowed(format),
             grid: grid,
             steps: vec![],
         }
@@ -398,18 +415,18 @@ impl Continue {
     }
 }
 
-pub fn find_closed_path(grid: &Grid, pt: Pt) -> Option<Path> {
-    let mut pf = FindPaths::new(grid);
+pub fn find_closed_path(grid: &Grid, format: &Table, pt: Pt) -> Option<Path> {
+    let mut pf = FindPaths::with_grid_format(grid, format);
     pf.find_closed_path(pt)
 }
 
-pub fn find_unclosed_path_from(grid: &Grid, dir: DirVector) -> Option<Path> {
-    let mut pf = FindPaths::new(grid);
+pub fn find_unclosed_path_from(grid: &Grid, format: &Table, dir: DirVector) -> Option<Path> {
+    let mut pf = FindPaths::with_grid_format(grid, format);
     pf.find_unclosed_path_from(dir, FindContext::Start)
 }
 
-pub fn find_unclosed_path(grid: &Grid, pt: Pt) -> Option<Path> {
-    let mut pf = FindPaths::new(grid);
+pub fn find_unclosed_path(grid: &Grid, format: &Table, pt: Pt) -> Option<Path> {
+    let mut pf = FindPaths::with_grid_format(grid, format);
     pf.find_unclosed_path(pt)
 }
 

@@ -20,7 +20,9 @@ impl Path {
 #[test]
 fn trivial_path_east() {
     let grid = "--- ".parse::<Grid>().unwrap();
-    let opt_p = super::find_unclosed_path_from(&grid, DirVector(Pt(1,1), Direction::E));
+    let opt_p = super::find_unclosed_path_from(&grid,
+                                               &Default::default(),
+                                               DirVector(Pt(1,1), Direction::E));
     assert_eq!(opt_p.unwrap(),
                Path::open((Pt(1,1)...Pt(3,1)).iter_char('-').collect()));
 }
@@ -28,7 +30,9 @@ fn trivial_path_east() {
 #[test]
 fn trivial_path_west() {
     let grid = "--- ".parse::<Grid>().unwrap();
-    let opt_p = super::find_unclosed_path_from(&grid, DirVector(Pt(3,1), Direction::W));
+    let opt_p = super::find_unclosed_path_from(&grid,
+                                               &Default::default(),
+                                               DirVector(Pt(3,1), Direction::W));
     assert_eq!(opt_p.unwrap(),
                Path::open((Pt(3,1)...Pt(1,1)).iter_char('-').collect()));
 }
@@ -37,7 +41,9 @@ fn trivial_path_west() {
 fn hopping_path_east() {
     // ::env_logger::init();
     let grid = "-+- ".parse::<Grid>().unwrap();
-    let opt_p = super::find_unclosed_path_from(&grid, DirVector(Pt(1,1), Direction::E));
+    let opt_p = super::find_unclosed_path_from(&grid,
+                                               &Default::default(),
+                                               DirVector(Pt(1,1), Direction::E));
 ```
 
 The expected data could be written more succinctly like so:
@@ -57,7 +63,9 @@ it extensively in the other tests that follow.
 #[test]
 fn eastward_arrow() {
     let grid = "--> ".parse::<Grid>().unwrap();
-    let opt_p = super::find_unclosed_path_from(&grid, DirVector(Pt(1,1), Direction::E));
+    let opt_p = super::find_unclosed_path_from(&grid,
+                                               &Default::default(),
+                                               DirVector(Pt(1,1), Direction::E));
     assert_eq!(opt_p.unwrap(),
                Path::open((Pt(1,1)...Pt(2,1)).iter_char('-')
                           .chain((Pt(3,1), '>').into_iter())
@@ -67,7 +75,9 @@ fn eastward_arrow() {
 #[test]
 fn reverse_westward_arrow() {
     let grid = "<-- ".parse::<Grid>().unwrap();
-    let opt_p = super::find_unclosed_path_from(&grid, DirVector(Pt(1,1), Direction::E));
+    let opt_p = super::find_unclosed_path_from(&grid,
+                                               &Default::default(),
+                                               DirVector(Pt(1,1), Direction::E));
     assert_eq!(opt_p.unwrap(),
                Path::open((Pt(1,1), '<').into_iter()
                           .chain((Pt(2,1)...Pt(3,1)).iter_char('-'))
@@ -77,7 +87,9 @@ fn reverse_westward_arrow() {
 #[test]
 fn westward_arrow() {
     let grid = "<-- ".parse::<Grid>().unwrap();
-    let opt_p = super::find_unclosed_path_from(&grid, DirVector(Pt(3,1), Direction::W));
+    let opt_p = super::find_unclosed_path_from(&grid,
+                                               &Default::default(),
+                                               DirVector(Pt(3,1), Direction::W));
     assert_eq!(opt_p.unwrap(),
                Path::open((Pt(3,1)...Pt(2,1)).iter_char('-')
                           .chain((Pt(1,1), '<').into_iter())
@@ -87,7 +99,9 @@ fn westward_arrow() {
 #[test]
 fn reverse_eastward_arrow() {
     let grid = "--> ".parse::<Grid>().unwrap();
-    let opt_p = super::find_unclosed_path_from(&grid, DirVector(Pt(3,1), Direction::W));
+    let opt_p = super::find_unclosed_path_from(&grid,
+                                               &Default::default(),
+                                               DirVector(Pt(3,1), Direction::W));
     assert_eq!(opt_p.unwrap(),
                Path::open((Pt(3,1), '>').into_iter()
                           .chain((Pt(2,1)...Pt(1,1)).iter_char('-'))
@@ -97,7 +111,9 @@ fn reverse_eastward_arrow() {
 #[test]
 fn reverse_northward_arrow() {
     let grid = "^ \n| \n| ".parse::<Grid>().unwrap();
-    let opt_p = super::find_unclosed_path_from(&grid, DirVector(Pt(1,1), Direction::S));
+    let opt_p = super::find_unclosed_path_from(&grid,
+                                               &Default::default(),
+                                               DirVector(Pt(1,1), Direction::S));
     assert_eq!(opt_p.unwrap(),
                Path::open((Pt(1,1), '^').into_iter()
                           .chain((Pt(1,2)...Pt(1,3)).iter_char('|'))
@@ -107,7 +123,9 @@ fn reverse_northward_arrow() {
 #[test]
 fn southward_arrow() {
     let grid = "| \n| \nv ".parse::<Grid>().unwrap();
-    let opt_p = super::find_unclosed_path_from(&grid, DirVector(Pt(1,1), Direction::S));
+    let opt_p = super::find_unclosed_path_from(&grid,
+                                               &Default::default(),
+                                               DirVector(Pt(1,1), Direction::S));
     assert_eq!(opt_p.unwrap(),
                Path::open((Pt(1,1)...Pt(1,2)).iter_char('|')
                           .chain((Pt(1,3), 'v').into_iter())
@@ -117,7 +135,9 @@ fn southward_arrow() {
 #[test]
 fn reverse_southward_arrow() {
     let grid = "| \n| \nv ".parse::<Grid>().unwrap();
-    let opt_p = super::find_unclosed_path_from(&grid, DirVector(Pt(1,3), Direction::N));
+    let opt_p = super::find_unclosed_path_from(&grid,
+                                               &Default::default(),
+                                               DirVector(Pt(1,3), Direction::N));
     assert_eq!(opt_p.unwrap(),
                Path::open((Pt(1,3), 'v').into_iter()
                           .chain((Pt(1,2)...Pt(1,1)).iter_char('|'))
@@ -127,7 +147,9 @@ fn reverse_southward_arrow() {
 #[test]
 fn eastward_arrow_to_joiner() {
     let grid = "-->+ ".parse::<Grid>().unwrap();
-    let opt_p = super::find_unclosed_path_from(&grid, DirVector(Pt(1,1), Direction::E));
+    let opt_p = super::find_unclosed_path_from(&grid,
+                                               &Default::default(),
+                                               DirVector(Pt(1,1), Direction::E));
     assert_eq!(opt_p.unwrap(),
                Path::open((Pt(1,1)...Pt(2,1)).iter_char('-')
                           .chain((Pt(3,1), '>').into_iter())
@@ -145,7 +167,9 @@ v
 +
 "#;
     let grid = input.parse::<Grid>().unwrap();
-    let opt_p = super::find_unclosed_path_from(&grid, DirVector(Pt(1,2), Direction::S));
+    let opt_p = super::find_unclosed_path_from(&grid,
+                                               &Default::default(),
+                                               DirVector(Pt(1,2), Direction::S));
     assert_eq!(opt_p.unwrap(),
                Path::open((Pt(1,2), '+').into_iter()
                           .chain((Pt(1,3), '^').into_iter())
@@ -167,7 +191,9 @@ v
     let mut grid = input.parse::<Grid>().unwrap();
     grid.mark_used(Pt(1,2));
     grid.mark_used(Pt(1,6));
-    let opt_p = super::find_unclosed_path_from(&grid, DirVector(Pt(1,2), Direction::S));
+    let opt_p = super::find_unclosed_path_from(&grid,
+                                               &Default::default(),
+                                               DirVector(Pt(1,2), Direction::S));
     assert_eq!(opt_p.unwrap(),
                Path::open((Pt(1,2), '+').into_iter()
                           .chain((Pt(1,3), '^').into_iter())

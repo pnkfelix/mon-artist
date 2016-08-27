@@ -1,6 +1,7 @@
 ```rust
 use directions::{self, Direction, ToDirections};
 
+#[derive(Clone)]
 pub enum Match {
     One(char),
 
@@ -32,6 +33,7 @@ impl IntoMatch for String {
     fn into_match(self) -> Match { (self[..]).into_match() }
 }
 
+#[derive(Clone)]
 pub enum Neighbor<T> {
     /// no neighbor allowed (i.e. pattern for some end of the path).
     Blank,
@@ -43,6 +45,7 @@ pub enum Neighbor<T> {
 
 /// Each Entry describes how to render a character along a path,
 /// based on the context in which it appears.
+#[derive(Clone)]
 pub struct Entry {
     /// `loop_start` is true if this entry represents a starting point
     /// for a closed polygon, e.g. a corner `+` is one such character.
@@ -378,6 +381,7 @@ impl<'a, C1, A> IntoEntry for (All, C1, All, &'a str, A) where
 macro_rules! entries { ($($e:expr),* $(,)*) => { vec![$($e.into_entry(),)*] } }
 
 #[allow(dead_code)]
+#[derive(Clone)]
 pub struct Table {
     entries: Vec<Entry>,
 }

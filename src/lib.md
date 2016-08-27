@@ -162,6 +162,7 @@ horizontally.
 ```rust
 mod scene {
     use path::{Path};
+    use format;
     use grid::{Grid};
     use text::{Text};
 
@@ -181,7 +182,7 @@ mod scene {
     }
 
     impl Grid {
-        pub fn into_scene(mut self) -> Scene {
+        pub fn into_scene(mut self, format: &format::Table) -> Scene {
             use find_path::{find_closed_path, find_unclosed_path};
             use find_text::{find_text};
             use grid::{Pt};
@@ -191,7 +192,7 @@ mod scene {
                 for col in 1...self.width {
                     loop {
                         let pt = Pt(col as i32, row as i32);
-                        if let Some(mut p) = find_closed_path(&self, pt) {
+                        if let Some(mut p) = find_closed_path(&self, format, pt) {
                             p.infer_id(&self);
                             p.attach_attributes(pt, &self);
                             debug!("pt {:?} => closed path {:?}", pt, p);
@@ -207,7 +208,7 @@ mod scene {
                 for col in 1...self.width {
                     loop {
                         let pt = Pt(col as i32, row as i32);
-                        if let Some(mut p) = find_unclosed_path(&self, pt) {
+                        if let Some(mut p) = find_unclosed_path(&self, format, pt) {
                             p.infer_id(&self);
                             p.attach_attributes(pt, &self);
                             debug!("pt {:?} => unclosed path {:?}", pt, p);
@@ -327,7 +328,7 @@ fn end_to_end_basics() {
             e.text = Some(format!("{}", d));
             e
         });
-        let s = d.parse::<Grid>().unwrap().into_scene();
+        let s = d.parse::<Grid>().unwrap().into_scene(&Default::default());
 
         if PRINT_INTERMEDIATE_SCENE_STRUCTURE {
             html_body.children.push(s.to_element());
