@@ -187,7 +187,7 @@ impl<'a> FindUnclosedPaths<'a> {
                     while let Some(dir) = dirs_to_try.pop() {
                         println!("find_unclosed_path trying dir: {:?}", dir);
                         let next = dv.towards(dir).step();
-                        match self.try_next(next, Open, FindContext::TurnAny(dir)) {
+                        match self.try_next(next, FindContext::TurnAny(dir)) {
                             p @ Some(_) => return p,
                             None => { }
                         }
@@ -201,7 +201,7 @@ impl<'a> FindUnclosedPaths<'a> {
                 } else if cont.matches(dv.1) && cont != AnyDir {
                     self.find.steps.push(dv.0);
                     let next = dv.steps(1);
-                    match self.try_next(next, Open, FindContext::Trajectory(next.1)) {
+                    match self.try_next(next, FindContext::Trajectory(next.1)) {
                         p @ Some(_) => p,
                         None => {
                             assert_eq!(self.find.steps.last(), Some(&dv.0));
@@ -317,7 +317,6 @@ impl<'a> FindClosedPaths<'a> {
 
     fn find_closed_path_from(&mut self, dv: DirVector, fc: FindContext) -> Option<Path> {
         use self::Continue::*;
-        use path::Closed::*;
         use directions::Turn;
         debug!("find_closed_path_from self: {:?} dv: {:?} {:?}", self, dv, fc);
         assert!(self.find.grid.holds(dv.0));
@@ -340,7 +339,7 @@ impl<'a> FindClosedPaths<'a> {
                     // reverse direction from where we started.)
                     while dir != dv.dir().reverse() {
                         let next = dv.towards(dir).step();
-                        match self.try_next(next, Closed, FindContext::TurnAny(dir)) {
+                        match self.try_next(next, FindContext::TurnAny(dir)) {
                             p @ Some(_) => return p,
                             None => {
                                 dir = dir.veer(Turn::CCW);
@@ -362,7 +361,7 @@ impl<'a> FindClosedPaths<'a> {
                     // continue in the same trajectory.
                     self.find.steps.push(dv.0);
                     let next = dv.steps(1);
-                    match self.try_next(next, Closed, FindContext::Trajectory(next.1)) {
+                    match self.try_next(next, FindContext::Trajectory(next.1)) {
                         p @ Some(_) => p,
                         None => {
                             assert_eq!(self.find.steps.last(), Some(&dv.0));
@@ -392,40 +391,32 @@ impl<'a> FindClosedPaths<'a> {
     fn new(grid: &'a Grid) -> Self {
         FindClosedPaths { find: FindPaths::new(grid) }
     }
-    fn try_next(&mut self, next: DirVector, closed: Closed, fc: FindContext) -> Option<Path> {
-        debug!("try_next self: {:?} next: {:?} closed: {:?} {:?}", self, next, closed, fc);
+    fn try_next(&mut self, next: DirVector, fc: FindContext) -> Option<Path> {
+        debug!("try_next Closed self: {:?} next: {:?} {:?}", self, next, fc);
 
         if !self.find.grid.holds(next.0) { // off grid
             return None
-        } else if self.find.start() == next.0 && closed == Closed::Closed { // closes path; success!
+        } else if self.find.start() == next.0 { // closes path; success!
             return Some(self.find.to_path(Closed::Closed))
         } else if self.find.steps.contains(&next.0) { // non-start overlap
             return None
         }
 
-        match closed {
-            Closed::Closed => self.find_closed_path_from(next, fc),
-            Closed::Open => unimplemented!(),
-        }
+        self.find_closed_path_from(next, fc)
     }
 }
 
 impl<'a> FindUnclosedPaths<'a> {
-    fn try_next(&mut self, next: DirVector, closed: Closed, fc: FindContext) -> Option<Path> {
-        debug!("try_next self: {:?} next: {:?} closed: {:?} {:?}", self, next, closed, fc);
+    fn try_next(&mut self, next: DirVector, fc: FindContext) -> Option<Path> {
+        debug!("try_next Unclosed self: {:?} next: {:?} {:?}", self, next, fc);
 
         if !self.find.grid.holds(next.0) { // off grid
             return None
-        } else if self.find.start() == next.0 && closed == Closed::Closed { // closes path; success!
-            return Some(self.find.to_path(Closed::Closed))
         } else if self.find.steps.contains(&next.0) { // non-start overlap
             return None
         }
 
-        match closed {
-            Closed::Closed => unimplemented!(),
-            Closed::Open => self.find_unclosed_path_from(next, fc),
-        }
+        self.find_unclosed_path_from(next, fc)
     }
 }
 
