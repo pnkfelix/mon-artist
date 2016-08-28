@@ -432,6 +432,7 @@ The format of the plugged in values is either:
 
 * A primitive point, or
 * A point along the line connecting any of the two of the above nine points.
+  (note: this still remains to be implemented).
 
 where a primitive point is either
 
@@ -446,24 +447,41 @@ to the current grid cell.)
 
 The syntax for specifying a placeholder value is bracket delimited.
 
-For the nine primitive point cases (i.e. center or edge), one writes
+For the nine primitive point cases (i.e. center or edge), one may write
 one of the following as appropriate:
 
-`{C}`, `{N}`, `{NE}`, `{E}`, `{SE}`, `{S}`, `{SW}, `{W}`, `{NW}`.
+`{C}`, `{N}`, `{NE}`, `{E}`, `{SE}`, `{S}`, `{SW}, `{W}`, `{NW}`,
 
+In addition, one can refer to an edge defined in terms of the
+incoming (`I`) or outgoing (`O`) node using one of the following:
+
+`{I}`, `{O}`, `{RI}`, `{RO}`
+
+`{I}` is the edge from which we came; likewise `{O}` is the outgoing
+neighbor. `{RI}` and `{RO}` are the *reflections* of those points.
+
+* For example, if the incoming neighbor is to the northeast, then `{I}`
+  is the same as `{NE}` and `{RI}` is the same as `{SW}`.
+
+(Unimplemented:)
 For a point along a line, one writes a decimal number in the range
 [0,1] (followed by optional non-linebreak whitespace), followed by
 two of the above base cases, delimited by a `-` mark (and again one
 is allowed to include non-linebreak whitespace before and after the
 `-`).
 
-For example, the point that is 3/10 of the way along the path from
-the center to the north-east corner could be written `{.3 C-NE}`.
+* For example, the point that is 3/10 of the way along the path from
+  the center to the north-east corner could be written `{.3 C-NE}`.
 
 The substituted value for the placeholder will be the absolute x,y
 coordinates for the described point. Note that this means that one
 should usually use the capital letter commands, which take absolute
 coordinates as inputs, in tandem with placeholders.
+
+TODO: it might be a good idea to add lower-case analogous placeholders
+that are then just ways to compute based on the width or height of the
+grid cell. E.g. `{n}` would be replaced with `0,-6` if the cell
+height is 12.
 
 ```rust
 impl Default for Table {

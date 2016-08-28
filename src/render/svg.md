@@ -280,7 +280,7 @@ to figure out how to render the middle (or edge) step.
 
 fn render_text(svg: &mut Svg, sr: &SvgRender, text: &text::Text) {
     use svg::text as svg_text;
-    let place = interpret_place(sr, "W", text.pt);
+    let place = interpret_place(sr, "W", None, text.pt, None);
     debug!("rendering text: {:?} starting at place: {:?}", text, place);
     let rendered = svg_text::Text {
         x: place.0,
@@ -344,7 +344,9 @@ impl<'a> PathRender<'a> {
 
     fn substitute_placeholders(&self,
                                template: &str,
-                               curr: Step) -> String
+                               incoming: Option<Direction>,
+                               curr: Step,
+                               outgoing: Option<Direction>) -> String
     {
         let mut s = String::new();
         let mut rest = &*template;
@@ -362,14 +364,20 @@ impl<'a> PathRender<'a> {
             };
             rest = &place[(j+1)..]; // j+1: skip the "}"
             let place = &place[1..j]; // 1: skip the "{"
-            let (value_x, value_y) = interpret_place(self.sr, &place, curr.0);
+            let (value_x, value_y) =
+                interpret_place(self.sr, &place, incoming, curr.0, outgoing);
             s.push_str(&format!("{},{}", value_x.to_string(), value_y.to_string()));
         }
     }
 }
 
 #[allow(warnings)]
-fn interpret_place(sr: &SvgRender, place: &str, curr: Pt) -> (Dim, Dim) {
+fn interpret_place(sr: &SvgRender,
+                   place: &str,
+                   incoming: Option<Direction>,
+                   curr: Pt,
+                   outgoing: Option<Direction>) -> (Dim, Dim) {
+    use directions::Direction::*;
     // x- and y-lines for compass points if all grid cells were 1x1 unit.
     let (ex, cx, wx) = {
         let x = curr.col() as u32;
@@ -408,6 +416,18 @@ fn interpret_place(sr: &SvgRender, place: &str, curr: Pt) -> (Dim, Dim) {
     match place {
         "C" => c, "N" => n, "S" => s, "E" => e, "W" => w,
         "NE" => ne, "SE" => se, "NW" => nw, "SW" => sw,
+        "I" => match incoming.unwrap_or_else(||panic!("cannot use `I` when none incoming")) {
+            N => s, NE => sw, E => w, SE => nw, S => n, SW => ne, W => e, NW => se,
+        },
+        "RI" => match incoming.unwrap_or_else(||panic!("cannot use `RI` when none incoming")) {
+            N => n, NE => ne, E => e, SE => se, S => s, SW => sw, W => w, NW => nw,
+        },
+        "O" => match outgoing.unwrap_or_else(||panic!("cannot use `O` when none outgoing")) {
+            N => n, NE => ne, E => e, SE => se, S => s, SW => sw, W => w, NW => nw,
+        },
+        "RO" => match outgoing.unwrap_or_else(||panic!("cannot use `RO` when none outgoing")) {
+            N => s, NE => sw, E => w, SE => nw, S => n, SW => ne, W => e, NW => se,
+        },
         // FIXME: need to add support for points along lines as well.
         _ => panic!("unrecognized place: {}", place),
     }
@@ -432,7 +452,10 @@ fn render_step(pr: &mut PathRender, prev: Option<Step>, curr: Step, next: Option
     let outgoing: Option<(Direction, char)> = to_outgoing(curr, next);
 
     if let Some((template, attributes)) = t.find(incoming, curr.1, outgoing) {
-        return (pr.substitute_placeholders(template, curr),
+        return (pr.substitute_placeholders(template,
+                                           incoming.map(|t|t.1),
+                                           curr,
+                                           outgoing.map(|t|t.0)),
                 attributes.iter().cloned().collect());
     } else {
         panic!("no command template found for prev: {:?} curr: {:?} next: {:?} name: {}",
