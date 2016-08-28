@@ -54,7 +54,7 @@ pub struct Entry {
     /// incoming/outgoing + loop_start true).  would be better to
     /// revise representation, e.g. with an enum {
     /// Edge(in,curr,out,is_loop),
-    loop_start: bool,
+    pub(crate) loop_start: bool,
 
     /// `Blank` if the first step in path; otherwise, the set of
     /// previous characters matched by this entry and direction from
@@ -78,6 +78,9 @@ pub struct Entry {
 }
 
 impl Entry {
+    pub(crate) fn matches_curr(&self, curr: char) -> bool {
+        self.curr.matches(curr)
+    }
     pub fn matches(&self,
                    incoming: Option<(char, Direction)>,
                    curr: char,
@@ -106,6 +109,22 @@ impl Entry {
         }
 
         return true;
+    }
+}
+
+impl Entry {
+    pub(crate) fn corner_incoming(&self) -> (Match, Vec<Direction>) {
+        match self.incoming {
+            Neighbor::Blank => panic!("A loop_start cannot require blank neighbor"),
+            Neighbor::May(ref t) | Neighbor::Must(ref t) => t.clone(),
+        }
+    }
+
+    pub(crate) fn corner_outgoing(&self) -> (Vec<Direction>, Match) {
+        match self.outgoing {
+            Neighbor::Blank => panic!("A loop_start cannot require blank neighbor"),
+            Neighbor::May(ref t) | Neighbor::Must(ref t) => t.clone(),
+        }
     }
 }
 
@@ -383,7 +402,7 @@ macro_rules! entries { ($($e:expr),* $(,)*) => { vec![$($e.into_entry(),)*] } }
 #[allow(dead_code)]
 #[derive(Clone)]
 pub struct Table {
-    entries: Vec<Entry>,
+    pub(crate) entries: Vec<Entry>,
 }
 
 impl Table {
@@ -493,11 +512,38 @@ impl Default for Table {
 
                 // The curves!  .-   .-  .-
                 // part 1:      |   /     \  et cetera
+                //
+                // FIXME: shouldn't the incoming edges be allowed to
+                // be northern?  Seems like the main things to outlaw
+                // are mirrors (which arguably should be built into
+                // the engine, right?) and things *from* the north.
                 (Match::Any, NonNorth, '.',  S, '|', "Q {C} {S}"),
                 (Match::Any, NonNorth, '.', SE, '\\', "Q {C} {SE}"),
                 (Match::Any, NonNorth, '.', SW, '/', "Q {C} {SW}"),
                 (Match::Any, NonSouth, '.',  E, '-', "Q {C} {E}"),
                 (Match::Any, NonSouth, '.',  W, '-', "Q {C} {W}"),
+
+                // FIXME a potentially easy way to remove a lot of redundancy here:
+                // add placeholders for incoming, outgoing, and reverses thereof.
+                // E.g. `M {RI} Q {C} {O}`, so that incoming `NE` and outgoing `S`
+                // yields `M {SW} {C} {S}`
+
+                (Match::Any, NE, Loop('.'),  E, Match::Any, "M {SW} Q {C}  {E}"),
+                (Match::Any, N,  Loop('.'),  E, Match::Any, "M {S}  Q {C}  {E}"),
+                (Match::Any, NW, Loop('.'),  E, Match::Any, "M {SE} Q {C}  {E}"),
+                (Match::Any,  E, Loop('.'), SE, Match::Any, "M  {W} Q {C} {SE}"),
+                (Match::Any, NE, Loop('.'), SE, Match::Any, "M {SW} Q {C} {SE}"),
+                (Match::Any,  N, Loop('.'), SE, Match::Any, "M  {S} Q {C} {SE}"),
+                (Match::Any,  W, Loop('.'), SE, Match::Any, "M  {E} Q {C} {SE}"),
+                (Match::Any,  E, Loop('.'), S, Match::Any, "M  {W} Q {C} {S}"),
+                (Match::Any, NE, Loop('.'), S, Match::Any, "M {SW} Q {C} {S}"),
+                (Match::Any, NW, Loop('.'), S, Match::Any, "M {SE} Q {C} {S}"),
+                (Match::Any,  W, Loop('.'), S, Match::Any, "M  {E} Q {C} {S}"),
+                (Match::Any,  N, Loop('.'), SW, Match::Any, "M  {S} Q {C} {SW}"),
+                (Match::Any,  E, Loop('.'), SW, Match::Any, "M  {W} Q {C} {SW}"),
+                (Match::Any, NW, Loop('.'), SW, Match::Any, "M {SE} Q {C} {SW}"),
+                (Match::Any,  W, Loop('.'), SW, Match::Any, "M  {E} Q {C} {SW}"),
+
                 // curves       |   \/   /
                 // part 1:      '-  '   '-   et cetera
                 (Match::Any, NonSouth, '\'', N, '|', "Q {C} {N}"),

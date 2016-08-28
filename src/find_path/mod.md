@@ -210,6 +210,49 @@ Some day, It may be worthwhile to make an exercise out of why.
         };
     }
 
+    fn is_corner(&self, curr: Pt) -> Option<Vec<(Direction, Direction)>> {
+        let grid = &self.grid;
+        let c = match grid[curr] {
+            Elem::C(c) | Elem::Used(c) => c,
+            Elem::Pad | Elem::Clear => {
+                debug!("elem {:?} found, is_corner returns None", grid[curr]);
+                return None;
+            }
+        };
+        let mut in_out = Vec::new();
+        for entry in &self.format.entries {
+            if !entry.loop_start { continue; }
+            if !entry.matches_curr(c) { continue; }
+
+            // This is a *potential* corner.
+            //
+            // check that there exist distinct neighbors that work
+            // with the incoming and outgoing parts of the entry.
+            let (in_match, in_dir) = entry.corner_incoming();
+            let (out_dir, out_match) = entry.corner_outgoing();
+            for in_dir in in_dir {
+                for &out_dir in &out_dir {
+                    if in_dir == out_dir { continue; }
+                    let i = curr.neighbor(in_dir);
+                    let o = curr.neighbor(out_dir);
+                    if !grid.holds(i) || !grid.holds(o) { continue; }
+                    if let (Some(i), Some(o)) = (grid[i].opt_char(), grid[o].opt_char()) {
+                        if in_match.matches(i) && out_match.matches(o) {
+                            in_out.push((in_dir, out_dir));
+                        }
+                    }
+                }
+            }
+        }
+
+        return if in_out.is_empty() {
+            debug!("no in_out found, is_corner returns None");
+            None
+        } else {
+            Some(in_out)
+        };
+    }
+
     fn find_closed_path(&mut self, curr: Pt) -> Option<Path> {
         let elem = self.grid[curr];
         debug!("find_closed_path self: {:?} curr: {:?} pt: {:?}", self, curr, elem);
@@ -218,8 +261,8 @@ Some day, It may be worthwhile to make an exercise out of why.
         //  since we need three points to define a positive 2D area;
         //  so we can be assured that at least one corner exists
         //  somewhere.)
-        if !elem.is_corner() {
-            debug!("find_closed_path: early exit on non-corner.");
+        if self.is_corner(curr).is_none() {
+            debug!("find_closed_path: early exit on non-corner: {:?} at {:?}", elem, curr);
             return None;
         }
         // Also, don't waste time on a search that starts on a cell with < 2 non-blank neighbors.
