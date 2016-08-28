@@ -5,7 +5,7 @@ use grid::{PtRangeIter, PtCharIntoIterator}; // import methods on Pt...Pt and (P
 use test_data::{BASIC, BASIC_WO_BOX, BASIC_UL_PLUS, BASIC_UR_PLUS, BASIC_ALL_PLUS};
 use test_data::{ISSUE_15_DESC};
 use path::{Path, Closed};
-use super::FindPaths;
+use super::{FindClosedPaths};
 
 impl Path {
     fn closed(steps: Vec<(Pt, char)>) -> Path {
@@ -228,7 +228,7 @@ fn simple_box_path(ul: (Pt, char), ur: (Pt, char),
 fn basic_single_box_upper_left() {
     let grid = BASIC.1.parse::<Grid>().unwrap();
     let opt_p = {
-        let mut pf = FindPaths::new(&grid);
+        let mut pf = FindClosedPaths::new(&grid);
         pf.find_closed_path(Pt(1,1))
     };
     assert_eq!(opt_p.clone().unwrap(),
@@ -242,7 +242,7 @@ fn basic_single_box_upper_left() {
 #[test]
 fn basic_ul_plus_single_box_upper_left() {
     let grid = BASIC_UL_PLUS.1.parse::<Grid>().unwrap();
-    let mut pf = FindPaths::new(&grid);
+    let mut pf = FindClosedPaths::new(&grid);
     let opt_p = pf.find_closed_path(Pt(1,1));
     assert_eq!(opt_p.unwrap(),
                simple_box_path((Pt(1,1), '+'), (Pt(6,1), '.'),
@@ -253,7 +253,7 @@ fn basic_ul_plus_single_box_upper_left() {
 fn basic_ur_plus_single_box_upper_left() {
     // ::env_logger::init();
     let grid = BASIC_UR_PLUS.1.parse::<Grid>().unwrap();
-    let mut pf = FindPaths::new(&grid);
+    let mut pf = FindClosedPaths::new(&grid);
     let opt_p = pf.find_closed_path(Pt(1,1));
     assert_eq!(opt_p.unwrap(),
                simple_box_path((Pt(1,1), '.'), (Pt(6,1), '+'),
@@ -263,7 +263,7 @@ fn basic_ur_plus_single_box_upper_left() {
 #[test]
 fn basic_all_plus_single_box_upper_left() {
     let grid = BASIC_ALL_PLUS.1.parse::<Grid>().unwrap();
-    let mut pf = FindPaths::new(&grid);
+    let mut pf = FindClosedPaths::new(&grid);
     let opt_p = pf.find_closed_path(Pt(1,1));
     assert_eq!(opt_p.unwrap(),
                simple_box_path((Pt(1,1), '+'), (Pt(6,1), '+'),
@@ -273,7 +273,7 @@ fn basic_all_plus_single_box_upper_left() {
 #[test]
 fn issue_15_box_big_upper_left() {
     let grid = ISSUE_15_DESC.1.parse::<Grid>().unwrap();
-    let mut pf = FindPaths::new(&grid);
+    let mut pf = FindClosedPaths::new(&grid);
     let opt_p = pf.find_closed_path(Pt(1, 2));
     assert_eq!(opt_p.unwrap(),
                Path::closed(vec![(Pt(1,2), '.'), (Pt(2,2), '-'), (Pt(3,2), '-'), (Pt(4,2), '-'),
@@ -295,7 +295,7 @@ fn issue_15_box_big_upper_left() {
 #[test]
 fn issue_15_box_lil_lower_left() {
     let grid = ISSUE_15_DESC.1.parse::<Grid>().unwrap();
-    let mut pf = FindPaths::new(&grid);
+    let mut pf = FindClosedPaths::new(&grid);
     let opt_p = pf.find_closed_path(Pt(5, 11));
     assert_eq!(opt_p.unwrap(),
                Path::closed(vec![(Pt(5,11), '.'), (Pt(6,11), '-'), (Pt(7,11), '+'), (Pt(8,11), '-'), (Pt(9,11), '.'),
@@ -308,7 +308,7 @@ fn issue_15_box_lil_lower_left() {
 fn issue_15_box_big_upper_middle() {
     // ::env_logger::init();
     let grid = ISSUE_15_DESC.1.parse::<Grid>().unwrap();
-    let mut pf = FindPaths::new(&grid);
+    let mut pf = FindClosedPaths::new(&grid);
     let opt_p = pf.find_closed_path(Pt(25, 4));
     assert_eq!(opt_p.unwrap(),
                Path::closed(vec![(Pt(25,4), '.'), (Pt(26,4), '-'), (Pt(27,4), '-'), (Pt(28,4), '-'), (Pt(29,4), '-'),
@@ -331,7 +331,7 @@ fn issue_15_box_big_upper_middle() {
 fn issue_15_box_big_lower_right() {
     // ::env_logger::init().ok(); // discard error since double-init is one.
     let grid = ISSUE_15_DESC.1.parse::<Grid>().unwrap();
-    let mut pf = FindPaths::new(&grid);
+    let mut pf = FindClosedPaths::new(&grid);
     let opt_p = pf.find_closed_path(Pt(35, 13));
     assert_eq!(opt_p.unwrap(),
                Path::closed(vec![(Pt(35,13), '+'), (Pt(36,13), '-'), (Pt(37,13), '-'), (Pt(38,13), '-'), (Pt(39,13), '-'),
@@ -360,7 +360,7 @@ fn trivial_box_removal() {
                     |  | mid\n\
                     '--' bot\n".parse::<Grid>().unwrap();
     let path = {
-        let mut pf = FindPaths::new(&grid);
+        let mut pf = FindClosedPaths::new(&grid);
         pf.find_closed_path(Pt(1,1)).unwrap()
     };
     grid.remove_path(&path);
@@ -376,7 +376,7 @@ fn box_removal_but_ul_corner() {
                     |  | mid\n\
                     '--' bot\n".parse::<Grid>().unwrap();
     let path = {
-        let mut pf = FindPaths::new(&grid);
+        let mut pf = FindClosedPaths::new(&grid);
         pf.find_closed_path(Pt(1,1)).unwrap()
     };
     grid.remove_path(&path);
@@ -392,7 +392,7 @@ fn box_removal_but_ur_corner() {
                     |  | mid\n\
                     '--' bot\n".parse::<Grid>().unwrap();
     let path = {
-        let mut pf = FindPaths::new(&grid);
+        let mut pf = FindClosedPaths::new(&grid);
         pf.find_closed_path(Pt(1,1)).unwrap()
     };
     grid.remove_path(&path);
@@ -408,7 +408,7 @@ fn box_removal_but_bl_corner() {
                     |  | mid\n\
                     +--' bot\n".parse::<Grid>().unwrap();
     let path = {
-        let mut pf = FindPaths::new(&grid);
+        let mut pf = FindClosedPaths::new(&grid);
         pf.find_closed_path(Pt(1,1)).unwrap()
     };
     grid.remove_path(&path);
@@ -424,7 +424,7 @@ fn box_removal_but_br_corner() {
                     |  | mid\n\
                     '--+ bot\n".parse::<Grid>().unwrap();
     let path = {
-        let mut pf = FindPaths::new(&grid);
+        let mut pf = FindClosedPaths::new(&grid);
         pf.find_closed_path(Pt(1,1)).unwrap()
     };
     grid.remove_path(&path);
