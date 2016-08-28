@@ -210,7 +210,7 @@ Some day, It may be worthwhile to make an exercise out of why.
         };
     }
 
-    fn is_corner(&self, curr: Pt) -> Option<Vec<(Direction, Direction)>> {
+    fn is_corner(&self, curr: Pt) -> Option<Vec<((char, Direction), (Direction, char))>> {
         let grid = &self.grid;
         let c = match grid[curr] {
             Elem::C(c) | Elem::Used(c) => c,
@@ -238,7 +238,7 @@ Some day, It may be worthwhile to make an exercise out of why.
                     if !grid.holds(i) || !grid.holds(o) { continue; }
                     if let (Some(i), Some(o)) = (grid[i].opt_char(), grid[o].opt_char()) {
                         if in_match.matches(i) && out_match.matches(o) {
-                            in_out.push((in_dir, out_dir));
+                            in_out.push(((i, in_dir), (out_dir, o)));
                         }
                     }
                 }
@@ -261,10 +261,13 @@ Some day, It may be worthwhile to make an exercise out of why.
         //  since we need three points to define a positive 2D area;
         //  so we can be assured that at least one corner exists
         //  somewhere.)
-        if self.is_corner(curr).is_none() {
-            debug!("find_closed_path: early exit on non-corner: {:?} at {:?}", elem, curr);
-            return None;
-        }
+        let corner_dirs = match self.is_corner(curr) {
+            None => {
+                debug!("find_closed_path: early exit on non-corner: {:?} at {:?}", elem, curr);
+                return None;
+            }
+            Some(v) => v,
+        };
         // Also, don't waste time on a search that starts on a cell with < 2 non-blank neighbors.
         {
             let mut non_blank_nbors = 0;
@@ -274,8 +277,7 @@ Some day, It may be worthwhile to make an exercise out of why.
                 if !self.grid[next.0].is_blank() { non_blank_nbors += 1; }
             }
             if non_blank_nbors < 2 {
-                debug!("find_closed_path: early exit on cell with {} neighbors.", non_blank_nbors);
-                return None;
+                unreachable!(); // (this became unreachable with the self.is_corner change above)
             }
         }
 
