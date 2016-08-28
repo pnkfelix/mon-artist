@@ -310,6 +310,7 @@ fn end_to_end_basics() {
     let mut html_doc = Document::default();
     let mut html_body = Element::new("body");
     for &(name, d) in &test_data::ALL {
+        println!("processing {}", name);
         let r = SvgRender {
             x_scale: 8, y_scale: 13,
             font_family: "Menlo".to_string(), font_size: 13,
