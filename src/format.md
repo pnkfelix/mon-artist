@@ -502,8 +502,6 @@ impl Default for Table {
                 (Match::Any, N, '|', May((N, Match::Any)), "L {N}"),
                 (Match::Any, S, '|', May((S, Match::Any)), "L {S}"),
 
-                (Match::Any, AnyDir, Loop('+'), AnyDir, Match::Any, "M {C}"),
-
                 // FIXME should these be included right now, in absence of
                 // extension to augment attributes to switch to dashed
                 // mode?
@@ -527,6 +525,7 @@ impl Default for Table {
                 ('^', N, '+', May((AnyDir, Match::Any)), "M {C}"),
                 ('v', S, '+', May((AnyDir, Match::Any)), "M {C}"),
                 (Match::Any, AnyDir, '+', May((AnyDir, Match::Any)), "L {C}"),
+                (Match::Any, AnyDir, Loop('+'), AnyDir, Match::Any, "M {C}"),
 
                 // The curves!  .-   .-  .-
                 // part 1:      |   /     \  et cetera
