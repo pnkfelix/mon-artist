@@ -16,7 +16,7 @@ impl Match {
         match *self {
             Match::One(m) => m == c,
             Match::Chars(ref v) => v.contains(&c),
-            Match::Any => true,
+            Match::Any => !c.is_whitespace(),
         }
     }
 }
