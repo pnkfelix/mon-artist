@@ -139,7 +139,7 @@ impl<'a> FindUnclosedPaths<'a> {
                 if !self.find.grid[next.0].is_blank() { non_blank_nbors += 1; }
             }
             if non_blank_nbors == 0 {
-                println!("find_unclosed_path: early exit on {:?} at {:?} with {} neighbors.", elem, curr, non_blank_nbors);
+                debug!("find_unclosed_path: early exit on {:?} at {:?} with {} neighbors.", elem, curr, non_blank_nbors);
                 return None;
             }
         }
@@ -159,22 +159,22 @@ impl<'a> FindUnclosedPaths<'a> {
                 return ret;
             }
         }
-        println!("find_unclosed_path self: {:?} exhausted directions; giving up.", self);
+        debug!("find_unclosed_path self: {:?} exhausted directions; giving up.", self);
         return None;
     }
 
     fn find_unclosed_path_from(&mut self, dv: DirVector, fc: FindContext) -> Option<Path> {
         use self::Continue::*;
         use path::Closed::*;
-        println!("find_unclosed_path_from self: {:?} dv: {:?} {:?}", self, dv, fc);
+        debug!("find_unclosed_path_from self: {:?} dv: {:?} {:?}", self, dv, fc);
         assert!(self.find.grid.holds(dv.0));
         assert!(!self.find.steps.contains(&dv.0));
         let elem: Elem = self.find.grid[dv.0];
-        println!("find_unclosed_path_from elem: {:?}", elem);
+        debug!("find_unclosed_path_from elem: {:?}", elem);
         return match elem {
             Elem::C(c) | Elem::Used(c) => {
                 let cont = self::Continue::cat(c);
-                println!("find_unclosed_path_from elem: {:?} cont: {:?}", elem, cont);
+                debug!("find_unclosed_path_from elem: {:?} cont: {:?}", elem, cont);
                 if cont == AnyDir {
                     self.find.steps.push(dv.0);
                     // if we can turn in any direction, attempt to
@@ -185,7 +185,7 @@ impl<'a> FindUnclosedPaths<'a> {
                     // TODO: maybe experiment with a non-clock iteration order,
                     // such as CW, 2*CCW, 3*CW, 4*CCW, ...
                     while let Some(dir) = dirs_to_try.pop() {
-                        println!("find_unclosed_path trying dir: {:?}", dir);
+                        debug!("find_unclosed_path trying dir: {:?}", dir);
                         let next = dv.towards(dir).step();
                         match self.try_next(next, FindContext::TurnAny(dir)) {
                             p @ Some(_) => return p,
@@ -195,7 +195,7 @@ impl<'a> FindUnclosedPaths<'a> {
 
                     // If we get here, then none of the available directions worked, so finish.
                     assert_eq!(self.find.steps.last(), Some(&dv.0));
-                    println!("find_unclosed_path self: {:?} exhausted turns; finished.", self);
+                    debug!("find_unclosed_path self: {:?} exhausted turns; finished.", self);
                     Some(self.find.to_path(Open))
 
                 } else if cont.matches(dv.1) && cont != AnyDir {
@@ -205,17 +205,17 @@ impl<'a> FindUnclosedPaths<'a> {
                         p @ Some(_) => p,
                         None => {
                             assert_eq!(self.find.steps.last(), Some(&dv.0));
-                            println!("find_unclosed_path self: {:?} following trajectory failed; finished.", self);
+                            debug!("find_unclosed_path self: {:?} following trajectory failed; finished.", self);
                             Some(self.find.to_path(Open))
                         }
                     }
                 } else {
-                    println!("find_unclosed_path self: {:?} unmatched trajectory; giving up.", self);
+                    debug!("find_unclosed_path self: {:?} unmatched trajectory; giving up.", self);
                     None
                 }
             }
             Elem::Pad | Elem::Clear => { // blank: Give up.
-                println!("find_unclosed_path self: {:?} blank; giving up.", self);
+                debug!("find_unclosed_path self: {:?} blank; giving up.", self);
                 None
             }
         };
