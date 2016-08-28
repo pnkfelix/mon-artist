@@ -212,6 +212,14 @@ pub enum Elem {
 }
 
 impl Elem {
+    pub fn opt_char(&self) -> Option<char> {
+        match *self {
+            Elem::C(c) | Elem::Used(c) => Some(c),
+            Elem::Pad => None,
+            Elem::Clear => None,
+        }
+    }
+
     pub fn to_char(&self) -> char {
         match *self {
             Elem::C(c) | Elem::Used(c) => c,
