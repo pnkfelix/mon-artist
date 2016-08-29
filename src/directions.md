@@ -9,7 +9,7 @@ that are immediately expressible via a grid:
 
 /// A `Direction` is a simple compass direction on the grid.
 ```rust
-#[derive(PartialEq, Eq, Copy, Clone, Debug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Copy, Clone, Debug)]
 pub enum Direction { N, NE, E, SE, S, SW, W, NW }
 
 pub const DIRECTIONS: &'static [Direction] =
