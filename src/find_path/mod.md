@@ -411,7 +411,7 @@ pub fn find_unclosed_path_from(grid: &Grid, format: &Table, dir: DirVector) -> O
         prev: None,
         curr: dir.0
     }).ok();
-    debug!("find_closed_path_from dir {:?} ret {:?}", dir, ret);
+    debug!("find_unclosed_path_from dir {:?} ret {:?}", dir, ret);
     ret
 }
 
