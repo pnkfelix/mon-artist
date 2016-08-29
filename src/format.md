@@ -592,7 +592,7 @@ impl Default for Table {
                 //
                 // horizontal arrow heads
                 ('-', E, '>', Finis, "L {C} l 3,0 m -3,-3 l 3,3 l -3,3 m 0,-3"),
-                (Start, '>', E, '-', "M {C} l 3,0 m -3,-3 l 3,3 l -3,3 m 0,-3"),
+                (Start, '>', W, '-', "M {C} l 3,0 m -3,-3 l 3,3 l -3,3 m 0,-3"),
                 ('-', W, '<', Finis, "L {C} l -3,0 m 3,-3 l -3,3 l 3,3 m 0,-3"),
                 (Start, '<', E, '-', "M {C} l -3,0 m 3,-3 l -3,3 l 3,3 m 0,-3"),
                 // vertical arrow heads
