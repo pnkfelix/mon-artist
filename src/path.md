@@ -64,12 +64,28 @@ use grid::{Grid, Elem, Pt};
 #[derive(PartialEq, Eq, Copy, Clone, Debug, Hash)]
 pub enum Closed { Closed, Open }
 
-#[derive(PartialEq, Eq, Clone, Debug, Hash)]
+#[derive(Eq, Clone, Debug)]
 pub struct Path {
     pub (crate) steps: Vec<(Pt, char)>,
     pub (crate) closed: Closed,
     pub (crate) id: Option<(Pt, String)>,
     pub (crate) attrs: Option<Vec<(String, String)>>,
+}
+
+impl PartialEq for Path {
+    fn eq(&self, rhs: &Self) -> bool {
+        self.attrs == rhs.attrs &&
+            self.id == rhs.id &&
+            self.closed == rhs.closed &&
+            (if self.closed == Closed::Open {
+                self.steps == rhs.steps
+            } else { let mut rev;
+                     self.steps == rhs.steps ||
+                     {
+                         rev = self.steps.clone();
+                         rev[1..].reverse();
+                         rev == rhs.steps } })
+    }
 }
 
 impl Path {
