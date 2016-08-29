@@ -351,74 +351,74 @@ impl<'a> FindClosedPaths<'a> {
         assert_eq!(dv.0, fc.curr());
         let elem: Elem = self.find.grid[dv.0];
         debug!("find_closed_path_from elem: {:?}", elem);
-        return match elem {
-            Elem::C(c) | Elem::Used(c) => {
-                let cont = self::Continue::cat(c);
-                debug!("find_closed_path_from elem: {:?} cont: {:?}", elem, cont);
-                if cont == AnyDir {
-                    self.find.steps.push(dv.0);
-                    // if we can turn in any direction, attempt to
-                    // make the closed polygon via the sharpest
-                    // clockwise turn possible.
-                    let mut dir = dv.dir().sharp_turn(Turn::CW);
-                    // (If that fails, we will try the next sharpest
-                    // by veering counter-clockwise, up until (but not
-                    // including) we end up going in the entirely
-                    // reverse direction from where we started.)
-                    while dir != dv.dir().reverse() {
-                        let next = dv.towards(dir).step();
-                        match self.try_next(next, FindContext {
-                            prev: Some(dv.0),
-                            curr: next.0,
-                            kind: TurnAny(dir) })
-                        {
-                            p @ Some(_) => return p,
-                            None => {
-                                dir = dir.veer(Turn::CCW);
-                            }
-                        }
-                    }
+        let c = match elem {
+            Elem::Pad | Elem::Clear => { // blank: Give up.
+                debug!("find_closed_path self: {:?} blank; giving up.", self);
+                return None;
+            }
+            Elem::C(c) | Elem::Used(c) => c
+        };
+        let cont = self::Continue::cat(c);
+        debug!("find_closed_path_from elem: {:?} cont: {:?}", elem, cont);
 
-                    // If we get here, then none of the available directions
-                    // worked, so give up.
+        if cont == AnyDir {
+            self.find.steps.push(dv.0);
+            // if we can turn in any direction, attempt to
+            // make the closed polygon via the sharpest
+            // clockwise turn possible.
+            let mut dir = dv.dir().sharp_turn(Turn::CW);
+            // (If that fails, we will try the next sharpest
+            // by veering counter-clockwise, up until (but not
+            // including) we end up going in the entirely
+            // reverse direction from where we started.)
+            while dir != dv.dir().reverse() {
+                let next = dv.towards(dir).step();
+                match self.try_next(next, FindContext {
+                    prev: Some(dv.0),
+                    curr: next.0,
+                    kind: TurnAny(dir) })
+                {
+                    p @ Some(_) => return p,
+                    None => {
+                        dir = dir.veer(Turn::CCW);
+                    }
+                }
+            }
+
+            // If we get here, then none of the available directions
+            // worked, so give up.
+            assert_eq!(self.find.steps.last(), Some(&dv.0));
+            self.find.steps.pop();
+            debug!("find_closed_path self: {:?} exhausted turns; giving up.", self);
+            None
+
+        } else if cont.matches(dv.1) && cont != AnyDir {
+            // If we cannot take any direction from the given
+            // point, but this point in the grid is consistent
+            // with our current trajectory, then attempt to
+            // continue in the same trajectory.
+            self.find.steps.push(dv.0);
+            let next = dv.steps(1);
+            match self.try_next(next, FindContext {
+                prev: Some(dv.0),
+                curr: next.0,
+                kind: Trajectory(next.1)})
+            {
+                p @ Some(_) => p,
+                None => {
                     assert_eq!(self.find.steps.last(), Some(&dv.0));
                     self.find.steps.pop();
-                    debug!("find_closed_path self: {:?} exhausted turns; giving up.", self);
-                    None
-
-                } else if cont.matches(dv.1) && cont != AnyDir {
-                    // If we cannot take any direction from the given
-                    // point, but this point in the grid is consistent
-                    // with our current trajectory, then attempt to
-                    // continue in the same trajectory.
-                    self.find.steps.push(dv.0);
-                    let next = dv.steps(1);
-                    match self.try_next(next, FindContext {
-                        prev: Some(dv.0),
-                        curr: next.0,
-                        kind: Trajectory(next.1)})
-                    {
-                        p @ Some(_) => p,
-                        None => {
-                            assert_eq!(self.find.steps.last(), Some(&dv.0));
-                            self.find.steps.pop();
-                            debug!("find_closed_path self: {:?} following trajectory failed; giving up.", self);
-                            None
-                        }
-                    }
-                } else {
-                    // If this point in the grid did not match our
-                    // trajectory, then this cannot be a continuation
-                    // of our current path. Give up.
-                    debug!("find_closed_path self: {:?} unmatched trajectory; giving up.", self);
+                    debug!("find_closed_path self: {:?} following trajectory failed; giving up.", self);
                     None
                 }
             }
-            Elem::Pad | Elem::Clear => { // blank: Give up.
-                debug!("find_closed_path self: {:?} blank; giving up.", self);
-                None
-            }
-        };
+        } else {
+            // If this point in the grid did not match our
+            // trajectory, then this cannot be a continuation
+            // of our current path. Give up.
+            debug!("find_closed_path self: {:?} unmatched trajectory; giving up.", self);
+            None
+        }
     }
 }
 
