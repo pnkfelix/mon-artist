@@ -78,6 +78,13 @@ struct FindContext {
     curr: Pt,
 }
 
+#[derive(Debug)]
+struct FindLoopContext<'a> {
+    prev: Pt,
+    curr: Pt,
+    corner_dirs: &'a [((char, Direction), (Direction, char))]
+}
+
 impl FindContext {
     fn curr(&self) -> Pt { self.curr }
 }
@@ -263,7 +270,7 @@ impl<'a> FindClosedPaths<'a> {
             for in_dir in in_dir {
                 for &out_dir in &out_dir {
                     if in_dir == out_dir { continue; }
-                    let i = curr.neighbor(in_dir);
+                    let i = curr.neighbor(in_dir.reverse());
                     let o = curr.neighbor(out_dir);
                     if !grid.holds(i) || !grid.holds(o) { continue; }
                     if let (Some(i), Some(o)) = (grid[i].opt_char(), grid[o].opt_char()) {
@@ -315,8 +322,9 @@ impl<'a> FindClosedPaths<'a> {
             } else if next.0 == self.find.start() { // closes path
                 panic!("this cannot happen so soon.");
             }
-            match self.find_closed_path_from(next, FindContext { prev: Some(curr),
-                                                                 curr: next.0 })
+            match self.find_closed_path_from(next, FindLoopContext { prev: curr,
+                                                                     curr: next.0,
+                                                                     corner_dirs: &corner_dirs })
             {
                 ret @ Ok(_) => {
                     return ret;
@@ -328,21 +336,20 @@ impl<'a> FindClosedPaths<'a> {
         return Err(self);
     }
 
-    fn find_closed_path_from(mut self, dv: DirVector, fc: FindContext) -> Result<Path, Self> {
+    fn find_closed_path_from(mut self, dv: DirVector, fc: FindLoopContext) -> Result<Path, Self> {
         use directions::Turn;
-        debug!("find_closed_path_from self: {:?} dv: {:?} {:?}", self, dv, fc);
         assert!(self.find.grid.holds(dv.0));
         assert!(!self.find.steps.contains(&dv.0));
-        assert_eq!(dv.0, fc.curr());
+        assert_eq!(dv.0, fc.curr);
         let elem: Elem = self.find.grid[dv.0];
-        debug!("find_closed_path_from elem: {:?}", elem);
-        match elem {
+        let c = match elem {
             Elem::Pad | Elem::Clear => { // blank: Give up.
                 debug!("find_closed_path self: {:?} blank; giving up.", self);
                 return Err(self);
             }
             Elem::C(c) | Elem::Used(c) => c
         };
+        debug!("find_closed_path_from self: {:?} dv: {:?} fc: {:?} c: {:?}", self, dv, fc, c);
 
         self.find.steps.push(dv.0);
 
@@ -359,21 +366,28 @@ impl<'a> FindClosedPaths<'a> {
                 dir = dir.veer(Turn::CCW);
                 continue;
             }
-            if self.find.start() == next.0 { // closes path; potential success!
-                // FIXME: needs to check against the actual start state, which will
-                // eventually be stored in struct FindClosedPaths
-                return Ok(self.find.to_path(Closed::Closed));
+            debug!("considering loop extension next: {:?} in {:?} fc: {:?}", next, self, fc);
+            if self.find.start() == next.0  { // closes path; potential success!
+                if self.properly_closed_loop(&fc) {
+                    debug!("properly closed loop in {:?} fc: {:?}", self, fc);
+                    return Ok(self.find.to_path(Closed::Closed));
+                } else {
+                    dir = dir.veer(Turn::CCW);
+                    debug!("improperly closed loop in {:?} fc: {:?} veering to {:?}", self, fc, dir);
+                    continue;
+                }
             } else if self.find.steps.contains(&next.0) { // non-start overlap
                 dir = dir.veer(Turn::CCW);
                 continue;
             }
-            if !self.find.matches(fc.prev, fc.curr, next.0) { // no format rule
+            if !self.find.matches(Some(fc.prev), fc.curr, next.0) { // no format rule
                 dir = dir.veer(Turn::CCW);
                 continue;
             }
 
-            match self.find_closed_path_from(next, FindContext { prev: Some(dv.0),
-                                                                 curr: next.0  }) {
+            match self.find_closed_path_from(next, FindLoopContext { prev: dv.0,
+                                                                     curr: next.0,
+                                                                     ..fc }) {
                 p @ Ok(_) => return p,
                 Err(s) => {
                     self = s;
@@ -396,6 +410,16 @@ impl<'a> FindClosedPaths<'a> {
     #[cfg(test)]
     fn new(grid: &'a Grid) -> Self {
         FindClosedPaths { find: FindPaths::new(grid) }
+    }
+    fn properly_closed_loop(&self, fc: &FindLoopContext) -> bool {
+        let fst = self.find.steps[0];
+        let snd = self.find.steps[1];
+        let last = *self.find.steps.last().unwrap();
+        let s = self.find.grid[snd].opt_char().unwrap();
+        let l = self.find.grid[last].opt_char().unwrap();
+        let finis_arc = last.towards(fst);
+        let start_arc = fst.towards(snd);
+        fc.corner_dirs.contains(&((l, finis_arc), (start_arc, s)))
     }
 }
 
