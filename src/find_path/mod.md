@@ -366,7 +366,8 @@ impl<'a> FindClosedPaths<'a> {
             } else if self.find.steps.contains(&next.0) { // non-start overlap
                 dir = dir.veer(Turn::CCW);
                 continue;
-            } else if !self.find.matches(fc.prev, fc.curr, next.0) { // no format rule
+            }
+            if !self.find.matches(fc.prev, fc.curr, next.0) { // no format rule
                 dir = dir.veer(Turn::CCW);
                 continue;
             }
