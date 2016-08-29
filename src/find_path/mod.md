@@ -290,31 +290,20 @@ impl<'a> FindClosedPaths<'a> {
 
     fn find_closed_path(mut self, curr: Pt) -> Result<Path, Self> {
         let elem = self.find.grid[curr];
-        debug!("find_closed_path self: {:?} curr: {:?} pt: {:?}", self, curr, elem);
-        // Don't waste time on a search that starts on a non-corner.
-        // (all closed paths must have at least three corner elements,
-        //  since we need three points to define a positive 2D area;
-        //  so we can be assured that at least one corner exists
-        //  somewhere.)
-        let corner_dirs = match self.is_corner(curr) {
+        // // Don't waste time on a search that starts on a non-corner.
+        // // (all closed paths must have at least three corner elements,
+        // //  since we need three points to define a positive 2D area;
+        // //  so we can be assured that at least one corner exists
+        // //  somewhere.)
+        let corner_dirs: Vec<((char, Direction),
+                              (Direction, char))> = match self.is_corner(curr) {
             None => {
                 debug!("find_closed_path: early exit on non-corner: {:?} at {:?}", elem, curr);
                 return Err(self);
             }
             Some(v) => v,
         };
-        // Also, don't waste time on a search that starts on a cell with < 2 non-blank neighbors.
-        {
-            let mut non_blank_nbors = 0;
-            for &dir in DIRECTIONS.iter() {
-                let next = DirVector(curr, dir).steps(1);
-                if !self.find.grid.holds(next.0) { continue; }
-                if !self.find.grid[next.0].is_blank() { non_blank_nbors += 1; }
-            }
-            if non_blank_nbors < 2 {
-                unreachable!(); // (this became unreachable with the self.is_corner change above)
-            }
-        }
+        debug!("find_closed_path self: {:?} curr: {:?} pt: {:?}", self, curr, elem);
 
         // start the search proper
         self.find.steps.push(curr);
@@ -406,70 +395,6 @@ impl<'a> FindClosedPaths<'a> {
         self.find.steps.pop();
         debug!("find_closed_path self: {:?} exhausted turns; giving up.", self);
         return Err(self);
-
-        let cont = self::Continue::cat(c);
-        debug!("find_closed_path_from elem: {:?} cont: {:?}", elem, cont);
-
-        if cont == AnyDir {
-            self.find.steps.push(dv.0);
-            // if we can turn in any direction, attempt to
-            // make the closed polygon via the sharpest
-            // clockwise turn possible.
-            let mut dir = dv.dir().sharp_turn(Turn::CW);
-            // (If that fails, we will try the next sharpest
-            // by veering counter-clockwise, up until (but not
-            // including) we end up going in the entirely
-            // reverse direction from where we started.)
-            while dir != dv.dir().reverse() {
-                let next = dv.towards(dir).step();
-                match self.try_next(next, FindContext {
-                    prev: Some(dv.0),
-                    curr: next.0,
-                    kind: TurnAny(dir) })
-                {
-                    p @ Ok(_) => return p,
-                    Err(s) => {
-                        self = s;
-                        dir = dir.veer(Turn::CCW);
-                    }
-                }
-            }
-
-            // If we get here, then none of the available directions
-            // worked, so give up.
-            assert_eq!(self.find.steps.last(), Some(&dv.0));
-            self.find.steps.pop();
-            debug!("find_closed_path self: {:?} exhausted turns; giving up.", self);
-            Err(self)
-
-        } else if cont.matches(dv.1) && cont != AnyDir {
-            // If we cannot take any direction from the given
-            // point, but this point in the grid is consistent
-            // with our current trajectory, then attempt to
-            // continue in the same trajectory.
-            self.find.steps.push(dv.0);
-            let next = dv.steps(1);
-            match self.try_next(next, FindContext {
-                prev: Some(dv.0),
-                curr: next.0,
-                kind: Trajectory(next.1)})
-            {
-                p @ Ok(_) => p,
-                Err(s) => {
-                    self = s;
-                    assert_eq!(self.find.steps.last(), Some(&dv.0));
-                    self.find.steps.pop();
-                    debug!("find_closed_path self: {:?} following trajectory failed; giving up.", self);
-                    Err(self)
-                }
-            }
-        } else {
-            // If this point in the grid did not match our
-            // trajectory, then this cannot be a continuation
-            // of our current path. Give up.
-            debug!("find_closed_path self: {:?} unmatched trajectory; giving up.", self);
-            Err(self)
-        }
     }
 }
 
