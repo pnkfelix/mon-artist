@@ -180,6 +180,9 @@ impl<'a> FindUnclosedPaths<'a> {
     }
 
     fn find_unclosed_path_from(mut self, dv: DirVector, fc: FindContext) -> Result<Path, Self> {
+        // FIXME: the success case for this code is not complete: in addition to searching
+        // forward along the path from the supposed start point, we also need to search
+        // *backward* (in case there is a longer path we could acquire by adding on a prefix).
         use self::FindContextKind::*;
         use path::Closed::*;
         debug!("find_unclosed_path_from self: {:?} dv: {:?} {:?}", self, dv, fc);
