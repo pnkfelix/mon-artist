@@ -312,8 +312,8 @@ impl<'a> FindClosedPaths<'a> {
                   j, dir, next);
             if !self.find.grid.holds(next.0) { // off grid
                 continue;
-            } else if next.0 == self.find.start() { // closes path (FIXME can this happen so soon?)
-                return Ok(self.find.to_path(Closed::Closed));
+            } else if next.0 == self.find.start() { // closes path
+                panic!("this cannot happen so soon.");
             }
             match self.find_closed_path_from(next, FindContext { prev: Some(curr),
                                                                  curr: next.0 })
