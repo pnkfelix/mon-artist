@@ -136,7 +136,6 @@ Some day, It may be worthwhile to make an exercise out of why.
 impl<'a> FindUnclosedPaths<'a> {
     fn find_unclosed_path(mut self, curr: Pt) -> Result<Path, Self> {
         let elem = self.find.grid[curr];
-        debug!("find_unclosed_path self: {:?} curr: {:?} pt: {:?}", self, curr, elem);
         // don't waste time on a search that starts on a blank cell
         if elem.is_blank() {
             return Err(self);
@@ -154,6 +153,7 @@ impl<'a> FindUnclosedPaths<'a> {
                 return Err(self);
             }
         }
+        debug!("find_unclosed_path self: {:?} curr: {:?} pt: {:?}", self, curr, elem);
 
         // start the search proper
         self.find.steps.push(curr);
@@ -215,7 +215,11 @@ impl<'a> FindUnclosedPaths<'a> {
 
             if !self.find.grid.holds(next.0) { continue; } // off grid
             if self.find.steps.contains(&next.0) { continue; } // overlap
-            if !self.find.matches(fc.prev, fc.curr, next.0) { continue; } // no format rule
+            if !self.find.matches(fc.prev, fc.curr, next.0) { // no format rule
+                debug!("no format rule found for ({:?},{:?},{:?})",
+                         fc.prev, fc.curr, next.0);
+                continue;
+            }
 
 
             match self.find_unclosed_path_from(next, FindContext { prev: Some(dv.0),
@@ -223,6 +227,8 @@ impl<'a> FindUnclosedPaths<'a> {
                                                                    kind: TurnAny(dir) }) {
                 p @ Ok(_) => return p,
                 Err(s) => {
+                    debug!("recursive search failed for ({:?},{:?},{:?})",
+                             fc.prev, fc.curr, next.0);
                     self = s;
                     continue;
                 }
@@ -489,21 +495,27 @@ impl Continue {
 
 pub fn find_closed_path(grid: &Grid, format: &Table, pt: Pt) -> Option<Path> {
     let mut pf = FindClosedPaths { find: FindPaths::with_grid_format(grid, format) };
-    pf.find_closed_path(pt).ok()
+    let ret = pf.find_closed_path(pt).ok();
+    debug!("find_closed_path pt {:?} ret {:?}", pt, ret);
+    ret
 }
 
 pub fn find_unclosed_path_from(grid: &Grid, format: &Table, dir: DirVector) -> Option<Path> {
     let pf = FindUnclosedPaths { find: FindPaths::with_grid_format(grid, format) };
-    pf.find_unclosed_path_from(dir, FindContext {
+    let ret = pf.find_unclosed_path_from(dir, FindContext {
         prev: None,
         curr: dir.0,
         kind: FindContextKind::Start
-    }).ok()
+    }).ok();
+    debug!("find_closed_path_from dir {:?} ret {:?}", dir, ret);
+    ret
 }
 
 pub fn find_unclosed_path(grid: &Grid, format: &Table, pt: Pt) -> Option<Path> {
     let pf = FindUnclosedPaths { find: FindPaths::with_grid_format(grid, format) };
-    pf.find_unclosed_path(pt).ok()
+    let ret = pf.find_unclosed_path(pt).ok();
+    debug!("find_unclosed_path pt {:?} ret {:?}", pt, ret);
+    ret
 }
 
 impl<'a> FindPaths<'a> {
