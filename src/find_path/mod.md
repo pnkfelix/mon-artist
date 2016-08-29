@@ -309,13 +309,15 @@ impl<'a> FindClosedPaths<'a> {
             }
             Some(v) => v,
         };
-        debug!("find_closed_path self: {:?} curr: {:?} pt: {:?}", self, curr, elem);
 
         // start the search proper
         self.find.steps.push(curr);
-        for (j, &dir) in DIRECTIONS.iter().enumerate() {
-            debug!("find_closed_path {} dir: {:?}",
-                  j, dir);
+        let mut out_dirs: Vec<Direction> = corner_dirs.iter().map(|t|(t.1).0).collect();
+        out_dirs.sort();
+        out_dirs.dedup();
+        debug!("find_closed_path self: {:?} curr: {:?} pt: {:?} corner_dirs: {:?} out_dirs: {:?}",
+               self, curr, elem, corner_dirs, out_dirs);
+        for (j, &dir) in out_dirs.iter().enumerate() {
             let next = DirVector(curr, dir).steps(1);
             debug!("find_closed_path {} dir: {:?} next: {:?}",
                   j, dir, next);
