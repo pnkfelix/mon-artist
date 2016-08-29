@@ -114,7 +114,6 @@ impl Entry {
                    incoming: Option<(char, Direction)>,
                    curr: char,
                    outgoing: Option<(Direction, char)>) -> bool {
-        use self::Neighbor::{Blank, Must, May};
         if !self.matches_incoming(incoming) { return false; }
         if !self.curr.matches(curr) { return false; }
         if !self.matches_outgoing(outgoing) { return false; }

@@ -439,20 +439,6 @@ impl<'a> FindClosedPaths<'a> {
     }
 }
 
-impl<'a> FindUnclosedPaths<'a> {
-    fn try_next(self, next: DirVector, fc: FindContext) -> Result<Path, Self> {
-        debug!("try_next Unclosed self: {:?} next: {:?} {:?}", self, next, fc);
-
-        if !self.find.grid.holds(next.0) { // off grid
-            return Err(self);
-        } else if self.find.steps.contains(&next.0) { // non-start overlap
-            return Err(self);
-        }
-
-        self.find_unclosed_path_from(next, fc)
-    }
-}
-
 /// Variants of `Continue` categorize how a given character can
 /// extend a path.
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
@@ -544,7 +530,6 @@ pub fn find_unclosed_path(grid: &Grid, format: &Table, pt: Pt) -> Option<Path> {
 impl<'a> FindPaths<'a> {
     fn matches(&self, prev: Option<Pt>, curr: Pt, next: Pt) -> bool {
         let c = if let Some(c) = self.grid[curr].opt_char() { c } else { return false; };
-        let n = self.grid[next];
         let prev_arc = prev.and_then(|prev| {
             self.grid[prev].opt_char().map(|p| (p, prev.towards(curr)))
         });
