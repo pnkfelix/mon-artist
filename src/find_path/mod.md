@@ -73,17 +73,9 @@ popping the vector of points that we are building up.
 
 ```rust
 #[derive(Debug)]
-enum FindContextKind {
-    Start,
-    TurnAny(Direction),
-    Trajectory(Direction),
-}
-
-#[derive(Debug)]
 struct FindContext {
     prev: Option<Pt>,
     curr: Pt,
-    kind: FindContextKind,
 }
 
 impl FindContext {
@@ -166,8 +158,7 @@ impl<'a> FindUnclosedPaths<'a> {
             if !self.find.grid.holds(next.0) {
                 continue;
             }
-            match self.find_unclosed_path_from(next, FindContext {
-                prev: Some(curr), curr: next.0, kind: FindContextKind::Start })
+            match self.find_unclosed_path_from(next, FindContext { prev: Some(curr), curr: next.0 })
             {
                 ret @ Ok(_) => {
                     return ret;
@@ -183,7 +174,6 @@ impl<'a> FindUnclosedPaths<'a> {
         // FIXME: the success case for this code is not complete: in addition to searching
         // forward along the path from the supposed start point, we also need to search
         // *backward* (in case there is a longer path we could acquire by adding on a prefix).
-        use self::FindContextKind::*;
         use path::Closed::*;
         debug!("find_unclosed_path_from self: {:?} dv: {:?} {:?}", self, dv, fc);
         assert!(self.find.grid.holds(dv.0));
@@ -223,8 +213,7 @@ impl<'a> FindUnclosedPaths<'a> {
 
 
             match self.find_unclosed_path_from(next, FindContext { prev: Some(dv.0),
-                                                                   curr: next.0,
-                                                                   kind: TurnAny(dir) }) {
+                                                                   curr: next.0 }) {
                 p @ Ok(_) => return p,
                 Err(s) => {
                     debug!("recursive search failed for ({:?},{:?},{:?})",
@@ -327,8 +316,7 @@ impl<'a> FindClosedPaths<'a> {
                 return Ok(self.find.to_path(Closed::Closed));
             }
             match self.find_closed_path_from(next, FindContext { prev: Some(curr),
-                                                                 curr: next.0,
-                                                                 kind: FindContextKind::Start })
+                                                                 curr: next.0 })
             {
                 ret @ Ok(_) => {
                     return ret;
@@ -341,8 +329,6 @@ impl<'a> FindClosedPaths<'a> {
     }
 
     fn find_closed_path_from(mut self, dv: DirVector, fc: FindContext) -> Result<Path, Self> {
-        use self::Continue::*;
-        use self::FindContextKind::*;
         use directions::Turn;
         debug!("find_closed_path_from self: {:?} dv: {:?} {:?}", self, dv, fc);
         assert!(self.find.grid.holds(dv.0));
@@ -350,7 +336,7 @@ impl<'a> FindClosedPaths<'a> {
         assert_eq!(dv.0, fc.curr());
         let elem: Elem = self.find.grid[dv.0];
         debug!("find_closed_path_from elem: {:?}", elem);
-        let c = match elem {
+        match elem {
             Elem::Pad | Elem::Clear => { // blank: Give up.
                 debug!("find_closed_path self: {:?} blank; giving up.", self);
                 return Err(self);
@@ -386,8 +372,7 @@ impl<'a> FindClosedPaths<'a> {
             }
 
             match self.find_closed_path_from(next, FindContext { prev: Some(dv.0),
-                                                                 curr: next.0,
-                                                                 kind: TurnAny(dir) }) {
+                                                                 curr: next.0  }) {
                 p @ Ok(_) => return p,
                 Err(s) => {
                     self = s;
@@ -411,92 +396,10 @@ impl<'a> FindClosedPaths<'a> {
     fn new(grid: &'a Grid) -> Self {
         FindClosedPaths { find: FindPaths::new(grid) }
     }
-    fn try_next(mut self, next: DirVector, fc: FindContext) -> Result<Path, Self> {
-        debug!("try_next Closed self: {:?} next: {:?} {:?}", self, next, fc);
-
-        if !self.find.grid.holds(next.0) { // off grid
-            return Err(self);
-        } else if self.find.start() == next.0 { // closes path; success!
-            return Ok(self.find.to_path(Closed::Closed))
-        } else if self.find.steps.contains(&next.0) { // non-start overlap
-            return Err(self);
-        }
-
-        self.find_closed_path_from(next, fc)
-    }
-}
-
-/// Variants of `Continue` categorize how a given character can
-/// extend a path.
-#[derive(Copy, Clone, PartialEq, Eq, Debug)]
-enum Continue {
-    /// A char like `|` or `:` requires continuing vertically.
-    Vertical,
-
-    /// A char like `-` or `=` requires continuing vertically.
-    Horizontal,
-
-    /// A char like `/` requires continuing northeast or southwest.
-    PosSlope,
-
-    /// A char like `\` requires continuing northwest or southeast.
-    NegSlope,
-
-    /// Some characters (e.g. `*`?) work in any context but just mean
-    /// to continue (linearly) the same way that we were going.
-    Continue,
-
-    /// Some characters like `+` serve as junction points where we can
-    /// turn in arbitrary directions.
-    ///
-    /// (For now `.` and `'` also allow arbitrary directions, but in
-    /// the future I plan to add `AnyButNorth` and `AnyButSouth`
-    /// variants that will restrict how we can continue on from `.`
-    /// and `'`.)
-    AnyDir,
-    // AnyButSouth,
-    // AnyButNorth,
-
-    /// *Most* characters (e.g. whitespace, text) mean that we cannot
-    /// continue in any direction, and that this is the end of the
-    /// path (or a dead-end, in the case of a closed path).
-    End,
-}
-
-impl Continue {
-    /// Categorize how the given char can extend a path.
-    fn cat(c: char) -> Continue {
-        use self::Continue::*;
-        match c {
-            '\\' => NegSlope,
-            '/' => PosSlope,
-            '|' | ':' | '^' | 'v' => Vertical,
-            '-' | '=' | '>' | '<' => Horizontal,
-            '*' => Continue,
-            '.' | '\'' | '+' => AnyDir,
-            _ => End,
-        }
-    }
-
-    /// Answers whether this continuation category can extend in the
-    /// given direction `dir`.
-    fn matches(&self, dir: Direction) -> bool {
-        use self::Continue::*;
-        use directions::Direction::*;
-        match *self {
-            Vertical => match dir { N | S => true, _ => false },
-            Horizontal => match dir { W | E => true, _ => false },
-            PosSlope => match dir { NE | SW => true, _ => false },
-            NegSlope => match dir { NW | SE => true, _ => false },
-            Continue => true,
-            AnyDir => true,
-            End => false,
-        }
-    }
 }
 
 pub fn find_closed_path(grid: &Grid, format: &Table, pt: Pt) -> Option<Path> {
-    let mut pf = FindClosedPaths { find: FindPaths::with_grid_format(grid, format) };
+    let pf = FindClosedPaths { find: FindPaths::with_grid_format(grid, format) };
     let ret = pf.find_closed_path(pt).ok();
     debug!("find_closed_path pt {:?} ret {:?}", pt, ret);
     ret
@@ -506,8 +409,7 @@ pub fn find_unclosed_path_from(grid: &Grid, format: &Table, dir: DirVector) -> O
     let pf = FindUnclosedPaths { find: FindPaths::with_grid_format(grid, format) };
     let ret = pf.find_unclosed_path_from(dir, FindContext {
         prev: None,
-        curr: dir.0,
-        kind: FindContextKind::Start
+        curr: dir.0
     }).ok();
     debug!("find_closed_path_from dir {:?} ret {:?}", dir, ret);
     ret
