@@ -546,8 +546,8 @@ impl Default for Table {
                 ('<', W, '+', May((AnyDir, Match::Any)), "M {C}"),
                 ('^', N, '+', May((AnyDir, Match::Any)), "M {C}"),
                 ('v', S, '+', May((AnyDir, Match::Any)), "M {C}"),
-                (Match::Any, AnyDir, '+', May((AnyDir, Match::Any)), "L {C}"),
-                (Match::Any, AnyDir, Loop('+'), AnyDir, Match::Any, "M {C}"),
+                (Match::Any, AnyDir, '+', May((AnyDir, "-|/\\:=")), "L {C}"),
+                (Match::Any, AnyDir, Loop('+'), AnyDir, "-|/\\:=", "M {C}"),
 
                 // The curves!  .-   .-  .-
                 // part 1:      |   /     \  et cetera
