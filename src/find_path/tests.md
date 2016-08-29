@@ -229,11 +229,11 @@ fn basic_single_box_upper_left() {
     let grid = BASIC.1.parse::<Grid>().unwrap();
     let opt_p = {
         let mut pf = FindClosedPaths::new(&grid);
-        pf.find_closed_path(Pt(1,1))
+        pf.find_closed_path(Pt(1,1)).ok()
     };
-    assert_eq!(opt_p.clone().unwrap(),
-               simple_box_path((Pt(1,1), '.'), (Pt(6,1), '.'),
-                               (Pt(1,3), '\''), (Pt(6,3), '\'')));
+    assert_eq!(opt_p.as_ref(),
+               Some(&simple_box_path((Pt(1,1), '.'), (Pt(6,1), '.'),
+                                     (Pt(1,3), '\''), (Pt(6,3), '\''))));
     let mut grid = grid;
     grid.remove_path(&opt_p.unwrap());
     assert_eq!(grid.to_string(), BASIC_WO_BOX.1);
