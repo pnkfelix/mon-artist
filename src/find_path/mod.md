@@ -180,7 +180,6 @@ impl<'a> FindUnclosedPaths<'a> {
     }
 
     fn find_unclosed_path_from(mut self, dv: DirVector, fc: FindContext) -> Result<Path, Self> {
-        use self::Continue::*;
         use self::FindContextKind::*;
         use path::Closed::*;
         debug!("find_unclosed_path_from self: {:?} dv: {:?} {:?}", self, dv, fc);
@@ -189,7 +188,7 @@ impl<'a> FindUnclosedPaths<'a> {
         assert_eq!(dv.0, fc.curr());
         let elem: Elem = self.find.grid[dv.0];
         debug!("find_unclosed_path_from elem: {:?}", elem);
-        let c = match elem {
+        let _c: char = match elem {
             Elem::Pad | Elem::Clear => { // blank: Give up.
                 debug!("find_unclosed_path self: {:?} blank; giving up.", self);
                 return Err(self);
@@ -197,49 +196,46 @@ impl<'a> FindUnclosedPaths<'a> {
             Elem::C(c) | Elem::Used(c) => c,
         };
 
-        let cont = self::Continue::cat(c);
-        debug!("find_unclosed_path_from elem: {:?} cont: {:?}", elem, cont);
-        if cont == AnyDir {
-            self.find.steps.push(dv.0);
-            // if we can turn in any direction, attempt to
-            // continue along our current trajectory.
-            let dir = dv.dir();
-            let mut dirs_to_try: Vec<_> = DIRECTIONS.iter().map(|&d|d).filter(|&d| d != dir && d != dir.reverse()).collect();
-            dirs_to_try.push(dir);
-            // TODO: maybe experiment with a non-clock iteration order,
-            // such as CW, 2*CCW, 3*CW, 4*CCW, ...
-            while let Some(dir) = dirs_to_try.pop() {
-                debug!("find_unclosed_path trying dir: {:?}", dir);
-                let next = dv.towards(dir).step();
-                match self.try_next(next, FindContext { prev: Some(dv.0),
-                                                        curr: next.0,
-                                                        kind: TurnAny(dir) }) {
-                    p @ Ok(_) => return p,
-                    Err(s) => { self = s; }
-                }
-            }
+        // attempt to continue along our current trajectory.
+        let dir = dv.dir();
+        let mut dirs_to_try: Vec<_> = DIRECTIONS.iter().map(|&d|d).filter(|&d| d != dir && d != dir.reverse()).collect();
+        dirs_to_try.push(dir);
+        // TODO: maybe experiment with a non-clock iteration order,
+        // such as CW, 2*CCW, 3*CW, 4*CCW, ...
 
-            // If we get here, then none of the available directions worked, so finish.
-            assert_eq!(self.find.steps.last(), Some(&dv.0));
-            debug!("find_unclosed_path self: {:?} exhausted turns; finished.", self);
-            Ok(self.find.to_path(Open))
+        // add `curr` to path.
+        self.find.steps.push(dv.0);
 
-        } else if cont.matches(dv.1) && cont != AnyDir {
-            self.find.steps.push(dv.0);
-            let next = dv.steps(1);
-            match self.try_next(next, FindContext { prev: Some(dv.0),
-                                                    curr: next.0,
-                                                    kind: Trajectory(next.1) }) {
-                p @ Ok(_) => p,
+        while let Some(dir) = dirs_to_try.pop() {
+            debug!("find_unclosed_path trying dir: {:?}", dir);
+            let next = dv.towards(dir).step();
+
+            if !self.find.grid.holds(next.0) { continue; } // off grid
+            if self.find.steps.contains(&next.0) { continue; } // overlap
+            if !self.find.matches(fc.prev, fc.curr, next.0) { continue; } // no format rule
+
+
+            match self.find_unclosed_path_from(next, FindContext { prev: Some(dv.0),
+                                                                   curr: next.0,
+                                                                   kind: TurnAny(dir) }) {
+                p @ Ok(_) => return p,
                 Err(s) => {
                     self = s;
-                    assert_eq!(self.find.steps.last(), Some(&dv.0));
-                    debug!("find_unclosed_path self: {:?} following trajectory failed; finished.", self);
-                    Ok(self.find.to_path(Open))
+                    continue;
                 }
             }
+        }
+
+        // If we get here, then none of the available directions worked, so attempt finish.
+        assert_eq!(self.find.steps.last(), Some(&dv.0));
+        if self.find.matches_end(fc.prev, fc.curr) {
+            debug!("find_unclosed_path self: {:?} exhausted turns; finished.", self);
+            Ok(self.find.to_path(Open))
         } else {
-            debug!("find_unclosed_path self: {:?} unmatched trajectory; giving up.", self);
+            debug!("find_unclosed_path self: {:?} cannot end here; aborting.", self);
+            // undo addition of `curr` to path
+            assert_eq!(self.find.steps.last(), Some(&dv.0));
+            self.find.steps.pop();
             Err(self)
         }
     }
@@ -543,6 +539,36 @@ pub fn find_unclosed_path_from(grid: &Grid, format: &Table, dir: DirVector) -> O
 pub fn find_unclosed_path(grid: &Grid, format: &Table, pt: Pt) -> Option<Path> {
     let pf = FindUnclosedPaths { find: FindPaths::with_grid_format(grid, format) };
     pf.find_unclosed_path(pt).ok()
+}
+
+impl<'a> FindPaths<'a> {
+    fn matches(&self, prev: Option<Pt>, curr: Pt, next: Pt) -> bool {
+        let c = if let Some(c) = self.grid[curr].opt_char() { c } else { return false; };
+        let n = self.grid[next];
+        let prev_arc = prev.and_then(|prev| {
+            self.grid[prev].opt_char().map(|p| (p, prev.towards(curr)))
+        });
+        let next_arc = self.grid[next].opt_char().map(|n| (curr.towards(next), n));
+        for entry in &self.format.entries {
+            if entry.matches(prev_arc, c, next_arc) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    fn matches_end(&self, prev: Option<Pt>, curr: Pt) -> bool {
+        let c = if let Some(c) = self.grid[curr].opt_char() { c } else { return false; };
+        let prev_arc = prev.and_then(|prev| {
+            self.grid[prev].opt_char().map(|p| (p, prev.towards(curr)))
+        });
+        for entry in &self.format.entries {
+            if entry.matches_end(prev_arc, c) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 #[cfg(test)]

@@ -81,10 +81,8 @@ impl Entry {
     pub(crate) fn matches_curr(&self, curr: char) -> bool {
         self.curr.matches(curr)
     }
-    pub fn matches(&self,
-                   incoming: Option<(char, Direction)>,
-                   curr: char,
-                   outgoing: Option<(Direction, char)>) -> bool {
+
+    fn matches_incoming(&self, incoming: Option<(char, Direction)>) -> bool {
         use self::Neighbor::{Blank, Must, May};
         match (&self.incoming, &incoming) {
             (&Blank, &Some(_)) | (&Must(..), &None) => return false,
@@ -95,9 +93,11 @@ impl Entry {
                 if !m.matches(c) { return false; }
             }
         }
+        return true;
+    }
 
-        if !self.curr.matches(curr) { return false; }
-
+    fn matches_outgoing(&self, outgoing: Option<(Direction, char)>) -> bool {
+        use self::Neighbor::{Blank, Must, May};
         match (&self.outgoing, &outgoing) {
             (&Blank, &Some(_)) | (&Must(..), &None) => return false,
             (&Blank, &None) | (&May(..), &None) => {}
@@ -107,8 +107,31 @@ impl Entry {
                 if !m.matches(c) { return false; }
             }
         }
-
         return true;
+    }
+
+    pub fn matches(&self,
+                   incoming: Option<(char, Direction)>,
+                   curr: char,
+                   outgoing: Option<(Direction, char)>) -> bool {
+        use self::Neighbor::{Blank, Must, May};
+        if !self.matches_incoming(incoming) { return false; }
+        if !self.curr.matches(curr) { return false; }
+        if !self.matches_outgoing(outgoing) { return false; }
+        return true;
+    }
+
+    pub fn matches_end(&self,
+                       incoming: Option<(char, Direction)>,
+                       curr: char) -> bool {
+        use self::Neighbor::{Blank, Must, May};
+        if !self.matches_incoming(incoming) { return false; }
+        if !self.curr.matches(curr) { return false; }
+
+        match &self.outgoing {
+            &Blank | &May(..) => true,
+            &Must(..) => false,
+        }
     }
 }
 
