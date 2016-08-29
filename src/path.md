@@ -200,7 +200,8 @@ impl Grid {
     fn remove_steps(&mut self, steps: &[(Pt, char)])
     {
         for &(pt, c) in steps {
-            assert!(self[pt] == Elem::C(c) || self[pt] == Elem::Used(c));
+            assert!(self[pt] == Elem::C(c) || self[pt] == Elem::Used(c),
+                    "elem at {:?} already removed", (pt, c));
         }
         for &(pt, c) in steps.iter() {
             match Remove::cat(c) {
