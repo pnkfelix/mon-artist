@@ -134,12 +134,12 @@ Some day, It may be worthwhile to make an exercise out of why.
 }
 
 impl<'a> FindUnclosedPaths<'a> {
-    fn find_unclosed_path(&mut self, curr: Pt) -> Option<Path> {
+    fn find_unclosed_path(mut self, curr: Pt) -> Result<Path, Self> {
         let elem = self.find.grid[curr];
         debug!("find_unclosed_path self: {:?} curr: {:?} pt: {:?}", self, curr, elem);
         // don't waste time on a search that starts on a blank cell
         if elem.is_blank() {
-            return None;
+            return Err(self);
         }
         // don't waste time on a search that starts on a cell with no non-blank neighbors.
         {
@@ -151,7 +151,7 @@ impl<'a> FindUnclosedPaths<'a> {
             }
             if non_blank_nbors == 0 {
                 debug!("find_unclosed_path: early exit on {:?} at {:?} with {} neighbors.", elem, curr, non_blank_nbors);
-                return None;
+                return Err(self);
             }
         }
 
@@ -166,18 +166,20 @@ impl<'a> FindUnclosedPaths<'a> {
             if !self.find.grid.holds(next.0) {
                 continue;
             }
-            if let ret @ Some(_) =
-                self.find_unclosed_path_from(next, FindContext {
-                    prev: Some(curr), curr: next.0, kind: FindContextKind::Start })
+            match self.find_unclosed_path_from(next, FindContext {
+                prev: Some(curr), curr: next.0, kind: FindContextKind::Start })
             {
-                return ret;
+                ret @ Ok(_) => {
+                    return ret;
+                }
+                Err(s) => { self = s; }
             }
         }
         debug!("find_unclosed_path self: {:?} exhausted directions; giving up.", self);
-        return None;
+        return Err(self);
     }
 
-    fn find_unclosed_path_from(&mut self, dv: DirVector, fc: FindContext) -> Option<Path> {
+    fn find_unclosed_path_from(mut self, dv: DirVector, fc: FindContext) -> Result<Path, Self> {
         use self::Continue::*;
         use self::FindContextKind::*;
         use path::Closed::*;
@@ -190,7 +192,7 @@ impl<'a> FindUnclosedPaths<'a> {
         let c = match elem {
             Elem::Pad | Elem::Clear => { // blank: Give up.
                 debug!("find_unclosed_path self: {:?} blank; giving up.", self);
-                return None;
+                return Err(self);
             }
             Elem::C(c) | Elem::Used(c) => c,
         };
@@ -212,15 +214,15 @@ impl<'a> FindUnclosedPaths<'a> {
                 match self.try_next(next, FindContext { prev: Some(dv.0),
                                                         curr: next.0,
                                                         kind: TurnAny(dir) }) {
-                    p @ Some(_) => return p,
-                    None => { }
+                    p @ Ok(_) => return p,
+                    Err(s) => { self = s; }
                 }
             }
 
             // If we get here, then none of the available directions worked, so finish.
             assert_eq!(self.find.steps.last(), Some(&dv.0));
             debug!("find_unclosed_path self: {:?} exhausted turns; finished.", self);
-            Some(self.find.to_path(Open))
+            Ok(self.find.to_path(Open))
 
         } else if cont.matches(dv.1) && cont != AnyDir {
             self.find.steps.push(dv.0);
@@ -228,16 +230,17 @@ impl<'a> FindUnclosedPaths<'a> {
             match self.try_next(next, FindContext { prev: Some(dv.0),
                                                     curr: next.0,
                                                     kind: Trajectory(next.1) }) {
-                p @ Some(_) => p,
-                None => {
+                p @ Ok(_) => p,
+                Err(s) => {
+                    self = s;
                     assert_eq!(self.find.steps.last(), Some(&dv.0));
                     debug!("find_unclosed_path self: {:?} following trajectory failed; finished.", self);
-                    Some(self.find.to_path(Open))
+                    Ok(self.find.to_path(Open))
                 }
             }
         } else {
             debug!("find_unclosed_path self: {:?} unmatched trajectory; giving up.", self);
-            None
+            Err(self)
         }
     }
 }
@@ -441,13 +444,13 @@ impl<'a> FindClosedPaths<'a> {
 }
 
 impl<'a> FindUnclosedPaths<'a> {
-    fn try_next(&mut self, next: DirVector, fc: FindContext) -> Option<Path> {
+    fn try_next(self, next: DirVector, fc: FindContext) -> Result<Path, Self> {
         debug!("try_next Unclosed self: {:?} next: {:?} {:?}", self, next, fc);
 
         if !self.find.grid.holds(next.0) { // off grid
-            return None
+            return Err(self);
         } else if self.find.steps.contains(&next.0) { // non-start overlap
-            return None
+            return Err(self);
         }
 
         self.find_unclosed_path_from(next, fc)
@@ -529,17 +532,17 @@ pub fn find_closed_path(grid: &Grid, format: &Table, pt: Pt) -> Option<Path> {
 }
 
 pub fn find_unclosed_path_from(grid: &Grid, format: &Table, dir: DirVector) -> Option<Path> {
-    let mut pf = FindUnclosedPaths { find: FindPaths::with_grid_format(grid, format) };
+    let pf = FindUnclosedPaths { find: FindPaths::with_grid_format(grid, format) };
     pf.find_unclosed_path_from(dir, FindContext {
         prev: None,
         curr: dir.0,
         kind: FindContextKind::Start
-    })
+    }).ok()
 }
 
 pub fn find_unclosed_path(grid: &Grid, format: &Table, pt: Pt) -> Option<Path> {
-    let mut pf = FindUnclosedPaths { find: FindPaths::with_grid_format(grid, format) };
-    pf.find_unclosed_path(pt)
+    let pf = FindUnclosedPaths { find: FindPaths::with_grid_format(grid, format) };
+    pf.find_unclosed_path(pt).ok()
 }
 
 #[cfg(test)]
