@@ -73,10 +73,21 @@ popping the vector of points that we are building up.
 
 ```rust
 #[derive(Debug)]
-enum FindContext {
+enum FindContextKind {
     Start,
     TurnAny(Direction),
     Trajectory(Direction),
+}
+
+#[derive(Debug)]
+struct FindContext {
+    prev: Option<Pt>,
+    curr: Pt,
+    kind: FindContextKind,
+}
+
+impl FindContext {
+    fn curr(&self) -> Pt { self.curr }
 }
 
 impl<'a> FindPaths<'a> {
@@ -155,7 +166,10 @@ impl<'a> FindUnclosedPaths<'a> {
             if !self.find.grid.holds(next.0) {
                 continue;
             }
-            if let ret @ Some(_) = self.find_unclosed_path_from(next, FindContext::Start) {
+            if let ret @ Some(_) =
+                self.find_unclosed_path_from(next, FindContext {
+                    prev: Some(curr), curr: next.0, kind: FindContextKind::Start })
+            {
                 return ret;
             }
         }
@@ -165,60 +179,66 @@ impl<'a> FindUnclosedPaths<'a> {
 
     fn find_unclosed_path_from(&mut self, dv: DirVector, fc: FindContext) -> Option<Path> {
         use self::Continue::*;
+        use self::FindContextKind::*;
         use path::Closed::*;
         debug!("find_unclosed_path_from self: {:?} dv: {:?} {:?}", self, dv, fc);
         assert!(self.find.grid.holds(dv.0));
         assert!(!self.find.steps.contains(&dv.0));
+        assert_eq!(dv.0, fc.curr());
         let elem: Elem = self.find.grid[dv.0];
         debug!("find_unclosed_path_from elem: {:?}", elem);
-        return match elem {
-            Elem::C(c) | Elem::Used(c) => {
-                let cont = self::Continue::cat(c);
-                debug!("find_unclosed_path_from elem: {:?} cont: {:?}", elem, cont);
-                if cont == AnyDir {
-                    self.find.steps.push(dv.0);
-                    // if we can turn in any direction, attempt to
-                    // continue along our current trajectory.
-                    let dir = dv.dir();
-                    let mut dirs_to_try: Vec<_> = DIRECTIONS.iter().map(|&d|d).filter(|&d| d != dir && d != dir.reverse()).collect();
-                    dirs_to_try.push(dir);
-                    // TODO: maybe experiment with a non-clock iteration order,
-                    // such as CW, 2*CCW, 3*CW, 4*CCW, ...
-                    while let Some(dir) = dirs_to_try.pop() {
-                        debug!("find_unclosed_path trying dir: {:?}", dir);
-                        let next = dv.towards(dir).step();
-                        match self.try_next(next, FindContext::TurnAny(dir)) {
-                            p @ Some(_) => return p,
-                            None => { }
-                        }
-                    }
-
-                    // If we get here, then none of the available directions worked, so finish.
-                    assert_eq!(self.find.steps.last(), Some(&dv.0));
-                    debug!("find_unclosed_path self: {:?} exhausted turns; finished.", self);
-                    Some(self.find.to_path(Open))
-
-                } else if cont.matches(dv.1) && cont != AnyDir {
-                    self.find.steps.push(dv.0);
-                    let next = dv.steps(1);
-                    match self.try_next(next, FindContext::Trajectory(next.1)) {
-                        p @ Some(_) => p,
-                        None => {
-                            assert_eq!(self.find.steps.last(), Some(&dv.0));
-                            debug!("find_unclosed_path self: {:?} following trajectory failed; finished.", self);
-                            Some(self.find.to_path(Open))
-                        }
-                    }
-                } else {
-                    debug!("find_unclosed_path self: {:?} unmatched trajectory; giving up.", self);
-                    None
-                }
-            }
+        let c = match elem {
             Elem::Pad | Elem::Clear => { // blank: Give up.
                 debug!("find_unclosed_path self: {:?} blank; giving up.", self);
-                None
+                return None;
             }
+            Elem::C(c) | Elem::Used(c) => c,
         };
+
+        let cont = self::Continue::cat(c);
+        debug!("find_unclosed_path_from elem: {:?} cont: {:?}", elem, cont);
+        if cont == AnyDir {
+            self.find.steps.push(dv.0);
+            // if we can turn in any direction, attempt to
+            // continue along our current trajectory.
+            let dir = dv.dir();
+            let mut dirs_to_try: Vec<_> = DIRECTIONS.iter().map(|&d|d).filter(|&d| d != dir && d != dir.reverse()).collect();
+            dirs_to_try.push(dir);
+            // TODO: maybe experiment with a non-clock iteration order,
+            // such as CW, 2*CCW, 3*CW, 4*CCW, ...
+            while let Some(dir) = dirs_to_try.pop() {
+                debug!("find_unclosed_path trying dir: {:?}", dir);
+                let next = dv.towards(dir).step();
+                match self.try_next(next, FindContext { prev: Some(dv.0),
+                                                        curr: next.0,
+                                                        kind: TurnAny(dir) }) {
+                    p @ Some(_) => return p,
+                    None => { }
+                }
+            }
+
+            // If we get here, then none of the available directions worked, so finish.
+            assert_eq!(self.find.steps.last(), Some(&dv.0));
+            debug!("find_unclosed_path self: {:?} exhausted turns; finished.", self);
+            Some(self.find.to_path(Open))
+
+        } else if cont.matches(dv.1) && cont != AnyDir {
+            self.find.steps.push(dv.0);
+            let next = dv.steps(1);
+            match self.try_next(next, FindContext { prev: Some(dv.0),
+                                                    curr: next.0,
+                                                    kind: Trajectory(next.1) }) {
+                p @ Some(_) => p,
+                None => {
+                    assert_eq!(self.find.steps.last(), Some(&dv.0));
+                    debug!("find_unclosed_path self: {:?} following trajectory failed; finished.", self);
+                    Some(self.find.to_path(Open))
+                }
+            }
+        } else {
+            debug!("find_unclosed_path self: {:?} unmatched trajectory; giving up.", self);
+            None
+        }
     }
 }
 
@@ -307,7 +327,11 @@ impl<'a> FindClosedPaths<'a> {
             } else if next.0 == self.find.start() {
                 return Some(self.find.to_path(Closed::Closed));
             }
-            if let ret @ Some(_) = self.find_closed_path_from(next, FindContext::Start) {
+            if let ret @ Some(_) = self.find_closed_path_from(next, FindContext {
+                prev: Some(curr),
+                curr: next.0,
+                kind: FindContextKind::Start
+            }) {
                 return ret;
             }
         }
@@ -317,10 +341,12 @@ impl<'a> FindClosedPaths<'a> {
 
     fn find_closed_path_from(&mut self, dv: DirVector, fc: FindContext) -> Option<Path> {
         use self::Continue::*;
+        use self::FindContextKind::*;
         use directions::Turn;
         debug!("find_closed_path_from self: {:?} dv: {:?} {:?}", self, dv, fc);
         assert!(self.find.grid.holds(dv.0));
         assert!(!self.find.steps.contains(&dv.0));
+        assert_eq!(dv.0, fc.curr());
         let elem: Elem = self.find.grid[dv.0];
         debug!("find_closed_path_from elem: {:?}", elem);
         return match elem {
@@ -339,7 +365,11 @@ impl<'a> FindClosedPaths<'a> {
                     // reverse direction from where we started.)
                     while dir != dv.dir().reverse() {
                         let next = dv.towards(dir).step();
-                        match self.try_next(next, FindContext::TurnAny(dir)) {
+                        match self.try_next(next, FindContext {
+                            prev: Some(dv.0),
+                            curr: next.0,
+                            kind: TurnAny(dir) })
+                        {
                             p @ Some(_) => return p,
                             None => {
                                 dir = dir.veer(Turn::CCW);
@@ -361,7 +391,11 @@ impl<'a> FindClosedPaths<'a> {
                     // continue in the same trajectory.
                     self.find.steps.push(dv.0);
                     let next = dv.steps(1);
-                    match self.try_next(next, FindContext::Trajectory(next.1)) {
+                    match self.try_next(next, FindContext {
+                        prev: Some(dv.0),
+                        curr: next.0,
+                        kind: Trajectory(next.1)})
+                    {
                         p @ Some(_) => p,
                         None => {
                             assert_eq!(self.find.steps.last(), Some(&dv.0));
@@ -496,7 +530,11 @@ pub fn find_closed_path(grid: &Grid, format: &Table, pt: Pt) -> Option<Path> {
 
 pub fn find_unclosed_path_from(grid: &Grid, format: &Table, dir: DirVector) -> Option<Path> {
     let mut pf = FindUnclosedPaths { find: FindPaths::with_grid_format(grid, format) };
-    pf.find_unclosed_path_from(dir, FindContext::Start)
+    pf.find_unclosed_path_from(dir, FindContext {
+        prev: None,
+        curr: dir.0,
+        kind: FindContextKind::Start
+    })
 }
 
 pub fn find_unclosed_path(grid: &Grid, format: &Table, pt: Pt) -> Option<Path> {
