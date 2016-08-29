@@ -7,7 +7,7 @@ A drawing is essentially a set of paths on a backdrop.
 ```rust
 use directions::Direction;
 use Scene;
-use path::{self, Path};
+use path::{self, Closed, Path};
 use grid::{Pt};
 
 use format;
@@ -256,7 +256,16 @@ to figure out how to render the middle (or edge) step.
                               attrs: Vec::new(),
     };
 
-    pr.render_first_step(steps[0], steps[1]);
+    match path.closed {
+        Closed::Closed => {
+            pr.render_first_step_in_loop(*steps.last().unwrap(),
+                                         steps[0],
+                                         steps[1]);
+        }
+        Closed::Open => {
+            pr.render_first_step(steps[0], steps[1]);
+        }
+    }
 
     for i in 2..len {
         pr.render_middle_step(steps[i-2], steps[i-1], steps[i]);
@@ -309,6 +318,11 @@ struct PathRender<'a> {
 }
 
 impl<'a> PathRender<'a> {
+    fn render_first_step_in_loop(&mut self, last: Step, curr: Step, next: Step) {
+        let (c, attrs) = render_loop_start(self, last, curr, next);
+        self.cmd.push_str(&c);
+        for attr in attrs { if !self.attrs.contains(&attr) { self.attrs.push(attr) } }
+    }
     fn render_first_step(&mut self, curr: Step, next: Step) {
         let (c, attrs) = render_step(self, None, curr, Some(next));
         self.cmd.push_str(&c);
@@ -439,6 +453,28 @@ fn to_incoming(prev: Option<Step>, curr: Step) -> Option<(char, Direction)> {
 
 fn to_outgoing(curr: Step, next: Option<Step>) -> Option<(Direction, char)> {
     next.map(|n| (curr.0.towards(n.0), n.1))
+}
+
+fn render_loop_start(pr: &mut PathRender, prev: Step, curr: Step, next: Step)
+                     -> (String, Vec<(String, String)>) {
+    use directions::Direction;
+
+    let sr = pr.sr;
+    let t = &pr.format_table;
+
+    let incoming: (char, Direction) = (prev.1, prev.0.towards(curr.0));
+    let outgoing: (Direction, char) = (curr.0.towards(next.0), next.1);
+
+    if let Some((template, attributes)) = t.find_loop(incoming, curr.1, outgoing) {
+        return (pr.substitute_placeholders(template,
+                                           Some(incoming.1),
+                                           curr,
+                                           Some(outgoing.0)),
+                attributes.iter().cloned().collect());
+    } else {
+        panic!("no command template found for prev: {:?} curr: {:?} next: {:?} name: {}",
+               prev, curr, next, sr.name);
+    }
 }
 
 fn render_step(pr: &mut PathRender, prev: Option<Step>, curr: Step, next: Option<Step>)

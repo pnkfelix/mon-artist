@@ -440,6 +440,19 @@ impl Table {
 
         return None;
     }
+
+    pub fn find_loop(&self,
+                     incoming: (char, Direction),
+                     curr: char,
+                     outgoing: (Direction, char)) -> Option<(&str, &[(String, String)])> {
+        for e in &self.entries {
+            if e.loop_start && e.matches(Some(incoming), curr, Some(outgoing)) {
+                return Some((&e.template, &e.include_attributes[..]));
+            }
+        }
+
+        return None;
+    }
 }
 ```
 
