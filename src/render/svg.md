@@ -183,42 +183,8 @@ corresponding to that pt." But that is actually not the right thing;
    of the grid cells for those pts, so this is actually a pretty
    intuitive property to enforce.
 
+
 ```rust
-#[allow(dead_code)]
-fn grid_middle(sr: &SvgRender, pt: Pt) -> (Dim, Dim) {
-    let x = Dim::U(pt.col() as u32,0).sub_half() * sr.x_scale;
-    let y = Dim::U(pt.row() as u32,0).sub_half() * sr.y_scale;
-    (x, y)
-}
-
-#[allow(dead_code)]
-fn is_line(c: Option<char>) -> bool {
-    match c {
-        Some(c) => match c {
-            '|' | ':' | '/' | '-' | '=' | '\\' => true,
-            // FIXME none of these belong here
-            '<' | '>' | 'V' | '^' => true,
-            _ => false,
-        },
-        None => false,
-    }
-}
-
-#[allow(dead_code)]
-fn is_curve(c: Option<char>) -> bool {
-    match c {
-        Some(c) => match c { '.' | '\'' => true, _ => false, },
-        None => false,
-    }
-}
-
-#[allow(dead_code)]
-fn midway(sr: &SvgRender, p1: Pt, p2: Pt) -> (Dim, Dim) {
-    let x = Dim::U(p1.col() as u32 + p2.col() as u32,0).div_2() * sr.x_scale;
-    let y = Dim::U(p1.row() as u32 + p2.row() as u32,0).div_2() * sr.y_scale;
-    (x, y)
-}
-
 fn render_path(svg: &mut Svg, sr: &SvgRender, path: &Path) {
     #![allow(unused_parens)]
 ```
