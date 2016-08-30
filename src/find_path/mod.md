@@ -151,6 +151,9 @@ impl<'a> FindUnclosedPaths<'a> {
             if !self.find.grid.holds(next.0) {
                 continue;
             }
+            // FIXME: the success case for this code is not complete: in addition to searching
+            // forward along the path from the supposed start point, we also need to search
+            // *backward* (in case there is a longer path we could acquire by adding on a prefix).
             match self.fwd_ext(next, FindContext { prev: Some(curr), curr: next.0 })
             {
                 ret @ Ok(_) => return ret,
@@ -165,9 +168,6 @@ impl<'a> FindUnclosedPaths<'a> {
 Attempts to extends the end of the path forward via `dv`.
 ```rust
     fn fwd_ext(mut self, dv: DirVector, fc: FindContext) -> Result<Path, Self> {
-        // FIXME: the success case for this code is not complete: in addition to searching
-        // forward along the path from the supposed start point, we also need to search
-        // *backward* (in case there is a longer path we could acquire by adding on a prefix).
         use path::Closed::*;
         debug!("fwd_ext self: {:?} dv: {:?} {:?}", self, dv, fc);
         assert!(self.find.grid.holds(dv.0));
