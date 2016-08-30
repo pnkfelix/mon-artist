@@ -62,10 +62,10 @@ it extensively in the other tests that follow.
 
 #[test]
 fn slant_chars_along_straight_line() {
-    let grid = r"-./'\./.".parse::<Grid>().unwrap();
+    let grid = r"-./'\././.".parse::<Grid>().unwrap();
 ```
 
-Note: searching `-./'\./.` from the left yields `-./'\./` *alone*.
+Note: searching `-./'\././.` from the left yields `-./'\./` *alone*.
 
 ```rust
     let opt_p = super::find_unclosed_path_from(&grid,
