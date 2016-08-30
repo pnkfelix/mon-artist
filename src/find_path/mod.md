@@ -144,8 +144,7 @@ impl<'a> FindUnclosedPaths<'a> {
         // start the search proper
         self.find.steps.push(curr);
         for (j, &dir) in DIRECTIONS.iter().enumerate() {
-            debug!("find_unclosed_path {} dir: {:?}",
-                   j, dir);
+            debug!("find_unclosed_path {} dir: {:?}", j, dir);
             let next = DirVector(curr, dir).steps(1);
             debug!("find_unclosed_path {} dir: {:?} next: {:?}",
                   j, dir, next);
@@ -154,10 +153,8 @@ impl<'a> FindUnclosedPaths<'a> {
             }
             match self.fwd_ext(next, FindContext { prev: Some(curr), curr: next.0 })
             {
-                ret @ Ok(_) => {
-                    return ret;
-                }
-                Err(s) => { self = s; }
+                ret @ Ok(_) => return ret,
+                Err(s) => self = s,
             }
         }
         debug!("find_unclosed_path self: {:?} exhausted directions; giving up.", self);
@@ -179,10 +176,7 @@ Attempts to extends the end of the path forward via `dv`.
         let elem: Elem = self.find.grid[dv.0];
         debug!("fwd_ext elem: {:?}", elem);
         let _c: char = match elem {
-            Elem::Pad | Elem::Clear => { // blank: Give up.
-                debug!("fwd_ext self: {:?} blank; giving up.", self);
-                return Err(self);
-            }
+            Elem::Pad | Elem::Clear => return Err(self), // blank: Give up.
             Elem::C(c) | Elem::Used(c) => c,
         };
 
@@ -240,10 +234,7 @@ impl<'a> FindClosedPaths<'a> {
         let grid = &self.find.grid;
         let c = match grid[curr] {
             Elem::C(c) | Elem::Used(c) => c,
-            Elem::Pad | Elem::Clear => {
-                debug!("elem {:?} found, is_corner returns None", grid[curr]);
-                return None;
-            }
+            Elem::Pad | Elem::Clear => return None,
         };
         let mut in_out = Vec::new();
         for entry in &self.find.format.entries {
@@ -288,10 +279,7 @@ impl<'a> FindClosedPaths<'a> {
         // //  somewhere.)
         let corner_dirs: Vec<((char, Direction),
                               (Direction, char))> = match self.is_corner(curr) {
-            None => {
-                debug!("find_closed_path: early exit on non-corner: {:?} at {:?}", elem, curr);
-                return Err(self);
-            }
+            None => return Err(self),
             Some(v) => v,
         };
 
@@ -315,10 +303,8 @@ impl<'a> FindClosedPaths<'a> {
                                                                      curr: next.0,
                                                                      corner_dirs: &corner_dirs })
             {
-                ret @ Ok(_) => {
-                    return ret;
-                }
-                Err(s) => { self = s; }
+                ret @ Ok(_) => return ret,
+                Err(s) => self = s,
             }
         }
         debug!("find_closed_path self: {:?} exhausted directions; giving up.", self);
@@ -332,10 +318,7 @@ impl<'a> FindClosedPaths<'a> {
         assert_eq!(dv.0, fc.curr);
         let elem: Elem = self.find.grid[dv.0];
         let c = match elem {
-            Elem::Pad | Elem::Clear => { // blank: Give up.
-                debug!("find_closed_path self: {:?} blank; giving up.", self);
-                return Err(self);
-            }
+            Elem::Pad | Elem::Clear => return Err(self), // blank: Give up.
             Elem::C(c) | Elem::Used(c) => c
         };
         debug!("find_closed_path_from self: {:?} dv: {:?} fc: {:?} c: {:?}", self, dv, fc, c);
@@ -362,7 +345,7 @@ impl<'a> FindClosedPaths<'a> {
                     return Ok(self.find.to_path(Closed::Closed));
                 } else {
                     dir = dir.veer(Turn::CCW);
-                    debug!("improperly closed loop in {:?} fc: {:?} veering to {:?}", self, fc, dir);
+                    debug!("improperly closed in {:?} fc: {:?} veering to {:?}", self, fc, dir);
                     continue;
                 }
             } else if self.find.steps.contains(&next.0) { // non-start overlap
