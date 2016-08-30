@@ -61,8 +61,13 @@ it extensively in the other tests that follow.
 }
 
 #[test]
-fn slant_chars_along_straight_line_via_period() {
-    let grid = r"-./.\.-".parse::<Grid>().unwrap();
+fn slant_chars_along_straight_line() {
+    let grid = r"-./'\./.".parse::<Grid>().unwrap();
+```
+
+Note: searching `-./'\./.` from the left yields `-./'\./` *alone*.
+
+```rust
     let opt_p = super::find_unclosed_path_from(&grid,
                                                &Default::default(),
                                                DirVector(Pt(1,1), Direction::E));
@@ -70,28 +75,118 @@ fn slant_chars_along_straight_line_via_period() {
                Path::open((Pt(1,1), '-').into_iter()
                           .chain((Pt(2,1), '.').into_iter())
                           .chain((Pt(3,1), '/').into_iter())
-                          .chain((Pt(4,1), '.').into_iter())
-                          .chain((Pt(5,1), '\\').into_iter())
+                          .chain((Pt(4,1),'\'').into_iter())
+                          .chain((Pt(5,1),'\\').into_iter())
                           .chain((Pt(6,1), '.').into_iter())
-                          .chain((Pt(7,1), '-').into_iter())
+                          .chain((Pt(7,1), '/').into_iter())
+                          .collect()));
+}
+
+
+#[test]
+fn line_to_letter() {
+    let input = r#"
+|
+|
+h
+"#;
+    let grid = input.parse::<Grid>().unwrap();
+    let opt_p = super::find_unclosed_path(&grid, &Default::default(), Pt(1,2));
+    assert_eq!(opt_p.unwrap(),
+               Path::open((Pt(1,2), '|').into_iter()
+                          .chain((Pt(1,3),  '|').into_iter())
                           .collect()));
 }
 
 #[test]
-fn slant_chars_along_straight_line_via_quote() {
-    let grid = r"-'/'\'-".parse::<Grid>().unwrap();
-    let opt_p = super::find_unclosed_path_from(&grid,
-                                               &Default::default(),
-                                               DirVector(Pt(1,1), Direction::E));
+fn nonline_down_to_letter() {
+    let input = r#"
+|
+h
+"#;
+    let grid = input.parse::<Grid>().unwrap();
+    let opt_p = super::find_unclosed_path(&grid, &Default::default(), Pt(1,2));
+    assert_eq!(opt_p,
+               None);
+}
+
+#[test]
+fn nonletter_up_to_line() {
+    let input = r#"
+|
+h
+"#;
+    let grid = input.parse::<Grid>().unwrap();
+    let opt_p = super::find_unclosed_path(&grid, &Default::default(), Pt(1,3));
+    assert_eq!(opt_p,
+               None);
+}
+
+#[test]
+fn manual_open_arrowhead_sharp() {
+    let input = r#"
+  +
+ / \
++-+-+
+  |
+"#;
+    let grid = input.parse::<Grid>().unwrap();
+    let opt_p = super::find_closed_path(&grid, &Default::default(), Pt(3,2));
     assert_eq!(opt_p.unwrap(),
-               Path::open((Pt(1,1), '-').into_iter()
-                          .chain((Pt(2,1), '\'').into_iter())
-                          .chain((Pt(3,1), '/').into_iter())
-                          .chain((Pt(4,1), '\'').into_iter())
-                          .chain((Pt(5,1), '\\').into_iter())
-                          .chain((Pt(6,1), '\'').into_iter())
-                          .chain((Pt(7,1), '-').into_iter())
-                          .collect()));
+               Path::closed((Pt(3,2), '+').into_iter()
+                            .chain((Pt(4,3), '\\').into_iter())
+                            .chain((Pt(5,4),  '+').into_iter())
+                            .chain((Pt(4,4),  '-').into_iter())
+                            .chain((Pt(3,4),  '+').into_iter())
+                            .chain((Pt(2,4),  '-').into_iter())
+                            .chain((Pt(1,4),  '+').into_iter())
+                            .chain((Pt(2,3),  '/').into_iter())
+                            .collect()));
+}
+
+#[test]
+fn manual_open_arrowhead_rounded() {
+    let input = r#"
+  .
+ / \
+'-+-'
+  |
+"#;
+    let grid = input.parse::<Grid>().unwrap();
+    let opt_p = super::find_closed_path(&grid, &Default::default(), Pt(3,2));
+    assert_eq!(opt_p.unwrap(),
+               Path::closed((Pt(3,2), '.').into_iter()
+                            .chain((Pt(4,3), '\\').into_iter())
+                            .chain((Pt(5,4), '\'').into_iter())
+                            .chain((Pt(4,4),  '-').into_iter())
+                            .chain((Pt(3,4),  '+').into_iter())
+                            .chain((Pt(2,4),  '-').into_iter())
+                            .chain((Pt(1,4), '\'').into_iter())
+                            .chain((Pt(2,3),  '/').into_iter())
+                            .collect()));
+}
+
+#[test]
+fn reused_manual_open_arrowhead_rounded() {
+    let input = r#"
+  .
+ / \
+'-+-'
+  |
+"#;
+    let mut grid = input.parse::<Grid>().unwrap();
+    grid.mark_used(Pt(3,2));
+    let opt_p = super::find_closed_path(&grid, &Default::default(), Pt(1,4));
+    assert_eq!(opt_p.unwrap(),
+               Path::closed((Pt(1,4),'\'').into_iter()
+                            .chain((Pt(2,4),  '-').into_iter())
+                            .chain((Pt(3,4),  '+').into_iter())
+                            .chain((Pt(4,4),  '-').into_iter())
+                            .chain((Pt(5,4), '\'').into_iter())
+                            .chain((Pt(4,3), '\\').into_iter())
+                            .chain((Pt(3,2),  '.').into_iter())
+                            .chain((Pt(2,3),  '/').into_iter())
+                            .collect()));
 }
 
 #[test]

@@ -447,7 +447,7 @@ impl Table {
                 curr: char,
                 outgoing: Option<(Direction, char)>) -> Option<(&str, &[(String, String)])> {
         for e in &self.entries {
-            if e.matches(incoming, curr, outgoing) {
+            if !e.loop_start && e.matches(incoming, curr, outgoing) {
                 return Some((&e.template, &e.include_attributes[..]));
             }
         }
@@ -539,7 +539,12 @@ impl Default for Table {
         use directions::Any as AnyDir;
         use directions::NonNorth;
         use directions::NonSouth;
+        const JOINTS: &'static str = ".'+";
         const LINES: &'static str = "-|/\\:=";
+        const ZER_SLOPE: &'static str = r"-=.'+><";
+        const INF_SLOPE: &'static str = r"|:.'+^v";
+        const POS_SLOPE: &'static str =  r"/.'+";
+        const NEG_SLOPE: &'static str =  r"\.'+";
         Table {
             entries: entries! {
                 (Start, '-', E, Match::Any, "M {W} L {E}"),
@@ -559,14 +564,14 @@ but it seems better to do *something* rather than fall through
 to default handlers that often show nothing special at all
 along the path.
 ```rust
-                (      r"\", E, '.', E, LINES,   "Q {SW} {S}"),
-                (      r"/", W, '.', W, LINES,   "Q {SE} {S}"),
-                (      r"/", E, "'", E, LINES,   "Q {NW} {N}"),
-                (      r"\", W, "'", W, LINES,   "Q {NE} {N}"),
-                (Match::Any, E, '.', E, LINES,   "Q {C} {S}"),
-                (Match::Any, W, '.', W, LINES,   "Q {C} {S}"),
-                (Match::Any, E, "'", E, LINES,   "Q {C} {N}"),
-                (Match::Any, W, "'", W, LINES,   "Q {C} {N}"),
+                (      r"\", E, '.', May((E, LINES)),   "Q {SW} {S}"),
+                (      r"/", W, '.', May((W, LINES)),   "Q {SE} {S}"),
+                (      r"/", E, "'", May((E, LINES)),   "Q {NW} {N}"),
+                (      r"\", W, "'", May((W, LINES)),   "Q {NE} {N}"),
+                (ZER_SLOPE, E, '.', May((E, LINES)),   "Q {C} {S}"),
+                (ZER_SLOPE, W, '.', May((W, LINES)),   "Q {C} {S}"),
+                (ZER_SLOPE, E, "'", May((E, LINES)),   "Q {C} {N}"),
+                (ZER_SLOPE, W, "'", May((W, LINES)),   "Q {C} {N}"),
                 (      ".'", E, '-', May((E, Match::Any)), "Q {W} {E}"),
                 (      ".'", W, '-', May((W, Match::Any)), "Q {E} {W}"),
                 (       ".", E, '/', May((E, Match::Any)), "Q {SW} {NE}"),
@@ -574,37 +579,50 @@ along the path.
                 (       "'", E,r"\", May((E, Match::Any)), "Q {NW} {SE}"),
                 (       "'", W, '/', May((W, Match::Any)), "Q {NE} {SW}"),
 
-                (Match::Any, E, '-', May((E, Match::Any)), "L {E}"),
-                (Match::Any, W, '-', May((W, Match::Any)), "L {W}"),
-                (Match::Any, N, '|', May((N, Match::Any)), "L {N}"),
-                (Match::Any, S, '|', May((S, Match::Any)), "L {S}"),
+                (Match::Any, E, '-', May((E, ZER_SLOPE)), "L {E}"),
+                (Match::Any, W, '-', May((W, ZER_SLOPE)), "L {W}"),
+                (Match::Any, N, '|', May((N, INF_SLOPE)), "L {N}"),
+                (Match::Any, S, '|', May((S, INF_SLOPE)), "L {S}"),
 
-                (Start, '=', E, Match::Any, "M {W} L {E}", [("stroke-dasharray", "5,2")]),
-                (Start, '=', W, Match::Any, "M {E} L {W}", [("stroke-dasharray", "5,2")]),
-                (Start, ':', N, Match::Any, "M {S} L {N}", [("stroke-dasharray", "5,2")]),
-                (Start, ':', S, Match::Any, "M {N} L {S}", [("stroke-dasharray", "5,2")]),
-                (Match::Any, E, '=', May((E, Match::Any)), "L {E}", [("stroke-dasharray", "5,2")]),
-                (Match::Any, W, '=', May((W, Match::Any)), "L {W}", [("stroke-dasharray", "5,2")]),
-                (Match::Any, N, ':', May((N, Match::Any)), "L {N}", [("stroke-dasharray", "5,2")]),
-                (Match::Any, S, ':', May((S, Match::Any)), "L {S}", [("stroke-dasharray", "5,2")]),
+                (Start, '=', E, ZER_SLOPE, "M {W} L {E}", [("stroke-dasharray", "5,2")]),
+                (Start, '=', W, ZER_SLOPE, "M {E} L {W}", [("stroke-dasharray", "5,2")]),
+                (Start, ':', N, INF_SLOPE, "M {S} L {N}", [("stroke-dasharray", "5,2")]),
+                (Start, ':', S, INF_SLOPE, "M {N} L {S}", [("stroke-dasharray", "5,2")]),
+                (Match::Any, E, '=', May((E, ZER_SLOPE)), "L {E}", [("stroke-dasharray", "5,2")]),
+                (Match::Any, W, '=', May((W, ZER_SLOPE)), "L {W}", [("stroke-dasharray", "5,2")]),
+                (Match::Any, N, ':', May((N, INF_SLOPE)), "L {N}", [("stroke-dasharray", "5,2")]),
+                (Match::Any, S, ':', May((S, INF_SLOPE)), "L {S}", [("stroke-dasharray", "5,2")]),
 
                 (Start, '+', AnyDir, Match::Any, "M {C}"),
 
-                (Match::Any, NE, '/', May((NE, Match::Any)), "L {NE}"),
-                (Match::Any, SW, '/', May((SW, Match::Any)), "L {SW}"),
-                (Match::Any, SE, '\\', May((SE, Match::Any)), "L {SE}"),
-                (Match::Any, NW, '\\', May((NW, Match::Any)), "L {NW}"),
-                (Match::Any, AnyDir, '\\', E, ".'", "L {SE}"),
-                (Match::Any, AnyDir, '/',  E, ".'", "L {NE}"),
-                (Match::Any, AnyDir, '\\', W, ".'", "L {NW}"),
-                (Match::Any, AnyDir, '/',  W, ".'", "L {SE}"),
+                (Match::Any, NE, '/', May((NE, POS_SLOPE)), "L {NE}"),
+                (Match::Any, SW, '/', May((SW, POS_SLOPE)), "L {SW}"),
+                (Match::Any, SE, '\\', May((SE, NEG_SLOPE)), "L {SE}"),
+                (Match::Any, NW, '\\', May((NW, NEG_SLOPE)), "L {NW}"),
+                (Match::Any, NE, '/',  E, JOINTS, "L {NE}"),
+                (Match::Any, SW, '/',  E, JOINTS, "L {NE}"),
+                (Match::Any, SE, '\\', E, JOINTS, "L {SE}"),
+                (Match::Any, NW, '\\', E, JOINTS, "L {SE}"),
+                (Match::Any, NW, '\\', W, JOINTS, "L {NW}"),
+                (Match::Any, SE, '\\', W, JOINTS, "L {NW}"),
+                (Match::Any, NE, '/',  W, JOINTS, "L {SE}"),
+                (Match::Any, SW, '/',  W, JOINTS, "L {SE}"),
 
                 ('>', E, '+', May((AnyDir, LINES)), "M {C}"),
                 ('<', W, '+', May((AnyDir, LINES)), "M {C}"),
                 ('^', N, '+', May((AnyDir, LINES)), "M {C}"),
                 ('v', S, '+', May((AnyDir, LINES)), "M {C}"),
-                (LINES, AnyDir, '+', May((AnyDir, LINES)), "L {C}"),
-                (LINES, AnyDir, Loop('+'), AnyDir, LINES, "M {C}"),
+                ("-=", (E, W), '+', May(((E, W), ZER_SLOPE)), "L {C}"),
+
+                (LINES, AnyDir, Loop('+'), (N,S), INF_SLOPE, "M {C}"),
+                (LINES, AnyDir, Loop('+'), (E,W), ZER_SLOPE, "M {C}"),
+                (LINES, AnyDir, Loop('+'), (NE,SW), POS_SLOPE, "M {C}"),
+                (LINES, AnyDir, Loop('+'), (NW,SE), NEG_SLOPE, "M {C}"),
+
+                (LINES, AnyDir, '+', (N,S), INF_SLOPE, "L {C}"),
+                (LINES, AnyDir, '+', (E,W), ZER_SLOPE, "L {C}"),
+                (LINES, AnyDir, '+', (NE,SW), POS_SLOPE, "L {C}"),
+                (LINES, AnyDir, '+', (NW,SE), NEG_SLOPE, "L {C}"),
 
                 // The curves!  .-   .-  .-   .
                 // part 1:      |   /     \  /| et cetera
