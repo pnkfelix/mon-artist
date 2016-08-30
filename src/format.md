@@ -537,9 +537,6 @@ impl Default for Table {
                 (Match::Any, N, '|', May((N, Match::Any)), "L {N}"),
                 (Match::Any, S, '|', May((S, Match::Any)), "L {S}"),
 
-                // FIXME should these be included right now, in absence of
-                // extension to augment attributes to switch to dashed
-                // mode?
                 (Start, '=', E, Match::Any, "M {W} L {E}", [("stroke-dasharray", "5,2")]),
                 (Start, '=', W, Match::Any, "M {E} L {W}", [("stroke-dasharray", "5,2")]),
                 (Start, ':', N, Match::Any, "M {S} L {N}", [("stroke-dasharray", "5,2")]),
