@@ -61,6 +61,40 @@ it extensively in the other tests that follow.
 }
 
 #[test]
+fn slant_chars_along_straight_line_via_period() {
+    let grid = r"-./.\.-".parse::<Grid>().unwrap();
+    let opt_p = super::find_unclosed_path_from(&grid,
+                                               &Default::default(),
+                                               DirVector(Pt(1,1), Direction::E));
+    assert_eq!(opt_p.unwrap(),
+               Path::open((Pt(1,1), '-').into_iter()
+                          .chain((Pt(2,1), '.').into_iter())
+                          .chain((Pt(3,1), '/').into_iter())
+                          .chain((Pt(4,1), '.').into_iter())
+                          .chain((Pt(5,1), '\\').into_iter())
+                          .chain((Pt(6,1), '.').into_iter())
+                          .chain((Pt(7,1), '-').into_iter())
+                          .collect()));
+}
+
+#[test]
+fn slant_chars_along_straight_line_via_quote() {
+    let grid = r"-'/'\'-".parse::<Grid>().unwrap();
+    let opt_p = super::find_unclosed_path_from(&grid,
+                                               &Default::default(),
+                                               DirVector(Pt(1,1), Direction::E));
+    assert_eq!(opt_p.unwrap(),
+               Path::open((Pt(1,1), '-').into_iter()
+                          .chain((Pt(2,1), '\'').into_iter())
+                          .chain((Pt(3,1), '/').into_iter())
+                          .chain((Pt(4,1), '\'').into_iter())
+                          .chain((Pt(5,1), '\\').into_iter())
+                          .chain((Pt(6,1), '\'').into_iter())
+                          .chain((Pt(7,1), '-').into_iter())
+                          .collect()));
+}
+
+#[test]
 fn eastward_arrow() {
     let grid = "--> ".parse::<Grid>().unwrap();
     let opt_p = super::find_unclosed_path_from(&grid,
