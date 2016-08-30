@@ -532,6 +532,29 @@ impl Default for Table {
                 (Start, '-', W, Match::Any, "M {E} L {W}"),
                 (Start, '|', N, Match::Any, "M {S} L {N}"),
                 (Start, '|', S, Match::Any, "M {N} L {S}"),
+```
+
+This block is made of special cases for rendering horizontal
+lines with curve characters in "interesting" ways.
+They are not necessarily consistent nor do they exhibit symmetry,
+but it seems better to do *something* rather than fall through
+to default handlers that often show nothing special at all
+along the path.
+```rust
+                (      r"\", E, '.', E, LINES,   "Q {SW} {S}"),
+                (      r"/", W, '.', W, LINES,   "Q {SE} {S}"),
+                (      r"/", E, "'", E, LINES,   "Q {NW} {N}"),
+                (      r"\", W, "'", W, LINES,   "Q {NE} {N}"),
+                (Match::Any, E, '.', E, LINES,   "Q {C} {S}"),
+                (Match::Any, W, '.', W, LINES,   "Q {C} {S}"),
+                (Match::Any, E, "'", E, LINES,   "Q {C} {N}"),
+                (Match::Any, W, "'", W, LINES,   "Q {C} {N}"),
+                (      ".'", E, '-', May((E, Match::Any)), "Q {I} {RI}"),
+                (      ".'", W, '-', May((W, Match::Any)), "Q {I} {RI}"),
+                (       ".", E, '/', May((E, Match::Any)), "L {NE}"),
+                (       ".", W,r"\", May((W, Match::Any)), "L {NW}"),
+                (       "'", E,r"\", May((E, Match::Any)), "L {SE}"),
+                (       "'", W, '/', May((W, Match::Any)), "L {SW}"),
 
                 (Match::Any, E, '-', May((E, Match::Any)), "L {E}"),
                 (Match::Any, W, '-', May((W, Match::Any)), "L {W}"),
@@ -553,6 +576,11 @@ impl Default for Table {
                 (Match::Any, SW, '/', May((SW, Match::Any)), "L {SW}"),
                 (Match::Any, SE, '\\', May((SE, Match::Any)), "L {SE}"),
                 (Match::Any, NW, '\\', May((NW, Match::Any)), "L {NW}"),
+                (Match::Any, AnyDir, '\\', E, ".'", "L {SE}"),
+                (Match::Any, AnyDir, '/',  E, ".'", "L {NE}"),
+                (Match::Any, AnyDir, '\\', W, ".'", "L {NW}"),
+                (Match::Any, AnyDir, '/',  W, ".'", "L {SE}"),
+
                 ('>', E, '+', May((AnyDir, LINES)), "M {C}"),
                 ('<', W, '+', May((AnyDir, LINES)), "M {C}"),
                 ('^', N, '+', May((AnyDir, LINES)), "M {C}"),
