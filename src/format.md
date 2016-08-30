@@ -570,8 +570,7 @@ impl Default for Table {
                 (Match::Any, NonNorth,      '\'',  NonSouth, LINES, "Q {C} {O}"),
                 (Match::Any, NonNorth, Loop('\''), NonSouth, LINES, "M {I} Q {C} {O}"),
 
-                // Arrow Heads! FIXME probably should just use opened arrow head
-                // rather than the current closed ones.
+                // Arrow Heads!
                 //
                 // Perhaps more importantly, this code builds in an
                 // assumption that each grid cell is 9x12 (or at least
