@@ -139,19 +139,6 @@ impl<'a> FindUnclosedPaths<'a> {
         if elem.is_blank() {
             return Err(self);
         }
-        // don't waste time on a search that starts on a cell with no non-blank neighbors.
-        {
-            let mut non_blank_nbors = 0;
-            for &dir in DIRECTIONS.iter() {
-                let next = DirVector(curr, dir).steps(1);
-                if !self.find.grid.holds(next.0) { continue; }
-                if !self.find.grid[next.0].is_blank() { non_blank_nbors += 1; }
-            }
-            if non_blank_nbors == 0 {
-                debug!("find_unclosed_path: early exit on {:?} at {:?} with {} neighbors.", elem, curr, non_blank_nbors);
-                return Err(self);
-            }
-        }
         debug!("find_unclosed_path self: {:?} curr: {:?} pt: {:?}", self, curr, elem);
 
         // start the search proper
