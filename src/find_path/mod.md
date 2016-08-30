@@ -165,7 +165,7 @@ impl<'a> FindUnclosedPaths<'a> {
             if !self.find.grid.holds(next.0) {
                 continue;
             }
-            match self.find_unclosed_path_from(next, FindContext { prev: Some(curr), curr: next.0 })
+            match self.fwd_ext(next, FindContext { prev: Some(curr), curr: next.0 })
             {
                 ret @ Ok(_) => {
                     return ret;
@@ -176,21 +176,24 @@ impl<'a> FindUnclosedPaths<'a> {
         debug!("find_unclosed_path self: {:?} exhausted directions; giving up.", self);
         return Err(self);
     }
+```
 
-    fn find_unclosed_path_from(mut self, dv: DirVector, fc: FindContext) -> Result<Path, Self> {
+Attempts to extends the end of the path forward via `dv`.
+```rust
+    fn fwd_ext(mut self, dv: DirVector, fc: FindContext) -> Result<Path, Self> {
         // FIXME: the success case for this code is not complete: in addition to searching
         // forward along the path from the supposed start point, we also need to search
         // *backward* (in case there is a longer path we could acquire by adding on a prefix).
         use path::Closed::*;
-        debug!("find_unclosed_path_from self: {:?} dv: {:?} {:?}", self, dv, fc);
+        debug!("fwd_ext self: {:?} dv: {:?} {:?}", self, dv, fc);
         assert!(self.find.grid.holds(dv.0));
         assert!(!self.find.steps.contains(&dv.0));
         assert_eq!(dv.0, fc.curr());
         let elem: Elem = self.find.grid[dv.0];
-        debug!("find_unclosed_path_from elem: {:?}", elem);
+        debug!("fwd_ext elem: {:?}", elem);
         let _c: char = match elem {
             Elem::Pad | Elem::Clear => { // blank: Give up.
-                debug!("find_unclosed_path self: {:?} blank; giving up.", self);
+                debug!("fwd_ext self: {:?} blank; giving up.", self);
                 return Err(self);
             }
             Elem::C(c) | Elem::Used(c) => c,
@@ -207,7 +210,7 @@ impl<'a> FindUnclosedPaths<'a> {
         self.find.steps.push(dv.0);
 
         while let Some(dir) = dirs_to_try.pop() {
-            debug!("find_unclosed_path trying dir: {:?}", dir);
+            debug!("fwd_ext trying dir: {:?}", dir);
             let next = dv.towards(dir).step();
 
             if !self.find.grid.holds(next.0) { continue; } // off grid
@@ -219,8 +222,7 @@ impl<'a> FindUnclosedPaths<'a> {
             }
 
 
-            match self.find_unclosed_path_from(next, FindContext { prev: Some(dv.0),
-                                                                   curr: next.0 }) {
+            match self.fwd_ext(next, FindContext { prev: Some(dv.0), curr: next.0 }) {
                 p @ Ok(_) => return p,
                 Err(s) => {
                     debug!("recursive search failed for ({:?},{:?},{:?})",
@@ -234,10 +236,10 @@ impl<'a> FindUnclosedPaths<'a> {
         // If we get here, then none of the available directions worked, so attempt finish.
         assert_eq!(self.find.steps.last(), Some(&dv.0));
         if self.find.matches_end(fc.prev, fc.curr) {
-            debug!("find_unclosed_path self: {:?} exhausted turns; finished.", self);
+            debug!("fwd_ext self: {:?} exhausted turns; finished.", self);
             Ok(self.find.to_path(Open))
         } else {
-            debug!("find_unclosed_path self: {:?} cannot end here; aborting.", self);
+            debug!("fwd_ext self: {:?} cannot end here; aborting.", self);
             // undo addition of `curr` to path
             assert_eq!(self.find.steps.last(), Some(&dv.0));
             self.find.steps.pop();
@@ -432,7 +434,7 @@ pub fn find_closed_path(grid: &Grid, format: &Table, pt: Pt) -> Option<Path> {
 
 pub fn find_unclosed_path_from(grid: &Grid, format: &Table, dir: DirVector) -> Option<Path> {
     let pf = FindUnclosedPaths { find: FindPaths::with_grid_format(grid, format) };
-    let ret = pf.find_unclosed_path_from(dir, FindContext {
+    let ret = pf.fwd_ext(dir, FindContext {
         prev: None,
         curr: dir.0
     }).ok();
