@@ -1,5 +1,5 @@
 ```rust
-pub const ALL: [(&'static str, &'static str); 27] = [
+pub const ALL: [(&'static str, &'static str); 28] = [
     BASIC,
     BASIC_NAMED_RECT,
     BASIC_NAMED_CLOSED,
@@ -30,7 +30,9 @@ pub const ALL: [(&'static str, &'static str); 27] = [
 
     MULTI_RECTS,
 
-    ISSUE_15_DESC
+    ISSUE_15_DESC,
+
+    EXPERIMENTS
         ];
 
 macro_rules! def_test {
@@ -320,5 +322,31 @@ def_test! { ISSUE_15_DESC,
                                   |                    |
                                   |                    |
                                   +--------------------+
+"# }
+
+def_test! { EXPERIMENTS,
+            // 111122222222223333333333444444444455555555556
+            // 678901234567890123456789012345678901234567890
+        r#"
+-.- -./ /.\ /./
+
+.----.---.
+|         \
+'-.        +------+
+   \       |
+    '------+
+
+       +-----+
+       |  A  |
+       +--+--+
+         / \
+        +---+
+          |
+   +------+------+
+   |             |
++--+--+       +--+--+
+|  B  |       |  C  |
++-----+       +-----+
+
 "# }
 ```
