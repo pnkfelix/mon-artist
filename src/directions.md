@@ -178,8 +178,42 @@ impl ToDirections for NonWest {
     }
 }
 
+fn union<D1, D2>(d1: &D1, d2: &D2) -> Vec<Direction> where D1: ToDirections, D2: ToDirections {
+    let mut v = d1.to_directions();
+    v.extend(d2.to_directions());
+    v.sort();
+    v.dedup();
+    v
+}
+
 impl ToDirections for Any {
     fn to_directions(&self) -> Vec<Direction> { DIRECTIONS.iter().cloned().collect() }
+}
+
+impl ToDirections for Vec<Direction> {
+    fn to_directions(&self) -> Vec<Direction> { self.clone() }
+}
+
+impl<D1,D2> ToDirections for (D1, D2)
+    where D1: ToDirections, D2: ToDirections
+{
+    fn to_directions(&self) -> Vec<Direction> {
+        union(&self.0, &self.1)
+    }
+}
+impl<D1,D2,D3> ToDirections for (D1, D2, D3)
+    where D1: ToDirections, D2: ToDirections, D3: ToDirections
+{
+    fn to_directions(&self) -> Vec<Direction> {
+        union(&union(&self.0, &self.1), &self.2)
+    }
+}
+impl<D1,D2,D3,D4> ToDirections for (D1, D2, D3, D4)
+    where D1: ToDirections, D2: ToDirections, D3: ToDirections, D4: ToDirections
+{
+    fn to_directions(&self) -> Vec<Direction> {
+        union(&union(&self.0, &self.1), &union(&self.2, &self.3))
+    }
 }
 
 macro_rules! to_dirs {
