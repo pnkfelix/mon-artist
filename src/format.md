@@ -525,6 +525,7 @@ impl Default for Table {
         use directions::Any as AnyDir;
         use directions::NonNorth;
         use directions::NonSouth;
+        const LINES: &'static str = "-|/\\:=";
         Table {
             entries: entries! {
                 (Start, '-', E, Match::Any, "M {W} L {E}"),
@@ -556,50 +557,18 @@ impl Default for Table {
                 ('<', W, '+', May((AnyDir, Match::Any)), "M {C}"),
                 ('^', N, '+', May((AnyDir, Match::Any)), "M {C}"),
                 ('v', S, '+', May((AnyDir, Match::Any)), "M {C}"),
-                (Match::Any, AnyDir, '+', May((AnyDir, "-|/\\:=")), "L {C}"),
-                (Match::Any, AnyDir, Loop('+'), AnyDir, "-|/\\:=", "M {C}"),
+                (Match::Any, AnyDir, '+', May((AnyDir, LINES)), "L {C}"),
+                (Match::Any, AnyDir, Loop('+'), AnyDir, LINES, "M {C}"),
 
-                // The curves!  .-   .-  .-
-                // part 1:      |   /     \  et cetera
-                //
-                // FIXME: shouldn't the incoming edges be allowed to
-                // be northern?  Seems like the main things to outlaw
-                // are mirrors (which arguably should be built into
-                // the engine, right?) and things *from* the north.
-                (Match::Any, NonNorth, '.',  S, '|', "Q {C} {S}"),
-                (Match::Any, NonNorth, '.', SE, '\\', "Q {C} {SE}"),
-                (Match::Any, NonNorth, '.', SW, '/', "Q {C} {SW}"),
-                (Match::Any, NonSouth, '.',  E, '-', "Q {C} {E}"),
-                (Match::Any, NonSouth, '.',  W, '-', "Q {C} {W}"),
-
-                // FIXME a potentially easy way to remove a lot of redundancy here:
-                // add placeholders for incoming, outgoing, and reverses thereof.
-                // E.g. `M {RI} Q {C} {O}`, so that incoming `NE` and outgoing `S`
-                // yields `M {SW} {C} {S}`
-
-                (Match::Any, NE, Loop('.'),  E, Match::Any, "M {SW} Q {C}  {E}"),
-                (Match::Any, N,  Loop('.'),  E, Match::Any, "M {S}  Q {C}  {E}"),
-                (Match::Any, NW, Loop('.'),  E, Match::Any, "M {SE} Q {C}  {E}"),
-                (Match::Any,  E, Loop('.'), SE, Match::Any, "M  {W} Q {C} {SE}"),
-                (Match::Any, NE, Loop('.'), SE, Match::Any, "M {SW} Q {C} {SE}"),
-                (Match::Any,  N, Loop('.'), SE, Match::Any, "M  {S} Q {C} {SE}"),
-                (Match::Any,  W, Loop('.'), SE, Match::Any, "M  {E} Q {C} {SE}"),
-                (Match::Any,  E, Loop('.'), S, Match::Any, "M  {W} Q {C} {S}"),
-                (Match::Any, NE, Loop('.'), S, Match::Any, "M {SW} Q {C} {S}"),
-                (Match::Any, NW, Loop('.'), S, Match::Any, "M {SE} Q {C} {S}"),
-                (Match::Any,  W, Loop('.'), S, Match::Any, "M  {E} Q {C} {S}"),
-                (Match::Any,  N, Loop('.'), SW, Match::Any, "M  {S} Q {C} {SW}"),
-                (Match::Any,  E, Loop('.'), SW, Match::Any, "M  {W} Q {C} {SW}"),
-                (Match::Any, NW, Loop('.'), SW, Match::Any, "M {SE} Q {C} {SW}"),
-                (Match::Any,  W, Loop('.'), SW, Match::Any, "M  {E} Q {C} {SW}"),
+                // The curves!  .-   .-  .-   .
+                // part 1:      |   /     \  /| et cetera
+                (Match::Any, NonSouth,      '.',  NonNorth, LINES, "Q {C} {O}"),
+                (Match::Any, NonSouth, Loop('.'), NonNorth, LINES, "M {I} Q {C} {O}"),
 
                 // curves       |   \/   /
-                // part 1:      '-  '   '-   et cetera
-                (Match::Any, NonSouth, '\'', N, '|', "Q {C} {N}"),
-                (Match::Any, NonSouth, '\'', NE, '/', "Q {C} {NE}"),
-                (Match::Any, NonSouth, '\'', NW, '\\', "Q {C} {NW}"),
-                (Match::Any, NonNorth, '\'', E, '-', "Q {C} {E}"),
-                (Match::Any, NonNorth, '\'', W, '-', "Q {C} {W}"),
+                // part 2:      '-  '   '-   et cetera
+                (Match::Any, NonNorth,      '\'',  NonSouth, LINES, "Q {C} {O}"),
+                (Match::Any, NonNorth, Loop('\''), NonSouth, LINES, "M {I} Q {C} {O}"),
 
                 // Arrow Heads! FIXME probably should just use opened arrow head
                 // rather than the current closed ones.
