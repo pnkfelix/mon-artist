@@ -120,6 +120,20 @@ impl Entry {
         return true;
     }
 
+    pub fn matches_start(&self,
+                         curr: char,
+                         outgoing: Option<(Direction, char)>) -> bool {
+        use self::Neighbor::{Blank, Must, May};
+        match &self.incoming {
+            &Blank | &May(..) => {}
+            &Must(..) => return false,
+        }
+
+        if !self.curr.matches(curr) { return false; }
+        if !self.matches_outgoing(outgoing) { return false; }
+        return true;
+    }
+
     pub fn matches_end(&self,
                        incoming: Option<(char, Direction)>,
                        curr: char) -> bool {

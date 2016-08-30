@@ -134,26 +134,37 @@ Some day, It may be worthwhile to make an exercise out of why.
 
 impl<'a> FindUnclosedPaths<'a> {
     fn find_unclosed_path(mut self, curr: Pt) -> Result<Path, Self> {
-        let elem = self.find.grid[curr];
-        // don't waste time on a search that starts on a blank cell
-        if elem.is_blank() {
-            return Err(self);
-        }
-        debug!("find_unclosed_path self: {:?} curr: {:?} pt: {:?}", self, curr, elem);
-
         // start the search proper
         self.find.steps.push(curr);
         for (j, &dir) in DIRECTIONS.iter().enumerate() {
             debug!("find_unclosed_path {} dir: {:?}", j, dir);
             let next = DirVector(curr, dir).steps(1);
             debug!("find_unclosed_path {} dir: {:?} next: {:?}",
-                  j, dir, next);
+                   j, dir, next);
+```
+
+If we've gone off the grid, then obviously this direction is no good.
+```rust
             if !self.find.grid.holds(next.0) {
                 continue;
             }
+```
+
+We must ensure there is some Starting entry in the
+format table for `curr` and `next`; otherwise, we will
+not be able to start the rendering of the path.
+
+```rust
+            if !self.find.matches_start(curr, Some(next.0)) {
+                continue;
+            }
+
             // FIXME: the success case for this code is not complete: in addition to searching
             // forward along the path from the supposed start point, we also need to search
             // *backward* (in case there is a longer path we could acquire by adding on a prefix).
+            //
+            // But in any case, once we have *some* kind of success, then we are guaranteed to
+            // return Ok; it is just a matter of *which* path we will return in the payload.
             match self.fwd_ext(next, FindContext { prev: Some(curr), curr: next.0 })
             {
                 ret @ Ok(_) => return ret,
@@ -428,6 +439,19 @@ impl<'a> FindPaths<'a> {
         let next_arc = self.grid[next].opt_char().map(|n| (curr.towards(next), n));
         for entry in &self.format.entries {
             if entry.matches(prev_arc, c, next_arc) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    fn matches_start(&self, curr: Pt, next: Option<Pt>) -> bool {
+        let c = if let Some(c) = self.grid[curr].opt_char() { c } else { return false; };
+        let next_arc = next.and_then(|next| {
+            self.grid[next].opt_char().map(|n| (curr.towards(next), n))
+        });
+        for entry in &self.format.entries {
+            if entry.matches_start(c, next_arc) {
                 return true;
             }
         }
