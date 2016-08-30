@@ -532,6 +532,10 @@ impl Default for Table {
                 (Start, '-', W, Match::Any, "M {E} L {W}"),
                 (Start, '|', N, Match::Any, "M {S} L {N}"),
                 (Start, '|', S, Match::Any, "M {N} L {S}"),
+                (Start, '/', SW, Match::Any, "M {NE} L {SW}"),
+                (Start, '/', NE, Match::Any, "M {SW} L {NE}"),
+                (Start,'\\', SE, Match::Any, "M {NW} L {SE}"),
+                (Start,'\\', NW, Match::Any, "M {SE} L {NW}"),
 ```
 
 This block is made of special cases for rendering horizontal
@@ -549,12 +553,12 @@ along the path.
                 (Match::Any, W, '.', W, LINES,   "Q {C} {S}"),
                 (Match::Any, E, "'", E, LINES,   "Q {C} {N}"),
                 (Match::Any, W, "'", W, LINES,   "Q {C} {N}"),
-                (      ".'", E, '-', May((E, Match::Any)), "Q {I} {RI}"),
-                (      ".'", W, '-', May((W, Match::Any)), "Q {I} {RI}"),
-                (       ".", E, '/', May((E, Match::Any)), "L {NE}"),
-                (       ".", W,r"\", May((W, Match::Any)), "L {NW}"),
-                (       "'", E,r"\", May((E, Match::Any)), "L {SE}"),
-                (       "'", W, '/', May((W, Match::Any)), "L {SW}"),
+                (      ".'", E, '-', May((E, Match::Any)), "Q {W} {E}"),
+                (      ".'", W, '-', May((W, Match::Any)), "Q {E} {W}"),
+                (       ".", E, '/', May((E, Match::Any)), "Q {SW} {NE}"),
+                (       ".", W,r"\", May((W, Match::Any)), "Q {SE} {NW}"),
+                (       "'", E,r"\", May((E, Match::Any)), "Q {NW} {SE}"),
+                (       "'", W, '/', May((W, Match::Any)), "Q {NE} {SW}"),
 
                 (Match::Any, E, '-', May((E, Match::Any)), "L {E}"),
                 (Match::Any, W, '-', May((W, Match::Any)), "L {W}"),
