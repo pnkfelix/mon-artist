@@ -553,12 +553,12 @@ impl Default for Table {
                 (Match::Any, SW, '/', May((SW, Match::Any)), "L {SW}"),
                 (Match::Any, SE, '\\', May((SE, Match::Any)), "L {SE}"),
                 (Match::Any, NW, '\\', May((NW, Match::Any)), "L {NW}"),
-                ('>', E, '+', May((AnyDir, Match::Any)), "M {C}"),
-                ('<', W, '+', May((AnyDir, Match::Any)), "M {C}"),
-                ('^', N, '+', May((AnyDir, Match::Any)), "M {C}"),
-                ('v', S, '+', May((AnyDir, Match::Any)), "M {C}"),
-                (Match::Any, AnyDir, '+', May((AnyDir, LINES)), "L {C}"),
-                (Match::Any, AnyDir, Loop('+'), AnyDir, LINES, "M {C}"),
+                ('>', E, '+', May((AnyDir, LINES)), "M {C}"),
+                ('<', W, '+', May((AnyDir, LINES)), "M {C}"),
+                ('^', N, '+', May((AnyDir, LINES)), "M {C}"),
+                ('v', S, '+', May((AnyDir, LINES)), "M {C}"),
+                (LINES, AnyDir, '+', May((AnyDir, LINES)), "L {C}"),
+                (LINES, AnyDir, Loop('+'), AnyDir, LINES, "M {C}"),
 
                 // The curves!  .-   .-  .-   .
                 // part 1:      |   /     \  /| et cetera
