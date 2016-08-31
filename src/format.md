@@ -602,6 +602,32 @@ along the path.
                 (     ".",  W, r"\", May((W, r"'-/")), "Q {SE} {NW}"),
                 (     "'",  E, r"\", May((E, r".-/")), "Q {NW} {SE}"),
                 (     "'",  W, '/', May((W, r".-\")), "Q {NE} {SW}"),
+```
+
+These bits for `(` are another set of special cases for handling the
+sides of a diamond when I don't want to use `+`.
+
+By "diamond" I mean something like this:
+
+```
+  +    <-- `.` also acceptable here
+ / \
+(   )
+ \ /
+  +    <-- likewise `'` works here.
+```
+
+I don't want to use `+` here because I only want it to connect to the
+diamond
+and not to other neighboring lines (which is what `+` and other generic
+joints would imply).
+
+```rust
+                // FIXME below cases seems like they are not always matching for some reason
+                (     r"/", SW, '(', SE, r"\", "Q {C} {SE}"),
+                (     r"/", NE, ')', NW, r"\", "Q {C} {NW}"),
+                (     r"\", SE, ')', SW, r"/", "Q {C} {SW}"),
+                (     r"\", NW, '(', NE, r"/", "Q {C} {NE}"),
 
                 (Match::Any, E, '-', May((E, ZER_SLOPE)), "L {E}"),
                 (Match::Any, W, '-', May((W, ZER_SLOPE)), "L {W}"),
