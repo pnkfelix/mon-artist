@@ -1,9 +1,10 @@
 ```rust
-pub const ALL: [(&'static str, &'static str); 28] = [
+pub const ALL: [(&'static str, &'static str); 29] = [
     BASIC,
     BASIC_NAMED_RECT,
     BASIC_NAMED_CLOSED,
-    BASIC_NAMED_UNCLOSED_FIXME,
+    BASIC_NAMED_UNCLOSED,
+    BASIC_NAMED_UNCLOSED_PREFIX,
     BASIC_ATTRS,
     LINE,
     LINE_WITH_ID,
@@ -139,11 +140,23 @@ def_test! { BASIC_NAMED_CLOSED,
 //           12345678901234
 
 
-def_test! { BASIC_NAMED_UNCLOSED_FIXME,
+def_test! { BASIC_NAMED_UNCLOSED,
             r#"
 .----.  top
-|[b] | <- one can see a problem in `find_path` here
-    -+  bottom          [note]
+     |
+    -+  bottom
+"# }
+//           00000000011111
+//           12345678901234
+
+def_test! { BASIC_NAMED_UNCLOSED_PREFIX,
+            r#"
+.----.  top
+|[b] |
+'-  -+  bottom
+^
+| We used to omit steps before top-left corner here
+  [note]
 
 [b]: stroke='blue'
 [note]: font-size='10' font-style='italic' font-family='Trattatello'

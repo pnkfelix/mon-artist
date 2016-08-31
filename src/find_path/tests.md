@@ -59,6 +59,56 @@ it extensively in the other tests that follow.
                           .chain((Pt(3,1), '-').into_iter())
                           .collect()));
 }
+```
+
+The idea of reverse extension is this: assume we are scanning
+for paths from top-to-bottom (or any other arbitrary direction).
+Inevitably cases arise where the first point you encounter is
+in the *middle* of the desired path, not its start.
+
+If we instead assume that this first point encountered
+(which must be a starting point for some path) might not
+be *the* start of the desired path, then we can drive our
+search by:
+
+  1. first searching for a suffix (starting from the
+     aforementioned first point encountered), and then
+
+  2. taking that suffix and searching for some prefix to
+     add on to it.
+
+```rust
+#[test]
+fn rev_extension_motivation() {
+    let grid = ".-\n\
+                | ".parse::<Grid>().unwrap();
+    let opt_p = super::find_unclosed_path_from(&grid,
+                                               &Default::default(),
+                                               DirVector(Pt(1,1), Direction::E));
+
+    assert_eq!(opt_p.unwrap(),
+               Path::open((Pt(1,2), '|').into_iter()
+                          .chain((Pt(1,1), '.').into_iter())
+                          .chain((Pt(2,1), '-').into_iter())
+                          .collect()));
+}
+```
+
+This below is a simpler version of the previous test; note
+in particular that we deliberately start the search from
+the middle of the path, to ensure that we test the prefix
+searching functionality.
+
+```rust
+#[test]
+fn rev_extension_horizontal() {
+    let grid = "---".parse::<Grid>().unwrap();
+    let opt_p = super::find_unclosed_path_from(&grid,
+                                               &Default::default(),
+                                               DirVector(Pt(2,1), Direction::E));
+    assert_eq!(opt_p.unwrap(),
+               Path::open((Pt(1,1)...Pt(3,1)).iter_char('-').collect()));
+}
 
 #[test]
 fn slant_chars_along_straight_line() {

@@ -6,7 +6,7 @@ points that make up the path).
 
 ```rust
 use directions::{Direction, DIRECTIONS};
-use format::Table;
+use format::{self, Table};
 use grid::{Elem, Grid, Pt, DirVector};
 use path::{Closed, Path};
 
@@ -25,6 +25,7 @@ struct FindClosedPaths<'a> {
 
 #[derive(Debug)]
 struct FindUnclosedPaths<'a> {
+    prefix_rev: Vec<Pt>,
     find: FindPaths<'a>
 }
 
@@ -159,12 +160,6 @@ not be able to start the rendering of the path.
                 continue;
             }
 
-            // FIXME: the success case for this code is not complete: in addition to searching
-            // forward along the path from the supposed start point, we also need to search
-            // *backward* (in case there is a longer path we could acquire by adding on a prefix).
-            //
-            // But in any case, once we have *some* kind of success, then we are guaranteed to
-            // return Ok; it is just a matter of *which* path we will return in the payload.
             match self.fwd_ext(next, FindContext { prev: Some(curr), curr: next.0 })
             {
                 ret @ Ok(_) => return ret,
@@ -179,7 +174,6 @@ not be able to start the rendering of the path.
 Attempts to extends the end of the path forward via `dv`.
 ```rust
     fn fwd_ext(mut self, dv: DirVector, fc: FindContext) -> Result<Path, Self> {
-        use path::Closed::*;
         debug!("fwd_ext self: {:?} dv: {:?} {:?}", self, dv, fc);
         assert!(self.find.grid.holds(dv.0));
         assert!(!self.find.steps.contains(&dv.0));
@@ -229,7 +223,8 @@ Attempts to extends the end of the path forward via `dv`.
         assert_eq!(self.find.steps.last(), Some(&dv.0));
         if self.find.matches_end(fc.prev, fc.curr) {
             debug!("fwd_ext self: {:?} exhausted turns; finished.", self);
-            Ok(self.find.to_path(Open))
+
+            Ok(self.rev_ext())
         } else {
             debug!("fwd_ext self: {:?} cannot end here; aborting.", self);
             // undo addition of `curr` to path
@@ -237,6 +232,159 @@ Attempts to extends the end of the path forward via `dv`.
             self.find.steps.pop();
             Err(self)
         }
+    }
+}
+```
+
+These are a collection of methods related to reverse extension
+of a path, i.e. finding a potential prefix after we have found
+a suffix that is itself a legal path.
+
+```rust
+impl<'a> FindUnclosedPaths<'a> {
+```
+
+When we call this function, we have committed to the path that
+we have found so far (i.e. the last item in the current reverse
+prefix (if any) is a legal starting step for this path), and we
+are trying to see if any futher prefix exists.
+
+```rust
+    fn rev_ext(mut self) -> Path {
+        let (curr, next) = self.first_two();
+        for (_j, &dir) in DIRECTIONS.iter().enumerate() {
+            let prev = DirVector(curr, dir).steps(1);
+```
+
+Attempt to find a prefix following `dir`, returning it on success.
+
+```rust
+            match self.try_rev_ext(next, curr, prev) {
+                Ok(p) => return p,
+                Err(s) => self = s,
+            }
+        }
+```
+
+If we try all directions and none are usable, then just hand back
+the path we have.
+
+```rust
+        self.to_path()
+    }
+
+    fn to_path(self) -> Path {
+        let grid = self.find.grid;
+        let mut steps = Vec::new();
+        for pt in self.prefix_rev.into_iter().rev() {
+            steps.push((pt, grid[pt].to_char()))
+        }
+        let mut p = self.find.to_path(Closed::Open);
+        for step in p.steps {
+            steps.push(step)
+        }
+        p.steps = steps;
+        p
+    }
+
+    // Returns the first and second steps of the path.
+    fn first_two(&self) -> (Pt, Pt) {
+        match self.prefix_rev.len() {
+            0 => (self.find.steps[0], self.find.steps[1]),
+            n @ 1 => (self.prefix_rev[n-1], self.find.steps[0]),
+            n => (self.prefix_rev[n-1], self.prefix_rev[n-2]),
+        }
+    }
+
+    fn try_rev_ext(mut self, next: Pt, curr: Pt, prev: DirVector) -> Result<Path, Self> {
+```
+
+If we've gone off the grid, then obviously this direction is no good.
+
+```rust
+        if !self.find.grid.holds(prev.0) {
+            return Err(self);
+        }
+```
+
+Likewise, if there is no content at this point, then we similarly
+need not explore it.
+
+```rust
+        if self.find.grid[prev.0].is_blank() {
+            return Err(self);
+        }
+```
+
+When we call this function, we have a prefix+suffix that may not
+be a legal path. So we need to:
+
+1. Determine if prepending `prev` is legal at all. (If not, Err.)
+   This involves:
+
+   * checking if `prev` is not already on the prefix+suffix, and
+
+```rust
+        // if self.contains(prev.0) {
+        if self.prefix_rev.contains(&prev.0) {
+            return Err(self);
+        }
+        if self.find.steps.contains(&prev.0) {
+            return Err(self);
+        }
+```
+
+   * checking if `(prev, curr, next)` is an entry in our format table.
+
+```rust
+        if !self.find.matches(Some(prev.0), curr, next) {
+            return Err(self);
+        }
+```
+
+(At this point, we know that adding `prev` yields a legal suffix,
+so tentatively add it to the `prefix_rev`.)
+
+```rust
+        self.prefix_rev.push(prev.0);
+```
+
+2. Determine if `prev` yields a valid start to the new prefix+suffix.
+   (If so, then commit addition of `prev` by transitioning to `rev_ext`.)
+
+```rust
+        if self.is_start(prev.0, curr) {
+            return Ok(self.rev_ext());
+        }
+```
+
+3. Otherwise, prefix+suffix yields a suffix but not a whole path,
+   loop through the directions and recursively call `try_rev_ext`
+   on each and see if one works.
+
+```rust
+        let (curr, next) = (prev.0, curr);
+        for (_j, &dir) in DIRECTIONS.iter().enumerate() {
+            let prev = DirVector(curr, dir).steps(1);
+            match self.try_rev_ext(next, curr, prev) {
+                ret @ Ok(_) => return ret,
+                Err(s) => self = s,
+            }
+        }
+```
+
+4. And if none of the directions work, then undo the addition
+of `prev` and Err.
+
+```rust
+        assert_eq!(self.prefix_rev.last(), Some(&prev.0));
+        self.prefix_rev.pop();
+
+        return Err(self);
+    }
+
+    fn is_start(&self, curr: Pt, next: Pt) -> bool {
+        self.find.matches_start(curr, Some(next))
     }
 }
 
@@ -414,7 +562,8 @@ pub fn find_closed_path(grid: &Grid, format: &Table, pt: Pt) -> Option<Path> {
 }
 
 pub fn find_unclosed_path_from(grid: &Grid, format: &Table, dir: DirVector) -> Option<Path> {
-    let pf = FindUnclosedPaths { find: FindPaths::with_grid_format(grid, format) };
+    let pf = FindUnclosedPaths { prefix_rev: Vec::new(),
+                                 find: FindPaths::with_grid_format(grid, format) };
     let ret = pf.fwd_ext(dir, FindContext {
         prev: None,
         curr: dir.0
@@ -424,25 +573,35 @@ pub fn find_unclosed_path_from(grid: &Grid, format: &Table, dir: DirVector) -> O
 }
 
 pub fn find_unclosed_path(grid: &Grid, format: &Table, pt: Pt) -> Option<Path> {
-    let pf = FindUnclosedPaths { find: FindPaths::with_grid_format(grid, format) };
+    let pf = FindUnclosedPaths { prefix_rev: Vec::new(),
+                                 find: FindPaths::with_grid_format(grid, format) };
     let ret = pf.find_unclosed_path(pt).ok();
     debug!("find_unclosed_path pt {:?} ret {:?}", pt, ret);
     ret
 }
 
 impl<'a> FindPaths<'a> {
-    fn matches(&self, prev: Option<Pt>, curr: Pt, next: Pt) -> bool {
-        let c = if let Some(c) = self.grid[curr].opt_char() { c } else { return false; };
+    fn find_entry(&self,
+                  prev: Option<Pt>,
+                  curr: Pt,
+                  next: Pt) -> Option<&format::Entry> {
+        #![allow(unused_parens)]
+        let c = (if let Some(c) = self.grid[curr].opt_char() { c }
+                 else { return None; });
         let prev_arc = prev.and_then(|prev| {
             self.grid[prev].opt_char().map(|p| (p, prev.towards(curr)))
         });
         let next_arc = self.grid[next].opt_char().map(|n| (curr.towards(next), n));
         for entry in &self.format.entries {
             if entry.matches(prev_arc, c, next_arc) {
-                return true;
+                return Some(entry);
             }
         }
-        return false;
+        return None;
+    }
+
+    fn matches(&self, prev: Option<Pt>, curr: Pt, next: Pt) -> bool {
+        self.find_entry(prev, curr, next).is_some()
     }
 
     fn matches_start(&self, curr: Pt, next: Option<Pt>) -> bool {
