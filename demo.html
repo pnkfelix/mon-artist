@@ -1,0 +1,868 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html>
+  <body>
+    <h3>BASIC</h3>
+    <pre style="border:1px dotted black;">.----.  top
+|    |
+'----'  bottom
+</pre>
+    <svg height="39" version="1.1" xmlns="http://www.w3.org/2000/svg" width="112" baseProfile="full">
+      <defs>
+        <pattern id="grid_cell" height="13" width="8" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="gray" fill="None" x="0" stroke-width="0.25" height="13" width="8" />
+        </pattern>
+        <pattern id="grid" height="130" width="80" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="darkgray" fill="url(#grid_cell)" x="0" stroke-width="0.5" height="130" width="80" />
+        </pattern>
+      </defs>
+      <rect y="0" fill="url(#grid)" x="0" height="100%" width="100%" />
+      <rect y="6.5" stroke="red" rx="4" fill="None" x="4" ry="6.5" stroke-width="2" height="26" width="40" />
+      <text y="6.5" font-family="Menlo" fill="black" x="64" text-anchor="start" font-size="13" dominant-baseline="middle">top</text>
+      <text y="32.5" font-family="Menlo" fill="black" x="64" text-anchor="start" font-size="13" dominant-baseline="middle">bottom</text>
+    </svg>
+    <hr />
+    <h3>BASIC_NAMED_RECT</h3>
+    <pre style="border:1px dotted black;">.----.  top
+|[b] |
+'----'  bottom
+
+[b]: fill='yellow'
+</pre>
+    <svg height="52" version="1.1" xmlns="http://www.w3.org/2000/svg" width="112" baseProfile="full">
+      <defs>
+        <pattern id="grid_cell" height="13" width="8" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="gray" fill="None" x="0" stroke-width="0.25" height="13" width="8" />
+        </pattern>
+        <pattern id="grid" height="130" width="80" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="darkgray" fill="url(#grid_cell)" x="0" stroke-width="0.5" height="130" width="80" />
+        </pattern>
+      </defs>
+      <rect y="0" fill="url(#grid)" x="0" height="100%" width="100%" />
+      <rect y="6.5" stroke="red" rx="4" id="b" fill="yellow" x="4" ry="6.5" stroke-width="2" height="26" width="40" />
+      <text y="6.5" font-family="Menlo" fill="black" x="64" text-anchor="start" font-size="13" dominant-baseline="middle">top</text>
+      <text y="32.5" font-family="Menlo" fill="black" x="64" text-anchor="start" font-size="13" dominant-baseline="middle">bottom</text>
+    </svg>
+    <hr />
+    <h3>BASIC_NAMED_CLOSED</h3>
+    <pre style="border:1px dotted black;">.----.  top
+|[b] |
+'----+  bottom
+
+[b]: fill='yellow'
+</pre>
+    <svg height="52" version="1.1" xmlns="http://www.w3.org/2000/svg" width="112" baseProfile="full">
+      <defs>
+        <pattern id="grid_cell" height="13" width="8" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="gray" fill="None" x="0" stroke-width="0.25" height="13" width="8" />
+        </pattern>
+        <pattern id="grid" height="130" width="80" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="darkgray" fill="url(#grid_cell)" x="0" stroke-width="0.5" height="130" width="80" />
+        </pattern>
+      </defs>
+      <rect y="0" fill="url(#grid)" x="0" height="100%" width="100%" />
+      <path stroke="green" d="M 4,13 Q 4,6.5 8,6.5Q 8,6.5 16,6.5L 24,6.5L 32,6.5L 40,6.5Q 44,6.5 44,13L 44,26L 44,32.5L 32,32.5L 24,32.5L 16,32.5L 8,32.5Q 4,32.5 4,26L 4,13 Z" id="b" fill="yellow" stroke-width="2" />
+      <text y="6.5" font-family="Menlo" fill="black" x="64" text-anchor="start" font-size="13" dominant-baseline="middle">top</text>
+      <text y="32.5" font-family="Menlo" fill="black" x="64" text-anchor="start" font-size="13" dominant-baseline="middle">bottom</text>
+    </svg>
+    <hr />
+    <h3>BASIC_NAMED_UNCLOSED</h3>
+    <pre style="border:1px dotted black;">
+.----.  top
+     |
+    -+  bottom
+</pre>
+    <svg height="52" version="1.1" xmlns="http://www.w3.org/2000/svg" width="112" baseProfile="full">
+      <defs>
+        <pattern id="grid_cell" height="13" width="8" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="gray" fill="None" x="0" stroke-width="0.25" height="13" width="8" />
+        </pattern>
+        <pattern id="grid" height="130" width="80" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="darkgray" fill="url(#grid_cell)" x="0" stroke-width="0.5" height="130" width="80" />
+        </pattern>
+      </defs>
+      <rect y="0" fill="url(#grid)" x="0" height="100%" width="100%" />
+      <path stroke="green" d="M 4,26 Q 4,19.5 8,19.5Q 8,19.5 16,19.5L 24,19.5L 32,19.5L 40,19.5Q 44,19.5 44,26L 44,39L 44,45.5L 32,45.5" fill="none" stroke-width="2" />
+      <text y="19.5" font-family="Menlo" fill="black" x="64" text-anchor="start" font-size="13" dominant-baseline="middle">top</text>
+      <text y="45.5" font-family="Menlo" fill="black" x="64" text-anchor="start" font-size="13" dominant-baseline="middle">bottom</text>
+    </svg>
+    <hr />
+    <h3>BASIC_NAMED_UNCLOSED_PREFIX</h3>
+    <pre style="border:1px dotted black;">
+.----.  top
+|[b] |
+'-  -+  bottom
+^
+| We used to omit steps before top-left corner here
+  [note]
+
+[b]: stroke='blue'
+[note]: font-size='10' font-style='italic' font-family='Trattatello'
+</pre>
+    <svg height="104" version="1.1" xmlns="http://www.w3.org/2000/svg" width="408" baseProfile="full">
+      <defs>
+        <pattern id="grid_cell" height="13" width="8" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="gray" fill="None" x="0" stroke-width="0.25" height="13" width="8" />
+        </pattern>
+        <pattern id="grid" height="130" width="80" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="darkgray" fill="url(#grid_cell)" x="0" stroke-width="0.5" height="130" width="80" />
+        </pattern>
+      </defs>
+      <rect y="0" fill="url(#grid)" x="0" height="100%" width="100%" />
+      <path stroke="blue" d="M 16,45.5 L 8,45.5Q 4,45.5 4,39L 4,26Q 4,19.5 8,19.5Q 8,19.5 16,19.5L 24,19.5L 32,19.5L 40,19.5Q 44,19.5 44,26L 44,39L 44,45.5L 32,45.5" id="b" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 4,58.5 l 0,-5 m -3,5 l 3,-5 l 3, 5 m -3,0L 4,78" fill="none" stroke-width="2" />
+      <text y="19.5" font-family="Menlo" fill="black" x="64" text-anchor="start" font-size="13" dominant-baseline="middle">top</text>
+      <text y="45.5" font-family="Menlo" fill="black" x="64" text-anchor="start" font-size="13" dominant-baseline="middle">bottom</text>
+      <text y="71.5" id="note" font-family="Trattatello" fill="black" x="16" text-anchor="start" font-style="italic" font-size="10" dominant-baseline="middle">We used to omit steps before top-left corner here</text>
+    </svg>
+    <hr />
+    <h3>BASIC_ATTRS</h3>
+    <pre style="border:1px dotted black;">.----.  top
+|[b] |
+'----'  bottom
+[b]: fill='yellow'
+</pre>
+    <svg height="39" version="1.1" xmlns="http://www.w3.org/2000/svg" width="112" baseProfile="full">
+      <defs>
+        <pattern id="grid_cell" height="13" width="8" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="gray" fill="None" x="0" stroke-width="0.25" height="13" width="8" />
+        </pattern>
+        <pattern id="grid" height="130" width="80" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="darkgray" fill="url(#grid_cell)" x="0" stroke-width="0.5" height="130" width="80" />
+        </pattern>
+      </defs>
+      <rect y="0" fill="url(#grid)" x="0" height="100%" width="100%" />
+      <rect y="6.5" stroke="red" rx="4" id="b" fill="yellow" x="4" ry="6.5" stroke-width="2" height="26" width="40" />
+      <text y="6.5" font-family="Menlo" fill="black" x="64" text-anchor="start" font-size="13" dominant-baseline="middle">top</text>
+      <text y="32.5" font-family="Menlo" fill="black" x="64" text-anchor="start" font-size="13" dominant-baseline="middle">bottom</text>
+    </svg>
+    <hr />
+    <h3>LINE</h3>
+    <pre style="border:1px dotted black;">
+ above
+------
+ below
+</pre>
+    <svg height="52" version="1.1" xmlns="http://www.w3.org/2000/svg" width="48" baseProfile="full">
+      <defs>
+        <pattern id="grid_cell" height="13" width="8" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="gray" fill="None" x="0" stroke-width="0.25" height="13" width="8" />
+        </pattern>
+        <pattern id="grid" height="130" width="80" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="darkgray" fill="url(#grid_cell)" x="0" stroke-width="0.5" height="130" width="80" />
+        </pattern>
+      </defs>
+      <rect y="0" fill="url(#grid)" x="0" height="100%" width="100%" />
+      <path stroke="green" d="M 0,32.5 L 8,32.5L 16,32.5L 24,32.5L 32,32.5L 40,32.5L 48,32.5" fill="none" stroke-width="2" />
+      <text y="19.5" font-family="Menlo" fill="black" x="8" text-anchor="start" font-size="13" dominant-baseline="middle">above</text>
+      <text y="45.5" font-family="Menlo" fill="black" x="8" text-anchor="start" font-size="13" dominant-baseline="middle">below</text>
+    </svg>
+    <hr />
+    <h3>LINE_WITH_ID</h3>
+    <pre style="border:1px dotted black;">
+ above
+------[line_id]
+ below
+</pre>
+    <svg height="52" version="1.1" xmlns="http://www.w3.org/2000/svg" width="120" baseProfile="full">
+      <defs>
+        <pattern id="grid_cell" height="13" width="8" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="gray" fill="None" x="0" stroke-width="0.25" height="13" width="8" />
+        </pattern>
+        <pattern id="grid" height="130" width="80" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="darkgray" fill="url(#grid_cell)" x="0" stroke-width="0.5" height="130" width="80" />
+        </pattern>
+      </defs>
+      <rect y="0" fill="url(#grid)" x="0" height="100%" width="100%" />
+      <path stroke="green" d="M 0,32.5 L 8,32.5L 16,32.5L 24,32.5L 32,32.5L 40,32.5L 48,32.5" id="line_id" fill="none" stroke-width="2" />
+      <text y="19.5" font-family="Menlo" fill="black" x="8" text-anchor="start" font-size="13" dominant-baseline="middle">above</text>
+      <text y="45.5" font-family="Menlo" fill="black" x="8" text-anchor="start" font-size="13" dominant-baseline="middle">below</text>
+    </svg>
+    <hr />
+    <h3>VERT_LINE</h3>
+    <pre style="border:1px dotted black;">
+| top
+|
+| bottom
+</pre>
+    <svg height="52" version="1.1" xmlns="http://www.w3.org/2000/svg" width="64" baseProfile="full">
+      <defs>
+        <pattern id="grid_cell" height="13" width="8" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="gray" fill="None" x="0" stroke-width="0.25" height="13" width="8" />
+        </pattern>
+        <pattern id="grid" height="130" width="80" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="darkgray" fill="url(#grid_cell)" x="0" stroke-width="0.5" height="130" width="80" />
+        </pattern>
+      </defs>
+      <rect y="0" fill="url(#grid)" x="0" height="100%" width="100%" />
+      <path stroke="green" d="M 4,13 L 4,26L 4,39L 4,52" fill="none" stroke-width="2" />
+      <text y="19.5" font-family="Menlo" fill="black" x="16" text-anchor="start" font-size="13" dominant-baseline="middle">top</text>
+      <text y="45.5" font-family="Menlo" fill="black" x="16" text-anchor="start" font-size="13" dominant-baseline="middle">bottom</text>
+    </svg>
+    <hr />
+    <h3>VERT_LINE_WITH_ID</h3>
+    <pre style="border:1px dotted black;">
+| top
+|
+| bottom
+|[line_id]
+</pre>
+    <svg height="65" version="1.1" xmlns="http://www.w3.org/2000/svg" width="80" baseProfile="full">
+      <defs>
+        <pattern id="grid_cell" height="13" width="8" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="gray" fill="None" x="0" stroke-width="0.25" height="13" width="8" />
+        </pattern>
+        <pattern id="grid" height="130" width="80" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="darkgray" fill="url(#grid_cell)" x="0" stroke-width="0.5" height="130" width="80" />
+        </pattern>
+      </defs>
+      <rect y="0" fill="url(#grid)" x="0" height="100%" width="100%" />
+      <path stroke="green" d="M 4,13 L 4,26L 4,39L 4,52L 4,65" id="line_id" fill="none" stroke-width="2" />
+      <text y="19.5" font-family="Menlo" fill="black" x="16" text-anchor="start" font-size="13" dominant-baseline="middle">top</text>
+      <text y="45.5" font-family="Menlo" fill="black" x="16" text-anchor="start" font-size="13" dominant-baseline="middle">bottom</text>
+    </svg>
+    <hr />
+    <h3>TEXT_WITH_ATTRS</h3>
+    <pre style="border:1px dotted black;">
+hello world
+[h]
+
+[h]: font-style='italic'
+</pre>
+    <svg height="52" version="1.1" xmlns="http://www.w3.org/2000/svg" width="88" baseProfile="full">
+      <defs>
+        <pattern id="grid_cell" height="13" width="8" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="gray" fill="None" x="0" stroke-width="0.25" height="13" width="8" />
+        </pattern>
+        <pattern id="grid" height="130" width="80" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="darkgray" fill="url(#grid_cell)" x="0" stroke-width="0.5" height="130" width="80" />
+        </pattern>
+      </defs>
+      <rect y="0" fill="url(#grid)" x="0" height="100%" width="100%" />
+      <text y="19.5" id="h" font-family="Menlo" fill="black" x="0" text-anchor="start" font-style="italic" font-size="13" dominant-baseline="middle">hello world</text>
+    </svg>
+    <hr />
+    <h3>DASHED</h3>
+    <pre style="border:1px dotted black;">
+ above
+-=-=-=
+ below
+</pre>
+    <svg height="52" version="1.1" xmlns="http://www.w3.org/2000/svg" width="48" baseProfile="full">
+      <defs>
+        <pattern id="grid_cell" height="13" width="8" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="gray" fill="None" x="0" stroke-width="0.25" height="13" width="8" />
+        </pattern>
+        <pattern id="grid" height="130" width="80" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="darkgray" fill="url(#grid_cell)" x="0" stroke-width="0.5" height="130" width="80" />
+        </pattern>
+      </defs>
+      <rect y="0" fill="url(#grid)" x="0" height="100%" width="100%" />
+      <path stroke="green" d="M 0,32.5 L 8,32.5L 16,32.5L 24,32.5L 32,32.5L 40,32.5L 48,32.5" fill="none" stroke-dasharray="5,2" stroke-width="2" />
+      <text y="19.5" font-family="Menlo" fill="black" x="8" text-anchor="start" font-size="13" dominant-baseline="middle">above</text>
+      <text y="45.5" font-family="Menlo" fill="black" x="8" text-anchor="start" font-size="13" dominant-baseline="middle">below</text>
+    </svg>
+    <hr />
+    <h3>VERT_DASH</h3>
+    <pre style="border:1px dotted black;">
+: top
+|
+: bottom
+</pre>
+    <svg height="52" version="1.1" xmlns="http://www.w3.org/2000/svg" width="64" baseProfile="full">
+      <defs>
+        <pattern id="grid_cell" height="13" width="8" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="gray" fill="None" x="0" stroke-width="0.25" height="13" width="8" />
+        </pattern>
+        <pattern id="grid" height="130" width="80" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="darkgray" fill="url(#grid_cell)" x="0" stroke-width="0.5" height="130" width="80" />
+        </pattern>
+      </defs>
+      <rect y="0" fill="url(#grid)" x="0" height="100%" width="100%" />
+      <path stroke="green" d="M 4,13 L 4,26L 4,39L 4,52" fill="none" stroke-dasharray="5,2" stroke-width="2" />
+      <text y="19.5" font-family="Menlo" fill="black" x="16" text-anchor="start" font-size="13" dominant-baseline="middle">top</text>
+      <text y="45.5" font-family="Menlo" fill="black" x="16" text-anchor="start" font-size="13" dominant-baseline="middle">bottom</text>
+    </svg>
+    <hr />
+    <h3>CURVES</h3>
+    <pre style="border:1px dotted black;">
+--.  +--+      +--.      .----+  +---------.  .------+
+  |  |   \    /    \    /    /    \       /    \     |
+  +--'    +--+      '--'    +------+     '------'    end
+</pre>
+    <svg height="52" version="1.1" xmlns="http://www.w3.org/2000/svg" width="448" baseProfile="full">
+      <defs>
+        <pattern id="grid_cell" height="13" width="8" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="gray" fill="None" x="0" stroke-width="0.25" height="13" width="8" />
+        </pattern>
+        <pattern id="grid" height="130" width="80" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="darkgray" fill="url(#grid_cell)" x="0" stroke-width="0.5" height="130" width="80" />
+        </pattern>
+      </defs>
+      <rect y="0" fill="url(#grid)" x="0" height="100%" width="100%" />
+      <path stroke="green" d="M 0,19.5 L 8,19.5L 16,19.5Q 20,19.5 20,26L 20,39L 20,45.5L 32,45.5L 40,45.5Q 44,45.5 44,39L 44,26L 44,19.5L 56,19.5L 64,19.5L 68,19.5L 80,39L 84,45.5L 96,45.5L 104,45.5L 108,45.5L 120,26L 124,19.5L 136,19.5L 144,19.5Q 148,19.5 152,26L 160,39Q 164,45.5 168,45.5Q 168,45.5 176,45.5L 184,45.5Q 188,45.5 192,39L 200,26Q 204,19.5 208,19.5Q 208,19.5 216,19.5L 224,19.5L 232,19.5L 240,19.5L 244,19.5L 232,39L 228,45.5L 240,45.5L 248,45.5L 256,45.5L 264,45.5L 272,45.5L 280,45.5L 284,45.5L 272,26L 268,19.5L 280,19.5L 288,19.5L 296,19.5L 304,19.5L 312,19.5L 320,19.5L 328,19.5L 336,19.5L 344,19.5Q 348,19.5 344,26L 336,39Q 332,45.5 336,45.5Q 336,45.5 344,45.5L 352,45.5L 360,45.5L 368,45.5L 376,45.5L 384,45.5Q 388,45.5 384,39L 376,26Q 372,19.5 376,19.5Q 376,19.5 384,19.5L 392,19.5L 400,19.5L 408,19.5L 416,19.5L 424,19.5L 428,19.5L 428,39" fill="none" stroke-width="2" />
+      <text y="45.5" font-family="Menlo" fill="black" x="424" text-anchor="start" font-size="13" dominant-baseline="middle">end</text>
+    </svg>
+    <hr />
+    <h3>LEFT_ARROW</h3>
+    <pre style="border:1px dotted black;">
+ above
+&lt;-----
+ below
+</pre>
+    <svg height="52" version="1.1" xmlns="http://www.w3.org/2000/svg" width="48" baseProfile="full">
+      <defs>
+        <pattern id="grid_cell" height="13" width="8" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="gray" fill="None" x="0" stroke-width="0.25" height="13" width="8" />
+        </pattern>
+        <pattern id="grid" height="130" width="80" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="darkgray" fill="url(#grid_cell)" x="0" stroke-width="0.5" height="130" width="80" />
+        </pattern>
+      </defs>
+      <rect y="0" fill="url(#grid)" x="0" height="100%" width="100%" />
+      <path stroke="green" d="M 4,32.5 l -3,0 m 3,-3 l -3,3 l 3,3 m 0,-3L 16,32.5L 24,32.5L 32,32.5L 40,32.5L 48,32.5" fill="none" stroke-width="2" />
+      <text y="19.5" font-family="Menlo" fill="black" x="8" text-anchor="start" font-size="13" dominant-baseline="middle">above</text>
+      <text y="45.5" font-family="Menlo" fill="black" x="8" text-anchor="start" font-size="13" dominant-baseline="middle">below</text>
+    </svg>
+    <hr />
+    <h3>RIGHT_ARROW</h3>
+    <pre style="border:1px dotted black;">
+above
+----->
+below
+</pre>
+    <svg height="52" version="1.1" xmlns="http://www.w3.org/2000/svg" width="48" baseProfile="full">
+      <defs>
+        <pattern id="grid_cell" height="13" width="8" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="gray" fill="None" x="0" stroke-width="0.25" height="13" width="8" />
+        </pattern>
+        <pattern id="grid" height="130" width="80" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="darkgray" fill="url(#grid_cell)" x="0" stroke-width="0.5" height="130" width="80" />
+        </pattern>
+      </defs>
+      <rect y="0" fill="url(#grid)" x="0" height="100%" width="100%" />
+      <path stroke="green" d="M 0,32.5 L 8,32.5L 16,32.5L 24,32.5L 32,32.5L 40,32.5L 44,32.5 l 3,0 m -3,-3 l 3,3 l -3,3 m 0,-3" fill="none" stroke-width="2" />
+      <text y="19.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">above</text>
+      <text y="45.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">below</text>
+    </svg>
+    <hr />
+    <h3>BASIC_ALL_PLUS</h3>
+    <pre style="border:1px dotted black;">+----+  top
+|[b] |
++----+  bottom
+</pre>
+    <svg height="39" version="1.1" xmlns="http://www.w3.org/2000/svg" width="112" baseProfile="full">
+      <defs>
+        <pattern id="grid_cell" height="13" width="8" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="gray" fill="None" x="0" stroke-width="0.25" height="13" width="8" />
+        </pattern>
+        <pattern id="grid" height="130" width="80" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="darkgray" fill="url(#grid_cell)" x="0" stroke-width="0.5" height="130" width="80" />
+        </pattern>
+      </defs>
+      <rect y="0" fill="url(#grid)" x="0" height="100%" width="100%" />
+      <rect y="6.5" stroke="red" id="b" fill="None" x="4" stroke-width="2" height="26" width="40" />
+      <text y="6.5" font-family="Menlo" fill="black" x="64" text-anchor="start" font-size="13" dominant-baseline="middle">top</text>
+      <text y="32.5" font-family="Menlo" fill="black" x="64" text-anchor="start" font-size="13" dominant-baseline="middle">bottom</text>
+    </svg>
+    <hr />
+    <h3>BASIC_UL_PLUS</h3>
+    <pre style="border:1px dotted black;">+----.  top
+|    |
+'----'  bottom
+</pre>
+    <svg height="39" version="1.1" xmlns="http://www.w3.org/2000/svg" width="112" baseProfile="full">
+      <defs>
+        <pattern id="grid_cell" height="13" width="8" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="gray" fill="None" x="0" stroke-width="0.25" height="13" width="8" />
+        </pattern>
+        <pattern id="grid" height="130" width="80" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="darkgray" fill="url(#grid_cell)" x="0" stroke-width="0.5" height="130" width="80" />
+        </pattern>
+      </defs>
+      <rect y="0" fill="url(#grid)" x="0" height="100%" width="100%" />
+      <path stroke="green" d="M 4,6.5L 16,6.5L 24,6.5L 32,6.5L 40,6.5Q 44,6.5 44,13L 44,26Q 44,32.5 40,32.5Q 40,32.5 32,32.5L 24,32.5L 16,32.5L 8,32.5Q 4,32.5 4,26L 4,13 Z" fill="none" stroke-width="2" />
+      <text y="6.5" font-family="Menlo" fill="black" x="64" text-anchor="start" font-size="13" dominant-baseline="middle">top</text>
+      <text y="32.5" font-family="Menlo" fill="black" x="64" text-anchor="start" font-size="13" dominant-baseline="middle">bottom</text>
+    </svg>
+    <hr />
+    <h3>ARROW_POINT_SOUTH_AT_BOX</h3>
+    <pre style="border:1px dotted black;">|   |[a]  top
+|   |
+|   v
+| +----+
+| |[b] |
+| +----+  bottom
+</pre>
+    <svg height="78" version="1.1" xmlns="http://www.w3.org/2000/svg" width="128" baseProfile="full">
+      <defs>
+        <pattern id="grid_cell" height="13" width="8" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="gray" fill="None" x="0" stroke-width="0.25" height="13" width="8" />
+        </pattern>
+        <pattern id="grid" height="130" width="80" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="darkgray" fill="url(#grid_cell)" x="0" stroke-width="0.5" height="130" width="80" />
+        </pattern>
+      </defs>
+      <rect y="0" fill="url(#grid)" x="0" height="100%" width="100%" />
+      <rect y="45.5" stroke="red" id="b" fill="None" x="20" stroke-width="2" height="26" width="40" />
+      <path stroke="green" d="M 4,0 L 4,13L 4,26L 4,39L 4,52L 4,65L 4,78" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 36,0 L 36,13L 36,26L 36,32.5 l 0,5 m -3,-5 l 3, 5 l 3,-5 m -3,0" id="a" fill="none" stroke-width="2" />
+      <text y="6.5" font-family="Menlo" fill="black" x="80" text-anchor="start" font-size="13" dominant-baseline="middle">top</text>
+      <text y="71.5" font-family="Menlo" fill="black" x="80" text-anchor="start" font-size="13" dominant-baseline="middle">bottom</text>
+    </svg>
+    <hr />
+    <h3>ARROW_POINT_SOUTH_TO_BOX</h3>
+    <pre style="border:1px dotted black;">|   |[a]  top
+|   |
+|   v
+| +-+--+
+| |[b] |
+| +----+  bottom
+</pre>
+    <svg height="78" version="1.1" xmlns="http://www.w3.org/2000/svg" width="128" baseProfile="full">
+      <defs>
+        <pattern id="grid_cell" height="13" width="8" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="gray" fill="None" x="0" stroke-width="0.25" height="13" width="8" />
+        </pattern>
+        <pattern id="grid" height="130" width="80" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="darkgray" fill="url(#grid_cell)" x="0" stroke-width="0.5" height="130" width="80" />
+        </pattern>
+      </defs>
+      <rect y="0" fill="url(#grid)" x="0" height="100%" width="100%" />
+      <rect y="45.5" stroke="red" id="b" fill="None" x="20" stroke-width="2" height="26" width="40" />
+      <path stroke="green" d="M 4,0 L 4,13L 4,26L 4,39L 4,52L 4,65L 4,78" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 36,0 L 36,13L 36,26L 36,39 l 0,5 m -3,-5 l 3, 5 l 3,-5 m -3,0 m 0, 5M 36,45.5" id="a" fill="none" stroke-width="2" />
+      <text y="6.5" font-family="Menlo" fill="black" x="80" text-anchor="start" font-size="13" dominant-baseline="middle">top</text>
+      <text y="71.5" font-family="Menlo" fill="black" x="80" text-anchor="start" font-size="13" dominant-baseline="middle">bottom</text>
+    </svg>
+    <hr />
+    <h3>DOUBLE_ARROW_POINT_SOUTH_AT_BOX</h3>
+    <pre style="border:1px dotted black;">|   ^     top
+|   |
+|   v
+| +----+
+| |    |
+| +----+  bottom
+</pre>
+    <svg height="78" version="1.1" xmlns="http://www.w3.org/2000/svg" width="128" baseProfile="full">
+      <defs>
+        <pattern id="grid_cell" height="13" width="8" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="gray" fill="None" x="0" stroke-width="0.25" height="13" width="8" />
+        </pattern>
+        <pattern id="grid" height="130" width="80" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="darkgray" fill="url(#grid_cell)" x="0" stroke-width="0.5" height="130" width="80" />
+        </pattern>
+      </defs>
+      <rect y="0" fill="url(#grid)" x="0" height="100%" width="100%" />
+      <rect y="45.5" stroke="red" fill="None" x="20" stroke-width="2" height="26" width="40" />
+      <path stroke="green" d="M 4,0 L 4,13L 4,26L 4,39L 4,52L 4,65L 4,78" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 36,6.5 l 0,-5 m -3,5 l 3,-5 l 3, 5 m -3,0L 36,26L 36,32.5 l 0,5 m -3,-5 l 3, 5 l 3,-5 m -3,0" fill="none" stroke-width="2" />
+      <text y="6.5" font-family="Menlo" fill="black" x="80" text-anchor="start" font-size="13" dominant-baseline="middle">top</text>
+      <text y="71.5" font-family="Menlo" fill="black" x="80" text-anchor="start" font-size="13" dominant-baseline="middle">bottom</text>
+    </svg>
+    <hr />
+    <h3>DOUBLE_ARROW_POINT_SOUTH_TO_BOX</h3>
+    <pre style="border:1px dotted black;">|   ^     top
+|   |
+|   v
+| +-+--+
+| |[b] |
+| +----+  bottom
+</pre>
+    <svg height="78" version="1.1" xmlns="http://www.w3.org/2000/svg" width="128" baseProfile="full">
+      <defs>
+        <pattern id="grid_cell" height="13" width="8" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="gray" fill="None" x="0" stroke-width="0.25" height="13" width="8" />
+        </pattern>
+        <pattern id="grid" height="130" width="80" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="darkgray" fill="url(#grid_cell)" x="0" stroke-width="0.5" height="130" width="80" />
+        </pattern>
+      </defs>
+      <rect y="0" fill="url(#grid)" x="0" height="100%" width="100%" />
+      <rect y="45.5" stroke="red" id="b" fill="None" x="20" stroke-width="2" height="26" width="40" />
+      <path stroke="green" d="M 4,0 L 4,13L 4,26L 4,39L 4,52L 4,65L 4,78" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 36,6.5 l 0,-5 m -3,5 l 3,-5 l 3, 5 m -3,0L 36,26L 36,39 l 0,5 m -3,-5 l 3, 5 l 3,-5 m -3,0 m 0, 5M 36,45.5" fill="none" stroke-width="2" />
+      <text y="6.5" font-family="Menlo" fill="black" x="80" text-anchor="start" font-size="13" dominant-baseline="middle">top</text>
+      <text y="71.5" font-family="Menlo" fill="black" x="80" text-anchor="start" font-size="13" dominant-baseline="middle">bottom</text>
+    </svg>
+    <hr />
+    <h3>BOX_AT_BOX</h3>
+    <pre style="border:1px dotted black;">() +---+ top    
+() |   |        
+() +---+[t]     
+()   ^          
+()   |          
+()   v          
+() +---+[b]     
+() |   |        
+() +---+ bottom 
+</pre>
+    <svg height="117" version="1.1" xmlns="http://www.w3.org/2000/svg" width="128" baseProfile="full">
+      <defs>
+        <pattern id="grid_cell" height="13" width="8" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="gray" fill="None" x="0" stroke-width="0.25" height="13" width="8" />
+        </pattern>
+        <pattern id="grid" height="130" width="80" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="darkgray" fill="url(#grid_cell)" x="0" stroke-width="0.5" height="130" width="80" />
+        </pattern>
+      </defs>
+      <rect y="0" fill="url(#grid)" x="0" height="100%" width="100%" />
+      <rect y="6.5" stroke="red" id="t" fill="None" x="28" stroke-width="2" height="26" width="32" />
+      <rect y="84.5" stroke="red" id="b" fill="None" x="28" stroke-width="2" height="26" width="32" />
+      <path stroke="green" d="M 44,45.5 l 0,-5 m -3,5 l 3,-5 l 3, 5 m -3,0L 44,65L 44,71.5 l 0,5 m -3,-5 l 3, 5 l 3,-5 m -3,0" fill="none" stroke-width="2" />
+      <text y="6.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">() </text>
+      <text y="6.5" font-family="Menlo" fill="black" x="72" text-anchor="start" font-size="13" dominant-baseline="middle">top    </text>
+      <text y="19.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">() </text>
+      <text y="32.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">() </text>
+      <text y="45.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">()   </text>
+      <text y="58.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">()   </text>
+      <text y="71.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">()   </text>
+      <text y="84.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">() </text>
+      <text y="97.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">() </text>
+      <text y="110.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">() </text>
+      <text y="110.5" font-family="Menlo" fill="black" x="72" text-anchor="start" font-size="13" dominant-baseline="middle">bottom </text>
+    </svg>
+    <hr />
+    <h3>BOX_TO_BOX</h3>
+    <pre style="border:1px dotted black;">() +---+ top    
+() |   |        
+() +-+-+[t]     
+()   ^          
+()   |          
+()   v          
+() +-+-+[b]     
+() |   |        
+() +---+ bottom 
+</pre>
+    <svg height="117" version="1.1" xmlns="http://www.w3.org/2000/svg" width="128" baseProfile="full">
+      <defs>
+        <pattern id="grid_cell" height="13" width="8" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="gray" fill="None" x="0" stroke-width="0.25" height="13" width="8" />
+        </pattern>
+        <pattern id="grid" height="130" width="80" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="darkgray" fill="url(#grid_cell)" x="0" stroke-width="0.5" height="130" width="80" />
+        </pattern>
+      </defs>
+      <rect y="0" fill="url(#grid)" x="0" height="100%" width="100%" />
+      <rect y="6.5" stroke="red" id="t" fill="None" x="28" stroke-width="2" height="26" width="32" />
+      <rect y="84.5" stroke="red" id="b" fill="None" x="28" stroke-width="2" height="26" width="32" />
+      <path stroke="green" d="M 44,32.5M 44,39 l 0,-5 m -3,5 l 3,-5 l 3, 5 m -3,0 M 44,39 L 44,45.5L 44,65L 44,78 l 0,5 m -3,-5 l 3, 5 l 3,-5 m -3,0 m 0, 5M 44,84.5" fill="none" stroke-width="2" />
+      <text y="6.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">() </text>
+      <text y="6.5" font-family="Menlo" fill="black" x="72" text-anchor="start" font-size="13" dominant-baseline="middle">top    </text>
+      <text y="19.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">() </text>
+      <text y="32.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">() </text>
+      <text y="45.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">()   </text>
+      <text y="58.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">()   </text>
+      <text y="71.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">()   </text>
+      <text y="84.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">() </text>
+      <text y="97.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">() </text>
+      <text y="110.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">() </text>
+      <text y="110.5" font-family="Menlo" fill="black" x="72" text-anchor="start" font-size="13" dominant-baseline="middle">bottom </text>
+    </svg>
+    <hr />
+    <h3>RBOX_AT_RBOX</h3>
+    <pre style="border:1px dotted black;">() .---. top    
+() |   |        
+() '---'[t]     
+()   ^          
+()   |          
+()   v          
+() .---.[b]     
+() |   |        
+() '---' bottom 
+</pre>
+    <svg height="117" version="1.1" xmlns="http://www.w3.org/2000/svg" width="128" baseProfile="full">
+      <defs>
+        <pattern id="grid_cell" height="13" width="8" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="gray" fill="None" x="0" stroke-width="0.25" height="13" width="8" />
+        </pattern>
+        <pattern id="grid" height="130" width="80" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="darkgray" fill="url(#grid_cell)" x="0" stroke-width="0.5" height="130" width="80" />
+        </pattern>
+      </defs>
+      <rect y="0" fill="url(#grid)" x="0" height="100%" width="100%" />
+      <rect y="6.5" stroke="red" rx="4" id="t" fill="None" x="28" ry="6.5" stroke-width="2" height="26" width="32" />
+      <rect y="84.5" stroke="red" rx="4" id="b" fill="None" x="28" ry="6.5" stroke-width="2" height="26" width="32" />
+      <path stroke="green" d="M 44,45.5 l 0,-5 m -3,5 l 3,-5 l 3, 5 m -3,0L 44,65L 44,71.5 l 0,5 m -3,-5 l 3, 5 l 3,-5 m -3,0" fill="none" stroke-width="2" />
+      <text y="6.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">() </text>
+      <text y="6.5" font-family="Menlo" fill="black" x="72" text-anchor="start" font-size="13" dominant-baseline="middle">top    </text>
+      <text y="19.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">() </text>
+      <text y="32.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">() </text>
+      <text y="45.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">()   </text>
+      <text y="58.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">()   </text>
+      <text y="71.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">()   </text>
+      <text y="84.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">() </text>
+      <text y="97.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">() </text>
+      <text y="110.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">() </text>
+      <text y="110.5" font-family="Menlo" fill="black" x="72" text-anchor="start" font-size="13" dominant-baseline="middle">bottom </text>
+    </svg>
+    <hr />
+    <h3>RBOX_TO_RBOX</h3>
+    <pre style="border:1px dotted black;">() .---. top    
+() |   |        
+() '-+-'[t]     
+()   ^          
+()   |          
+()   v          
+() .-+-.[b]     
+() |   |        
+() '---' bottom 
+</pre>
+    <svg height="117" version="1.1" xmlns="http://www.w3.org/2000/svg" width="128" baseProfile="full">
+      <defs>
+        <pattern id="grid_cell" height="13" width="8" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="gray" fill="None" x="0" stroke-width="0.25" height="13" width="8" />
+        </pattern>
+        <pattern id="grid" height="130" width="80" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="darkgray" fill="url(#grid_cell)" x="0" stroke-width="0.5" height="130" width="80" />
+        </pattern>
+      </defs>
+      <rect y="0" fill="url(#grid)" x="0" height="100%" width="100%" />
+      <rect y="6.5" stroke="red" rx="4" id="t" fill="None" x="28" ry="6.5" stroke-width="2" height="26" width="32" />
+      <rect y="84.5" stroke="red" rx="4" id="b" fill="None" x="28" ry="6.5" stroke-width="2" height="26" width="32" />
+      <path stroke="green" d="M 44,32.5M 44,39 l 0,-5 m -3,5 l 3,-5 l 3, 5 m -3,0 M 44,39 L 44,45.5L 44,65L 44,78 l 0,5 m -3,-5 l 3, 5 l 3,-5 m -3,0 m 0, 5M 44,84.5" fill="none" stroke-width="2" />
+      <text y="6.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">() </text>
+      <text y="6.5" font-family="Menlo" fill="black" x="72" text-anchor="start" font-size="13" dominant-baseline="middle">top    </text>
+      <text y="19.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">() </text>
+      <text y="32.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">() </text>
+      <text y="45.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">()   </text>
+      <text y="58.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">()   </text>
+      <text y="71.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">()   </text>
+      <text y="84.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">() </text>
+      <text y="97.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">() </text>
+      <text y="110.5" font-family="Menlo" fill="black" x="0" text-anchor="start" font-size="13" dominant-baseline="middle">() </text>
+      <text y="110.5" font-family="Menlo" fill="black" x="72" text-anchor="start" font-size="13" dominant-baseline="middle">bottom </text>
+    </svg>
+    <hr />
+    <h3>MULTI_RECTS</h3>
+    <pre style="border:1px dotted black;">
+.-------------.
+|[a]          |
+|   A Box!    |&lt;----.   .-------------.
+|             |     |   |[c]          |
+'-------------'     |   |   Another   |---------+
+      ^             '-->|     Box     |         |
+      :                 |             |         |
+      |                 '-------------'         |
+      v                    |                    |
+    .-+-.[b]          o ---+                    |
+    |   |                  | .-.                |
+    '---'                  | | |  +--------------------+
+                           '-' |  |[d]                 |
+                               |  :                    |
+                               '->+                    |
+                                  |                    |
+                                  +--------------------+
+</pre>
+    <svg height="234" version="1.1" xmlns="http://www.w3.org/2000/svg" width="448" baseProfile="full">
+      <defs>
+        <pattern id="grid_cell" height="13" width="8" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="gray" fill="None" x="0" stroke-width="0.25" height="13" width="8" />
+        </pattern>
+        <pattern id="grid" height="130" width="80" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="darkgray" fill="url(#grid_cell)" x="0" stroke-width="0.5" height="130" width="80" />
+        </pattern>
+      </defs>
+      <rect y="0" fill="url(#grid)" x="0" height="100%" width="100%" />
+      <rect y="19.5" stroke="red" rx="4" id="a" fill="None" x="4" ry="6.5" stroke-width="2" height="52" width="112" />
+      <rect y="45.5" stroke="red" rx="4" id="c" fill="None" x="196" ry="6.5" stroke-width="2" height="65" width="112" />
+      <rect y="136.5" stroke="red" rx="4" id="b" fill="None" x="36" ry="6.5" stroke-width="2" height="26" width="32" />
+      <path stroke="green" d="M 276,162.5L 288,162.5L 296,162.5L 304,162.5L 312,162.5L 320,162.5L 328,162.5L 336,162.5L 344,162.5L 352,162.5L 360,162.5L 368,162.5L 376,162.5L 384,162.5L 392,162.5L 400,162.5L 408,162.5L 416,162.5L 424,162.5L 432,162.5L 440,162.5L 444,162.5L 444,182L 444,195L 444,208L 444,221L 444,227.5L 432,227.5L 424,227.5L 416,227.5L 408,227.5L 400,227.5L 392,227.5L 384,227.5L 376,227.5L 368,227.5L 360,227.5L 352,227.5L 344,227.5L 336,227.5L 328,227.5L 320,227.5L 312,227.5L 304,227.5L 296,227.5L 288,227.5L 280,227.5L 276,227.5L 276,208L 276,201.5L 276,182L 276,169 Z" id="d" fill="none" stroke-dasharray="5,2" stroke-width="2" />
+      <path stroke="green" d="M 124,45.5 l -3,0 m 3,-3 l -3,3 l 3,3 m 0,-3L 136,45.5L 144,45.5L 152,45.5L 160,45.5Q 164,45.5 164,52L 164,65L 164,78Q 164,84.5 168,84.5Q 168,84.5 176,84.5L 184,84.5L 188,84.5 l 3,0 m -3,-3 l 3,3 l -3,3 m 0,-3" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 312,71.5 L 320,71.5L 328,71.5L 336,71.5L 344,71.5L 352,71.5L 360,71.5L 368,71.5L 376,71.5L 384,71.5L 388,71.5L 388,91L 388,104L 388,117L 388,130L 388,143L 388,156" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 52,84.5 l 0,-5 m -3,5 l 3,-5 l 3, 5 m -3,0L 52,104L 52,117L 52,130 l 0,5 m -3,-5 l 3, 5 l 3,-5 m -3,0 m 0, 5M 52,136.5" fill="none" stroke-dasharray="5,2" stroke-width="2" />
+      <path stroke="green" d="M 220,117 L 220,130L 220,136.5L 220,156L 220,169Q 220,175.5 224,175.5Q 224,175.5 232,175.5Q 236,175.5 236,169L 236,156Q 236,149.5 240,149.5Q 240,149.5 248,149.5Q 252,149.5 252,156L 252,169L 252,182L 252,195Q 252,201.5 256,201.5Q 256,201.5 264,201.5L 272,201.5 m -2,0 l 4,0 m -4,-3 l 4,3 l -4,3 m 0,-3 m  4,0M 276,201.5" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 192,136.5 L 200,136.5L 208,136.5L 216,136.5L 220,136.5" fill="none" stroke-width="2" />
+      <text y="45.5" font-family="Menlo" fill="black" x="32" text-anchor="start" font-size="13" dominant-baseline="middle">A Box!    </text>
+      <text y="71.5" font-family="Menlo" fill="black" x="224" text-anchor="start" font-size="13" dominant-baseline="middle">Another   </text>
+      <text y="84.5" font-family="Menlo" fill="black" x="240" text-anchor="start" font-size="13" dominant-baseline="middle">Box     </text>
+      <text y="136.5" font-family="Menlo" fill="black" x="176" text-anchor="start" font-size="13" dominant-baseline="middle">o </text>
+    </svg>
+    <hr />
+    <h3>ISSUE_15_DESC</h3>
+    <pre style="border:1px dotted black;">
+.-------------.
+|[a]          |
+|   A Box!    +&lt;----.   .-------------.
+|             |     |   |[c]          |
+'-----+-------'     |   |   Another   +---------+
+      ^             '-->+     Box     |         |
+      |                 |             |         |
+      |                 '-------------'         |
+      v                                         |
+    .-+-.[b]                                    |
+    |   |                                       |
+    '---'                         +-------------+------+
+                                  |[d]                 |
+                                  |                    |
+                                  |                    |
+                                  |                    |
+                                  +--------------------+
+</pre>
+    <svg height="234" version="1.1" xmlns="http://www.w3.org/2000/svg" width="448" baseProfile="full">
+      <defs>
+        <pattern id="grid_cell" height="13" width="8" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="gray" fill="None" x="0" stroke-width="0.25" height="13" width="8" />
+        </pattern>
+        <pattern id="grid" height="130" width="80" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="darkgray" fill="url(#grid_cell)" x="0" stroke-width="0.5" height="130" width="80" />
+        </pattern>
+      </defs>
+      <rect y="0" fill="url(#grid)" x="0" height="100%" width="100%" />
+      <rect y="19.5" stroke="red" rx="4" id="a" fill="None" x="4" ry="6.5" stroke-width="2" height="52" width="112" />
+      <rect y="45.5" stroke="red" rx="4" id="c" fill="None" x="196" ry="6.5" stroke-width="2" height="65" width="112" />
+      <rect y="136.5" stroke="red" rx="4" id="b" fill="None" x="36" ry="6.5" stroke-width="2" height="26" width="32" />
+      <rect y="162.5" stroke="red" id="d" fill="None" x="276" stroke-width="2" height="65" width="168" />
+      <path stroke="green" d="M 116,45.5M 120,45.5 m 2,0 l -4,0 m 4,-3 l -4,3 l 4,3 m 0,-3 m -4,0  M 120,45.5 L 124,45.5L 136,45.5L 144,45.5L 152,45.5L 160,45.5Q 164,45.5 164,52L 164,65L 164,78Q 164,84.5 168,84.5Q 168,84.5 176,84.5L 184,84.5L 192,84.5 m -2,0 l 4,0 m -4,-3 l 4,3 l -4,3 m 0,-3 m  4,0M 196,84.5" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 52,71.5M 52,78 l 0,-5 m -3,5 l 3,-5 l 3, 5 m -3,0 M 52,78 L 52,84.5L 52,104L 52,117L 52,130 l 0,5 m -3,-5 l 3, 5 l 3,-5 m -3,0 m 0, 5M 52,136.5" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 308,71.5L 320,71.5L 328,71.5L 336,71.5L 344,71.5L 352,71.5L 360,71.5L 368,71.5L 376,71.5L 384,71.5L 388,71.5L 388,91L 388,104L 388,117L 388,130L 388,143L 388,156" fill="none" stroke-width="2" />
+      <text y="45.5" font-family="Menlo" fill="black" x="32" text-anchor="start" font-size="13" dominant-baseline="middle">A Box!    </text>
+      <text y="71.5" font-family="Menlo" fill="black" x="224" text-anchor="start" font-size="13" dominant-baseline="middle">Another   </text>
+      <text y="84.5" font-family="Menlo" fill="black" x="240" text-anchor="start" font-size="13" dominant-baseline="middle">Box     </text>
+    </svg>
+    <hr />
+    <h3>EXPERIMENTS</h3>
+    <pre style="border:1px dotted black;">
+-.- -./ -./.\.- -././.-
+
+-'- -'\ -'\'/'- -'\'\'-
+
+.----.---.
+|         \
+'-.        +------+
+   \       |
+    '------+
+
+       +-----+       +-----+
+       |  A  |       |  A  |
+       +--+--+       +--.--+
+         / \           / \
+        +-+-+         +---+
+          |             |
+   +------+------+    Other
+   |             |
++--+--+       +--+--+
+|  B  |       |  C  |
++-----+       +-----+
+
++                           +
+ \   +   \         +   /   /
+  )   \   )       /   (   /
+ /     \ /       (     \ /
+        '         \     '
+
++        +     \           +          +
+ \        \     \         /    /     /
+  \        \     )       /    /     /
+   )        \   /       (    (     /
+  /          \ /         \    \   /
+ /            '           \    \ /
+                                '
+
+   +-----+   +
+  /     /   / \
+ +-----+   /   \
+    ^     /     \      +---------------+
+    |    / flow  \     |               |
+    '-- ( charts  ) -->| Ask Questions |
+         \       /     |               |
+          \     /      +-------.-------+
+           \   /                O
+            \ /                \|/
+             +                  +    .------.
+                               / \   | o o  |
+                                     |  ^   |
+                                     | ---  |
+                                     '---+--'
+                                        \|/
+                                         +
+                                        / \
+</pre>
+    <svg height="715" version="1.1" xmlns="http://www.w3.org/2000/svg" width="360" baseProfile="full">
+      <defs>
+        <pattern id="grid_cell" height="13" width="8" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="gray" fill="None" x="0" stroke-width="0.25" height="13" width="8" />
+        </pattern>
+        <pattern id="grid" height="130" width="80" patternUnits="userSpaceOnUse">
+          <rect y="0" stroke="darkgray" fill="url(#grid_cell)" x="0" stroke-width="0.5" height="130" width="80" />
+        </pattern>
+      </defs>
+      <rect y="0" fill="url(#grid)" x="0" height="100%" width="100%" />
+      <path stroke="green" d="M 4,78 Q 4,71.5 8,71.5Q 8,71.5 16,71.5L 24,71.5L 32,71.5L 40,71.5Q 44,71.5 44,78Q 48,71.5 56,71.5L 64,71.5L 72,71.5Q 76,71.5 80,78L 88,91L 92,97.5L 92,117L 92,123.5L 80,123.5L 72,123.5L 64,123.5L 56,123.5L 48,123.5L 40,123.5Q 36,123.5 32,117L 24,104Q 20,97.5 16,97.5Q 16,97.5 8,97.5Q 4,97.5 4,91L 4,78 Z" fill="none" stroke-width="2" />
+      <rect y="149.5" stroke="red" fill="None" x="60" stroke-width="2" height="26" width="48" />
+      <path stroke="green" d="M 172,149.5L 184,149.5L 192,149.5L 200,149.5L 208,149.5L 216,149.5L 220,149.5L 220,169L 220,175.5L 208,175.5L 200,175.5Q 196,175.5 196,182Q 192,175.5 184,175.5L 176,175.5L 172,175.5L 172,156 Z" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 84,175.5L 96,195L 100,201.5L 88,201.5L 84,201.5L 72,201.5L 68,201.5L 80,182 Z" fill="none" stroke-width="2" />
+      <rect y="253.5" stroke="red" fill="None" x="4" stroke-width="2" height="26" width="48" />
+      <rect y="253.5" stroke="red" fill="None" x="116" stroke-width="2" height="26" width="48" />
+      <path stroke="green" d="M 28,487.5L 40,487.5L 48,487.5L 56,487.5L 64,487.5L 72,487.5L 76,487.5L 64,507L 60,513.5L 48,513.5L 40,513.5L 32,513.5L 24,513.5L 16,513.5L 12,513.5L 24,494 Z" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 188,526.5L 200,526.5L 208,526.5L 216,526.5L 224,526.5L 232,526.5L 240,526.5L 248,526.5L 256,526.5L 264,526.5L 272,526.5L 280,526.5L 288,526.5L 296,526.5L 304,526.5L 312,526.5L 316,526.5L 316,546L 316,559L 316,572L 316,578.5L 304,578.5L 296,578.5L 288,578.5L 280,578.5L 272,578.5L 264,578.5L 256,578.5Q 252,578.5 252,585Q 248,578.5 240,578.5L 232,578.5L 224,578.5L 216,578.5L 208,578.5L 200,578.5L 192,578.5L 188,578.5L 188,559L 188,546L 188,533 Z" fill="none" stroke-width="2" />
+      <rect y="617.5" stroke="red" rx="4" fill="None" x="300" ry="6.5" stroke-width="2" height="52" width="56" />
+      <path stroke="green" d="M 332,669.5L 332,689L 332,695.5L 320,676 Z" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 0,19.5 L 8,19.5Q 12,19.5 12,26Q 16,19.5 24,19.5" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 32,19.5 L 40,19.5Q 44,19.5 44,26Q 48,26 56,13" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 64,19.5 L 72,19.5Q 76,19.5 76,26Q 80,26 88,13" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 96,13 L 104,26Q 104,26 108,26Q 112,19.5 120,19.5" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 128,19.5 L 136,19.5Q 140,19.5 140,26Q 144,26 152,13" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 156,26Q 160,26 168,13" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 172,26 Q 172,19.5 176,19.5Q 176,19.5 184,19.5" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 0,45.5 L 8,45.5Q 12,45.5 12,39Q 16,45.5 24,45.5" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 32,45.5 L 40,45.5Q 44,45.5 44,39Q 48,39 56,52" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 64,45.5 L 72,45.5Q 76,45.5 76,39Q 80,39 88,52" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 96,52 L 104,39Q 104,39 108,39Q 112,45.5 120,45.5" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 128,45.5 L 136,45.5Q 140,45.5 140,39Q 144,39 152,52" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 156,39Q 160,39 168,52" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 172,39 Q 172,45.5 176,45.5Q 176,45.5 184,45.5" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 92,97.5L 104,97.5L 112,97.5L 120,97.5L 128,97.5L 136,97.5L 144,97.5L 148,97.5" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 192,182 L 184,195L 180,201.5L 192,201.5L 200,201.5L 208,201.5L 212,201.5L 200,182" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 84,201.5L 84,221L 84,227.5L 72,227.5L 64,227.5L 56,227.5L 48,227.5L 40,227.5L 32,227.5L 28,227.5L 28,247" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 84,227.5L 96,227.5L 104,227.5L 112,227.5L 120,227.5L 128,227.5L 136,227.5L 140,227.5L 140,247" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 4,305.5L 16,325" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 228,305.5L 216,325L 208,338L 200,351Q 196,357.5 192,351L 184,338" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 44,318.5L 56,338L 64,351Q 68,357.5 72,351L 80,338" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 156,318.5L 144,338" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 4,383.5L 16,403L 24,416" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 76,383.5L 88,403L 96,416L 104,429L 112,442Q 116,448.5 120,442L 128,429L 136,416" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 120,377 L 128,390L 136,403" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 220,383.5L 208,403L 200,416" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 308,383.5L 296,403L 288,416L 280,429L 272,442L 264,455Q 260,461.5 256,455L 248,442L 240,429" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 256,390 L 248,403L 240,416" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 24,429 L 16,442L 8,455" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 200,429 L 208,442L 216,455" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 80,572 L 72,559Q 68,552.5 72,546L 80,533L 88,520L 96,507L 104,494L 108,487.5L 120,507L 128,520L 136,533L 144,546" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 36,526.5 l 0,-5 m -3,5 l 3,-5 l 3, 5 m -3,0L 36,546Q 36,552.5 40,552.5Q 40,552.5 48,552.5L 56,552.5" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 160,552.5 L 168,552.5L 176,552.5L 180,552.5 l 3,0 m -3,-3 l 3,3 l -3,3 m 0,-3" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 144,559 L 136,572L 128,585L 120,598L 112,611L 108,617.5L 96,598L 88,585L 80,572" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 248,598 L 256,611L 260,617.5L 272,637" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 260,598 L 260,611L 260,617.5L 248,637" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 260,617.5L 272,598" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 312,656.5 L 320,656.5L 328,656.5L 336,656.5" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 344,676 L 336,689L 332,695.5L 320,715" fill="none" stroke-width="2" />
+      <path stroke="green" d="M 332,695.5L 344,715" fill="none" stroke-width="2" />
+      <text y="19.5" font-family="Menlo" fill="black" x="88" text-anchor="start" font-size="13" dominant-baseline="middle">.</text>
+      <text y="45.5" font-family="Menlo" fill="black" x="88" text-anchor="start" font-size="13" dominant-baseline="middle">'</text>
+      <text y="162.5" font-family="Menlo" fill="black" x="80" text-anchor="start" font-size="13" dominant-baseline="middle">A  </text>
+      <text y="162.5" font-family="Menlo" fill="black" x="192" text-anchor="start" font-size="13" dominant-baseline="middle">A  </text>
+      <text y="214.5" font-family="Menlo" fill="black" x="192" text-anchor="start" font-size="13" dominant-baseline="middle">|</text>
+      <text y="227.5" font-family="Menlo" fill="black" x="176" text-anchor="start" font-size="13" dominant-baseline="middle">Other</text>
+      <text y="266.5" font-family="Menlo" fill="black" x="24" text-anchor="start" font-size="13" dominant-baseline="middle">B  </text>
+      <text y="266.5" font-family="Menlo" fill="black" x="136" text-anchor="start" font-size="13" dominant-baseline="middle">C  </text>
+      <text y="318.5" font-family="Menlo" fill="black" x="72" text-anchor="start" font-size="13" dominant-baseline="middle">\         </text>
+      <text y="318.5" font-family="Menlo" fill="black" x="184" text-anchor="start" font-size="13" dominant-baseline="middle">/   </text>
+      <text y="331.5" font-family="Menlo" fill="black" x="16" text-anchor="start" font-size="13" dominant-baseline="middle">)   </text>
+      <text y="331.5" font-family="Menlo" fill="black" x="80" text-anchor="start" font-size="13" dominant-baseline="middle">)       </text>
+      <text y="331.5" font-family="Menlo" fill="black" x="176" text-anchor="start" font-size="13" dominant-baseline="middle">(   </text>
+      <text y="344.5" font-family="Menlo" fill="black" x="8" text-anchor="start" font-size="13" dominant-baseline="middle">/     </text>
+      <text y="344.5" font-family="Menlo" fill="black" x="136" text-anchor="start" font-size="13" dominant-baseline="middle">(     </text>
+      <text y="357.5" font-family="Menlo" fill="black" x="144" text-anchor="start" font-size="13" dominant-baseline="middle">\     </text>
+      <text y="409.5" font-family="Menlo" fill="black" x="136" text-anchor="start" font-size="13" dominant-baseline="middle">)       </text>
+      <text y="422.5" font-family="Menlo" fill="black" x="24" text-anchor="start" font-size="13" dominant-baseline="middle">)        </text>
+      <text y="422.5" font-family="Menlo" fill="black" x="192" text-anchor="start" font-size="13" dominant-baseline="middle">(    (     </text>
+      <text y="539.5" font-family="Menlo" fill="black" x="88" text-anchor="start" font-size="13" dominant-baseline="middle">flow  </text>
+      <text y="552.5" font-family="Menlo" fill="black" x="80" text-anchor="start" font-size="13" dominant-baseline="middle">charts  ) </text>
+      <text y="552.5" font-family="Menlo" fill="black" x="200" text-anchor="start" font-size="13" dominant-baseline="middle">Ask Questions </text>
+      <text y="591.5" font-family="Menlo" fill="black" x="256" text-anchor="start" font-size="13" dominant-baseline="middle">O</text>
+      <text y="630.5" font-family="Menlo" fill="black" x="312" text-anchor="start" font-size="13" dominant-baseline="middle">o o  </text>
+      <text y="643.5" font-family="Menlo" fill="black" x="320" text-anchor="start" font-size="13" dominant-baseline="middle">^   </text>
+    </svg>
+    <hr />
+  </body>
+</html>
