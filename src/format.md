@@ -628,6 +628,10 @@ joints would imply).
                 (     r"/", NE, ')', NW, r"\", "Q {C} {NW}"),
                 (     r"\", SE, ')', SW, r"/", "Q {C} {SW}"),
                 (     r"\", NW, '(', NE, r"/", "Q {C} {NE}"),
+                (Match::Any, AnyDir, r"/", SW, '(', "L {SW}"),
+                (Match::Any, AnyDir, r"/", NE, ')', "L {NE}"),
+                (Match::Any, AnyDir, r"\", SE, ')', "L {SE}"),
+                (Match::Any, AnyDir, r"\", NW, '(', "L {NW}"),
 
                 (Match::Any, E, '-', May((E, ZER_SLOPE)), "L {E}"),
                 (Match::Any, W, '-', May((W, ZER_SLOPE)), "L {W}"),
