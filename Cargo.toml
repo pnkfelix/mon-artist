@@ -1,5 +1,5 @@
 [package]
-name = "mon_artiste"
+name = "mon-artiste"
 version = "0.1.0"
 authors = ["pnkfelix"]
 build = "tango-build.rs"
