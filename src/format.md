@@ -521,6 +521,7 @@ impl<'a, C1, A> IntoEntry for (All, C1, All, &'a str, A) where
     }
 }
 
+#[allow(dead_code)]
 struct Loud<X>(X) where X: IntoEntry;
 impl<X: IntoEntry> IntoEntry for Loud<X> {
     fn into_entry(self, text: &'static str) -> Entry {
