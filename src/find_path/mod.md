@@ -11,8 +11,10 @@ use grid::{Elem, Grid, Pt, DirVector};
 use path::{Closed, Path};
 
 use std::borrow::Cow;
+use std::cell::Cell;
 
 struct FindPaths<'a> {
+    announce: Cell<fn (String)>,
     format: Cow<'a, Table>,
     grid: &'a Grid,
     steps: Vec<Pt>,
@@ -103,6 +105,7 @@ Some day, It may be worthwhile to make an exercise out of why.
     #[cfg(test)]
     fn new(grid: &Grid) -> FindPaths {
         FindPaths {
+            announce: Cell::new(silent),
             format: Default::default(),
             grid: grid,
             steps: vec![],
@@ -111,6 +114,7 @@ Some day, It may be worthwhile to make an exercise out of why.
 
     fn with_grid_format(grid: &'a Grid, format: &'a Table) -> Self {
         FindPaths {
+            announce: Cell::new(silent),
             format: Cow::Borrowed(format),
             grid: grid,
             steps: vec![],
@@ -133,8 +137,12 @@ Some day, It may be worthwhile to make an exercise out of why.
     }
 }
 
+fn silent(_: String) { }
+fn announce(x: String) { println!("{}", x); }
+
 impl<'a> FindUnclosedPaths<'a> {
     fn find_unclosed_path(mut self, curr: Pt) -> Result<Path, Self> {
+        self.find.check_inspection(curr);
         // start the search proper
         self.find.steps.push(curr);
         for (j, &dir) in DIRECTIONS.iter().enumerate() {
@@ -178,6 +186,7 @@ Attempts to extends the end of the path forward via `dv`.
         assert!(self.find.grid.holds(dv.0));
         assert!(!self.find.steps.contains(&dv.0));
         assert_eq!(dv.0, fc.curr());
+        self.find.check_inspection(fc.curr());
         let elem: Elem = self.find.grid[dv.0];
         debug!("fwd_ext elem: {:?}", elem);
         let _c: char = match elem {
@@ -252,6 +261,7 @@ are trying to see if any futher prefix exists.
 ```rust
     fn rev_ext(mut self) -> Path {
         let (curr, next) = self.first_two();
+        self.find.check_inspection(curr);
         for (_j, &dir) in DIRECTIONS.iter().enumerate() {
             let prev = DirVector(curr, dir).steps(1);
 ```
@@ -297,6 +307,7 @@ the path we have.
     }
 
     fn try_rev_ext(mut self, next: Pt, curr: Pt, prev: DirVector) -> Result<Path, Self> {
+        self.find.check_inspection(curr);
 ```
 
 If we've gone off the grid, then obviously this direction is no good.
@@ -398,7 +409,7 @@ impl<'a> FindClosedPaths<'a> {
         let mut in_out = Vec::new();
         for entry in &self.find.format.entries {
             if !entry.loop_start { continue; }
-            if !entry.matches_curr(c) { continue; }
+            if !entry.matches_curr(&self.find.announce.get(), c) { continue; }
 
             // This is a *potential* corner.
             //
@@ -430,6 +441,7 @@ impl<'a> FindClosedPaths<'a> {
     }
 
     fn find_closed_path(mut self, curr: Pt) -> Result<Path, Self> {
+        self.find.check_inspection(curr);
         let elem = self.find.grid[curr];
         // // Don't waste time on a search that starts on a non-corner.
         // // (all closed paths must have at least three corner elements,
@@ -475,6 +487,7 @@ impl<'a> FindClosedPaths<'a> {
         assert!(self.find.grid.holds(dv.0));
         assert!(!self.find.steps.contains(&dv.0));
         assert_eq!(dv.0, fc.curr);
+        self.find.check_inspection(fc.curr);
         let elem: Elem = self.find.grid[dv.0];
         let c = match elem {
             Elem::Pad | Elem::Clear => return Err(self), // blank: Give up.
@@ -581,6 +594,43 @@ pub fn find_unclosed_path(grid: &Grid, format: &Table, pt: Pt) -> Option<Path> {
 }
 
 impl<'a> FindPaths<'a> {
+    fn check_inspection_start_at(&self, pt: Pt) {
+        if !self.grid.holds(pt) { return; }
+        if self.grid[pt].opt_char() == Some('%') {
+            println!("TURNING ON ANNOUCER at {:?}", pt); 
+            self.announce.set(announce);
+        }
+    }
+
+    fn check_inspection_finis_at(&self, pt: Pt) {
+        if !self.grid.holds(pt) { return; }
+        if self.grid[pt].opt_char() == Some('$') {
+            println!("TURNING OFF ANNOUCER at {:?}", pt); 
+            self.announce.set(silent);
+        }
+    }
+
+    fn check_inspection_start(&self, curr: Pt) {
+        self.check_inspection_start_at(curr);
+        for (_j, &dir) in DIRECTIONS.iter().enumerate() {
+            let nbor = DirVector(curr, dir).steps(1);
+            self.check_inspection_start_at(nbor.0);
+        }
+    }
+
+    fn check_inspection_finis(&self, curr: Pt) {
+        self.check_inspection_finis_at(curr);
+        for (_j, &dir) in DIRECTIONS.iter().enumerate() {
+            let nbor = DirVector(curr, dir).steps(1);
+            self.check_inspection_finis_at(nbor.0);
+        }
+    }
+
+    fn check_inspection(&self, curr: Pt) {
+        self.check_inspection_start(curr);
+        self.check_inspection_finis(curr);
+    }
+
     fn find_entry(&self,
                   prev: Option<Pt>,
                   curr: Pt,
@@ -593,7 +643,7 @@ impl<'a> FindPaths<'a> {
         });
         let next_arc = self.grid[next].opt_char().map(|n| (curr.towards(next), n));
         for entry in &self.format.entries {
-            if entry.matches(prev_arc, c, next_arc) {
+            if entry.matches(&self.announce.get(), prev_arc, c, next_arc) {
                 return Some(entry);
             }
         }
@@ -610,7 +660,7 @@ impl<'a> FindPaths<'a> {
             self.grid[next].opt_char().map(|n| (curr.towards(next), n))
         });
         for entry in &self.format.entries {
-            if entry.matches_start(c, next_arc) {
+            if entry.matches_start(&self.announce.get(), c, next_arc) {
                 return true;
             }
         }
@@ -623,7 +673,7 @@ impl<'a> FindPaths<'a> {
             self.grid[prev].opt_char().map(|p| (p, prev.towards(curr)))
         });
         for entry in &self.format.entries {
-            if entry.matches_end(prev_arc, c) {
+            if entry.matches_end(&self.announce.get(), prev_arc, c) {
                 return true;
             }
         }
