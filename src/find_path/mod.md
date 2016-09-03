@@ -138,11 +138,17 @@ Some day, It may be worthwhile to make an exercise out of why.
 }
 
 fn silent(_: String) { }
-fn announce(x: String) { println!("{}", x); }
+// fn announce(x: String) { println!("{}", x); }
+fn announce_fup(x: String) { println!("find_unclosed_path {}", x); }
+fn announce_fupfe(x: String) { println!("find_unclosed_path fwd_ext {}", x); }
+fn announce_fupre(x: String) { println!("find_unclosed_path rev_ext {}", x); }
+fn announce_fuptre(x: String) { println!("find_unclosed_path try_rev_ext {}", x); }
+fn announce_fcp(x: String) { println!("find_closed_path {}", x); }
+fn announce_fcpf(x: String) { println!("find_closed_path_from {}", x); }
 
 impl<'a> FindUnclosedPaths<'a> {
     fn find_unclosed_path(mut self, curr: Pt) -> Result<Path, Self> {
-        self.find.check_inspection(curr);
+        self.find.check_inspection(curr, announce_fup);
         // start the search proper
         self.find.steps.push(curr);
         for (j, &dir) in DIRECTIONS.iter().enumerate() {
@@ -186,7 +192,7 @@ Attempts to extends the end of the path forward via `dv`.
         assert!(self.find.grid.holds(dv.0));
         assert!(!self.find.steps.contains(&dv.0));
         assert_eq!(dv.0, fc.curr());
-        self.find.check_inspection(fc.curr());
+        self.find.check_inspection(fc.curr(), announce_fupfe);
         let elem: Elem = self.find.grid[dv.0];
         debug!("fwd_ext elem: {:?}", elem);
         let _c: char = match elem {
@@ -261,7 +267,7 @@ are trying to see if any futher prefix exists.
 ```rust
     fn rev_ext(mut self) -> Path {
         let (curr, next) = self.first_two();
-        self.find.check_inspection(curr);
+        self.find.check_inspection(curr, announce_fupre);
         for (_j, &dir) in DIRECTIONS.iter().enumerate() {
             let prev = DirVector(curr, dir).steps(1);
 ```
@@ -307,7 +313,7 @@ the path we have.
     }
 
     fn try_rev_ext(mut self, next: Pt, curr: Pt, prev: DirVector) -> Result<Path, Self> {
-        self.find.check_inspection(curr);
+        self.find.check_inspection(curr, announce_fuptre);
 ```
 
 If we've gone off the grid, then obviously this direction is no good.
@@ -441,7 +447,7 @@ impl<'a> FindClosedPaths<'a> {
     }
 
     fn find_closed_path(mut self, curr: Pt) -> Result<Path, Self> {
-        self.find.check_inspection(curr);
+        self.find.check_inspection(curr, announce_fcp);
         let elem = self.find.grid[curr];
         // // Don't waste time on a search that starts on a non-corner.
         // // (all closed paths must have at least three corner elements,
@@ -487,7 +493,7 @@ impl<'a> FindClosedPaths<'a> {
         assert!(self.find.grid.holds(dv.0));
         assert!(!self.find.steps.contains(&dv.0));
         assert_eq!(dv.0, fc.curr);
-        self.find.check_inspection(fc.curr);
+        self.find.check_inspection(fc.curr, announce_fcpf);
         let elem: Elem = self.find.grid[dv.0];
         let c = match elem {
             Elem::Pad | Elem::Clear => return Err(self), // blank: Give up.
@@ -594,11 +600,11 @@ pub fn find_unclosed_path(grid: &Grid, format: &Table, pt: Pt) -> Option<Path> {
 }
 
 impl<'a> FindPaths<'a> {
-    fn check_inspection_start_at(&self, pt: Pt) {
+    fn check_inspection_start_at(&self, pt: Pt, a: fn (String)) {
         if !self.grid.holds(pt) { return; }
         if self.grid[pt].opt_char() == Some('%') {
             println!("TURNING ON ANNOUCER at {:?}", pt); 
-            self.announce.set(announce);
+            self.announce.set(a);
         }
     }
 
@@ -610,11 +616,11 @@ impl<'a> FindPaths<'a> {
         }
     }
 
-    fn check_inspection_start(&self, curr: Pt) {
-        self.check_inspection_start_at(curr);
+    fn check_inspection_start(&self, curr: Pt, a: fn (String)) {
+        self.check_inspection_start_at(curr, a);
         for (_j, &dir) in DIRECTIONS.iter().enumerate() {
             let nbor = DirVector(curr, dir).steps(1);
-            self.check_inspection_start_at(nbor.0);
+            self.check_inspection_start_at(nbor.0, a);
         }
     }
 
@@ -626,8 +632,8 @@ impl<'a> FindPaths<'a> {
         }
     }
 
-    fn check_inspection(&self, curr: Pt) {
-        self.check_inspection_start(curr);
+    fn check_inspection(&self, curr: Pt, a: fn (String)) {
+        self.check_inspection_start(curr, a);
         self.check_inspection_finis(curr);
     }
 
