@@ -88,16 +88,16 @@ pub struct Entry {
 pub(crate) type Announce<'a> = &'a Fn(String);
 
 impl Entry {
-    pub(crate) fn matches_curr(&self, a: Announce, curr: char) -> bool {
+    pub(crate) fn matches_curr(&self, _a: Announce, curr: char) -> bool {
         let ret = self.curr.matches(curr);
-        if self.instrumented {
-            a(format!("matches_curr({:?}) on {} => {:?}",
-                      curr, self.entry_text, ret));
-        }
+        // if self.instrumented {
+        //     a(format!("matches_curr({:?}) on {} => {:?}",
+        //               curr, self.entry_text, ret));
+        // }
         ret
     }
 
-    fn matches_incoming(&self, a: Announce, incoming: Option<(char, Direction)>) -> bool {
+    fn matches_incoming(&self, _a: Announce, incoming: Option<(char, Direction)>) -> bool {
         use self::Neighbor::{Blank, Must, May};
         let ret = match (&self.incoming, &incoming) {
             (&Blank, &Some(_)) | (&Must(..), &None) => false,
@@ -112,14 +112,14 @@ impl Entry {
                     true
                 },
         };
-        if self.instrumented {
-            a(format!("matches_incoming({:?}) on {} => {:?}",
-                      incoming, self.entry_text, ret));
-        }
+        // if self.instrumented {
+        //     a(format!("matches_incoming({:?}) on {} => {:?}",
+        //               incoming, self.entry_text, ret));
+        // }
         ret
     }
 
-    fn matches_outgoing(&self, a: Announce, outgoing: Option<(Direction, char)>) -> bool {
+    fn matches_outgoing(&self, _a: Announce, outgoing: Option<(Direction, char)>) -> bool {
         use self::Neighbor::{Blank, Must, May};
         let ret = match (&self.outgoing, &outgoing) {
             (&Blank, &Some(_)) | (&Must(..), &None) => false,
@@ -134,10 +134,10 @@ impl Entry {
                     true
                 },
         };
-        if self.instrumented {
-            a(format!("matches_outgoing({:?}) on {} => {:?}",
-                      outgoing, self.entry_text, ret));
-        }
+        // if self.instrumented {
+        //     a(format!("matches_outgoing({:?}) on {} => {:?}",
+        //               outgoing, self.entry_text, ret));
+        // }
         ret
     }
 
@@ -639,12 +639,13 @@ impl Default for Table {
         use directions::Any as AnyDir;
         use directions::NonNorth;
         use directions::NonSouth;
-        const JOINTS: &'static str = ".'+";
+        const JOINTS: &'static str = ".'+o";
         const LINES: &'static str = "-|/\\:=";
-        const ZER_SLOPE: &'static str = r"-=.'+><";
-        const INF_SLOPE: &'static str = r"|:.'+^v";
-        const POS_SLOPE: &'static str =  r"/.'+";
-        const NEG_SLOPE: &'static str =  r"\.'+";
+        const LINES_AND_JOINTS: &'static str = r"-|/\:=.'+o";
+        const ZER_SLOPE: &'static str = r"-=.'+o><";
+        const INF_SLOPE: &'static str = r"|:.'+o^v";
+        const POS_SLOPE: &'static str =  r"/.'+o";
+        const NEG_SLOPE: &'static str =  r"\.'+o";
         Table {
             entries: entries! {
                 (Start, '-', E, Match::Any, "M {W} L {E}"),
@@ -662,6 +663,37 @@ impl Default for Table {
                 (Start, "'", E, NEG_SLOPE, "M {N}"),
                 (Start, "'", W, POS_SLOPE, "M {N}"),
 ```
+
+This block adds support for little circles along a line,
+via the elliptical arc command `A`.
+
+```rust
+                (LINES_AND_JOINTS, AnyDir, 'o', Finis,
+                 "L {I} A 2,2 360 1 0 {RI}  A 2,2 180 0 0 {I} M {RI}"),
+```
+
+Commented out code below is the same mistake I have
+made elsewhere: there
+are "natural" directions for characters like `/` and
+`\`, which I have encoded in the SLOPE classes above.
+But that means you cannot just match willy-nilly
+against all LINES or LINES_AND_JOINTS in the
+`next` component of the tuple; you need to put in
+a stricter filter.
+
+```rust
+                // Loud((LINES_AND_JOINTS, AnyDir, 'o', AnyDir, LINES_AND_JOINTS,
+                //      "L {I} A 2,2 360 1 0  {O}  A 2,2 180 0 0 {I} M {O}")),
+                (LINES_AND_JOINTS, AnyDir, 'o', (W,E), ZER_SLOPE,
+                      "L {I} A 2,2 360 1 0  {O}  A 2,2 180 0 0 {I} M {O}"),
+                (LINES_AND_JOINTS, AnyDir, 'o', (N,S), INF_SLOPE,
+                      "L {I} A 2,2 360 1 0  {O}  A 2,2 180 0 0 {I} M {O}"),
+                (LINES_AND_JOINTS, AnyDir, 'o', (NE,SW), POS_SLOPE,
+                      "L {I} A 2,2 360 1 0  {O}  A 2,2 180 0 0 {I} M {O}"),
+                (LINES_AND_JOINTS, AnyDir, 'o', (NW,SE), NEG_SLOPE,
+                      "L {I} A 2,2 360 1 0  {O}  A 2,2 180 0 0 {I} M {O}"),
+```
+
 
 This block is made of special cases for rendering horizontal
 lines with curve characters in "interesting" ways.
@@ -730,6 +762,10 @@ joints would imply).
                 (Match::Any, S, ':', May((S, INF_SLOPE)), "L {S}", [("stroke-dasharray", "5,2")]),
 
                 (Start, '+', AnyDir, Match::Any, "M {C}"),
+                (Match::Any, AnyDir, '+', Finis, "L {C}"),
+                // Below is riskier than I actually want to take
+                // on right now.
+                // (LINES_AND_JOINTS, AnyDir, '+', May((AnyDir, JOINTS)), "L {C}"),
 
                 (Match::Any, NE, '/', May((NE, POS_SLOPE)), "L {NE}"),
                 (Match::Any, SW, '/', May((SW, POS_SLOPE)), "L {SW}"),
@@ -744,10 +780,10 @@ joints would imply).
                 (Match::Any, NE, '/',  W, JOINTS, "L {SE}"),
                 (Match::Any, SW, '/',  W, JOINTS, "L {SE}"),
 
-                ('>', E, '+', May((AnyDir, LINES)), "M {C}"),
-                ('<', W, '+', May((AnyDir, LINES)), "M {C}"),
-                ('^', N, '+', May((AnyDir, LINES)), "M {C}"),
-                ('v', S, '+', May((AnyDir, LINES)), "M {C}"),
+                ('>', E, '+', May((AnyDir, LINES_AND_JOINTS)), "M {C}"),
+                ('<', W, '+', May((AnyDir, LINES_AND_JOINTS)), "M {C}"),
+                ('^', N, '+', May((AnyDir, LINES_AND_JOINTS)), "M {C}"),
+                ('v', S, '+', May((AnyDir, LINES_AND_JOINTS)), "M {C}"),
                 ("-=", (E, W), '+', May(((E, W), ZER_SLOPE)), "L {C}"),
 
                 (LINES, AnyDir, Loop('+'), (N,S), INF_SLOPE, "M {C}"),
