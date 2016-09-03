@@ -393,6 +393,27 @@ fn interpret_place(sr: &SvgRender,
     let nw = (wx, ny);
     let sw = (wx, sy);
 
+    // FIXME: these cover the edge of the grid cell itself, but
+    // another case that I want is the compass points along the
+    // circumference of the circle *circumscribed* by the grid cell.
+    //
+    // With that in hand, I could have consistent handling of things
+    // like:
+    //        /  \/
+    // -o-  -o   o
+    //
+    // where I want the circle to be rendered with the same dimensions
+    // in each case but I also want the lines to go right up to the
+    // edge of the circle.
+    //
+    // Perhaps the syntax "DIR/o" could be used here? Or "(DIR)"? Hmm?
+    // (The reasoning behind "DIR/o" is that its dividing the original
+    // DIR by some amount >= 1, but the actual amount depends on the
+    // direction (and also the actual grid dimensions too, of course).
+    //
+    // But if I add "DIR/o", I might as well work on adding the other
+    // forms like "DIR/2" etc, right?
+
     match place {
         "C" => c, "N" => n, "S" => s, "E" => e, "W" => w,
         "NE" => ne, "SE" => se, "NW" => nw, "SW" => sw,
