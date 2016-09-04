@@ -77,76 +77,136 @@ pub struct Entry {
     /// attribute(s) that should be present on element if this pattern
     /// is matched along the path.
     include_attributes: Vec<(String, String)>,
+
+    /// If `instrumented` is true, then during rendering we will
+    /// announce a message (i.e. invoke a callback) every time this
+    /// entry is considered, including the `entry_text`, the actual
+    /// inputs under consideration, and the returned result.
+    pub(crate) instrumented: bool,
 }
 
+pub(crate) type Announce<'a> = &'a Fn(String);
+
 impl Entry {
-    pub(crate) fn matches_curr(&self, curr: char) -> bool {
-        self.curr.matches(curr)
+    pub(crate) fn matches_curr(&self, _a: Announce, curr: char) -> bool {
+        let ret = self.curr.matches(curr);
+        // if self.instrumented {
+        //     a(format!("matches_curr({:?}) on {} => {:?}",
+        //               curr, self.entry_text, ret));
+        // }
+        ret
     }
 
-    fn matches_incoming(&self, incoming: Option<(char, Direction)>) -> bool {
+    fn matches_incoming(&self, _a: Announce, incoming: Option<(char, Direction)>) -> bool {
         use self::Neighbor::{Blank, Must, May};
-        match (&self.incoming, &incoming) {
-            (&Blank, &Some(_)) | (&Must(..), &None) => return false,
-            (&Blank, &None) | (&May(..), &None) => {}
+        let ret = match (&self.incoming, &incoming) {
+            (&Blank, &Some(_)) | (&Must(..), &None) => false,
+            (&Blank, &None) | (&May(..), &None) => true,
             (&Must((ref m, ref dirs)), &Some((c, d))) |
-            (&May((ref m, ref dirs)), &Some((c, d))) => {
-                if !dirs.contains(&d) { return false; }
-                if !m.matches(c) { return false; }
-            }
-        }
-        return true;
+            (&May((ref m, ref dirs)), &Some((c, d))) =>
+                if !dirs.contains(&d) {
+                    false
+                } else if !m.matches(c) {
+                    false
+                } else {
+                    true
+                },
+        };
+        // if self.instrumented {
+        //     a(format!("matches_incoming({:?}) on {} => {:?}",
+        //               incoming, self.entry_text, ret));
+        // }
+        ret
     }
 
-    fn matches_outgoing(&self, outgoing: Option<(Direction, char)>) -> bool {
+    fn matches_outgoing(&self, _a: Announce, outgoing: Option<(Direction, char)>) -> bool {
         use self::Neighbor::{Blank, Must, May};
-        match (&self.outgoing, &outgoing) {
-            (&Blank, &Some(_)) | (&Must(..), &None) => return false,
-            (&Blank, &None) | (&May(..), &None) => {}
+        let ret = match (&self.outgoing, &outgoing) {
+            (&Blank, &Some(_)) | (&Must(..), &None) => false,
+            (&Blank, &None) | (&May(..), &None) => true,
             (&May((ref dirs, ref m)), &Some((d, c))) |
-            (&Must((ref dirs, ref m)), &Some((d, c))) => {
-                if !dirs.contains(&d) { return false; }
-                if !m.matches(c) { return false; }
+            (&Must((ref dirs, ref m)), &Some((d, c))) =>
+                if !dirs.contains(&d) {
+                    false
+                } else if !m.matches(c) {
+                    false
+                } else {
+                    true
+                },
+        };
+        // if self.instrumented {
+        //     a(format!("matches_outgoing({:?}) on {} => {:?}",
+        //               outgoing, self.entry_text, ret));
+        // }
+        ret
+    }
+
+    pub(crate) fn matches(&self,
+                          a: Announce,
+                          incoming: Option<(char, Direction)>,
+                          curr: char,
+                          outgoing: Option<(Direction, char)>) -> bool {
+        let ret = if !self.matches_incoming(a, incoming) { false
+        } else if !self.curr.matches(curr) {
+            false
+        } else if !self.matches_outgoing(a, outgoing) {
+            false
+        } else {
+            true
+        };
+        if self.instrumented {
+            a(format!("matches({:?}, {:?}, {:?}) on {} => {:?}",
+                      incoming, curr, outgoing, self.entry_text, ret));
+        }
+        ret
+    }
+
+    pub(crate) fn matches_start(&self,
+                                a: Announce,
+                                curr: char,
+                                outgoing: Option<(Direction, char)>) -> bool {
+        use self::Neighbor::{Blank, Must, May};
+        if curr == ' ' { return false; }
+        let ret = match &self.incoming {
+            &Blank | &May(..) => {
+                if !self.curr.matches(curr) {
+                    false
+                } else if !self.matches_outgoing(a, outgoing) {
+                    false
+                } else {
+                    true
+                }
             }
-        }
-        return true;
-    }
-
-    pub fn matches(&self,
-                   incoming: Option<(char, Direction)>,
-                   curr: char,
-                   outgoing: Option<(Direction, char)>) -> bool {
-        if !self.matches_incoming(incoming) { return false; }
-        if !self.curr.matches(curr) { return false; }
-        if !self.matches_outgoing(outgoing) { return false; }
-        return true;
-    }
-
-    pub fn matches_start(&self,
-                         curr: char,
-                         outgoing: Option<(Direction, char)>) -> bool {
-        use self::Neighbor::{Blank, Must, May};
-        match &self.incoming {
-            &Blank | &May(..) => {}
-            &Must(..) => return false,
-        }
-
-        if !self.curr.matches(curr) { return false; }
-        if !self.matches_outgoing(outgoing) { return false; }
-        return true;
-    }
-
-    pub fn matches_end(&self,
-                       incoming: Option<(char, Direction)>,
-                       curr: char) -> bool {
-        use self::Neighbor::{Blank, Must, May};
-        if !self.matches_incoming(incoming) { return false; }
-        if !self.curr.matches(curr) { return false; }
-
-        match &self.outgoing {
-            &Blank | &May(..) => true,
             &Must(..) => false,
+        };
+        if self.instrumented {
+            a(format!("matches_start({:?}, {:?}) on {} => {:?}",
+                      curr, outgoing, self.entry_text, ret));
         }
+        ret
+    }
+
+    pub(crate) fn matches_end(&self,
+                              a: Announce,
+                              incoming: Option<(char, Direction)>,
+                              curr: char) -> bool {
+        use self::Neighbor::{Blank, Must, May};
+        if curr == ' ' { return false; }
+        let ret = if !self.matches_incoming(a, incoming) {
+            false
+        } else if !self.curr.matches(curr) {
+            false
+        } else {
+            match &self.outgoing {
+                &Blank | &May(..) => true,
+                &Must(..) => false,
+            }
+        };
+        if self.instrumented {
+            a(format!("matches_end({:?}, {:?}) on {} => {:?}",
+                      incoming, curr, self.entry_text, ret));
+        }
+        ret
     }
 }
 
@@ -208,6 +268,7 @@ impl<'a, C0, D0, C1, D1, C2> IntoEntry for (C0, D0, C1, D1, C2, &'a str) where
     fn into_entry(self, text: &'static str) -> Entry {
         use self::Neighbor::{Must};
         Entry {
+            instrumented: false,
             entry_text: text,
             loop_start: self.2.is_loop(),
             incoming: Must((self.0.into_match(), self.1.to_directions())),
@@ -225,6 +286,7 @@ impl<'a, C0, D0, C1, D1, C2, A> IntoEntry for (C0, D0, C1, D1, C2, &'a str, A) w
     fn into_entry(self, text: &'static str) -> Entry {
         use self::Neighbor::{Must};
         Entry {
+            instrumented: false,
             entry_text: text,
             loop_start: self.2.is_loop(),
             incoming: Must((self.0.into_match(), self.1.to_directions())),
@@ -242,6 +304,7 @@ impl<'a, C0, D0, C1, D1, C2> IntoEntry for (May<(C0, D0)>, C1, D1, C2, &'a str) 
     fn into_entry(self, text: &'static str) -> Entry {
         use self::Neighbor::{Must, May};
         Entry {
+            instrumented: false,
             entry_text: text,
             loop_start: self.1.is_loop(),
             incoming: May((((self.0).0).0.into_match(),
@@ -260,6 +323,7 @@ impl<'a, C0, D0, C1, D1, C2, A> IntoEntry for (May<(C0, D0)>, C1, D1, C2, &'a st
     fn into_entry(self, text: &'static str) -> Entry {
         use self::Neighbor::{Must, May};
         Entry {
+            instrumented: false,
             entry_text: text,
             loop_start: self.1.is_loop(),
             incoming: May((((self.0).0).0.into_match(),
@@ -278,6 +342,7 @@ impl<'a, C0, D0, C1, D1, C2> IntoEntry for (C0, D0, C1, May<(D1, C2)>, &'a str) 
     fn into_entry(self, text: &'static str) -> Entry {
         use self::Neighbor::{Must, May};
         Entry {
+            instrumented: false,
             entry_text: text,
             loop_start: self.2.is_loop(),
             incoming: Must((self.0.into_match(), self.1.to_directions())),
@@ -296,6 +361,7 @@ impl<'a, C0, D0, C1, D1, C2, A> IntoEntry for (C0, D0, C1, May<(D1, C2)>, &'a st
     fn into_entry(self, text: &'static str) -> Entry {
         use self::Neighbor::{Must, May};
         Entry {
+            instrumented: false,
             entry_text: text,
             loop_start: self.2.is_loop(),
             incoming: Must((self.0.into_match(), self.1.to_directions())),
@@ -315,6 +381,7 @@ impl<'a, C0, D0, C1, D1, C2> IntoEntry for (May<(C0, D0)>, C1, May<(D1, C2)>, &'
     fn into_entry(self, text: &'static str) -> Entry {
         use self::Neighbor::{May};
         Entry {
+            instrumented: false,
             entry_text: text,
             loop_start: self.1.is_loop(),
             incoming: May((((self.0).0).0.into_match(), ((self.0).0).1.to_directions())),
@@ -333,6 +400,7 @@ impl<'a, C0, D0, C1, D1, C2, A> IntoEntry for (May<(C0, D0)>, C1, May<(D1, C2)>,
     fn into_entry(self, text: &'static str) -> Entry {
         use self::Neighbor::{May};
         Entry {
+            instrumented: false,
             entry_text: text,
             loop_start: self.1.is_loop(),
             incoming: May((((self.0).0).0.into_match(), ((self.0).0).1.to_directions())),
@@ -353,6 +421,7 @@ impl<'a, C1, D1, C2> IntoEntry for (Start, C1, D1, C2, &'a str)
     fn into_entry(self, text: &'static str) -> Entry {
         use self::Neighbor::{Blank, Must};
         Entry {
+            instrumented: false,
             entry_text: text,
             loop_start: false,
             incoming: Blank,
@@ -370,6 +439,7 @@ impl<'a, C1, D1, C2, A> IntoEntry for (Start, C1, D1, C2, &'a str, A)
     fn into_entry(self, text: &'static str) -> Entry {
         use self::Neighbor::{Blank, Must};
         Entry {
+            instrumented: false,
             entry_text: text,
             loop_start: false,
             incoming: Blank,
@@ -387,6 +457,7 @@ impl<'a, C0, D0, C1> IntoEntry for (C0, D0, C1, Finis, &'a str)
     fn into_entry(self, text: &'static str) -> Entry {
         use self::Neighbor::{Blank, Must};
         Entry {
+            instrumented: false,
             entry_text: text,
             loop_start: false,
             incoming: Must((self.0.into_match(), self.1.to_directions())),
@@ -404,6 +475,7 @@ impl<'a, C0, D0, C1, A> IntoEntry for (C0, D0, C1, Finis, &'a str, A)
     fn into_entry(self, text: &'static str) -> Entry {
         use self::Neighbor::{Blank, Must};
         Entry {
+            instrumented: false,
             entry_text: text,
             loop_start: false,
             incoming: Must((self.0.into_match(), self.1.to_directions())),
@@ -421,6 +493,7 @@ impl<'a, C1> IntoEntry for (All, C1, All, &'a str) where
     fn into_entry(self, text: &'static str) -> Entry {
         use self::Neighbor::{May};
         Entry {
+            instrumented: false,
             entry_text: text,
             loop_start: self.1.is_loop(),
             incoming: May((Match::Any, directions::Any.to_directions())),
@@ -438,6 +511,7 @@ impl<'a, C1, A> IntoEntry for (All, C1, All, &'a str, A) where
     fn into_entry(self, text: &'static str) -> Entry {
         use self::Neighbor::{May};
         Entry {
+            instrumented: false,
             entry_text: text,
             loop_start: self.1.is_loop(),
             incoming: May((Match::Any, directions::Any.to_directions())),
@@ -446,6 +520,14 @@ impl<'a, C1, A> IntoEntry for (All, C1, All, &'a str, A) where
             template: self.3.to_string(),
             include_attributes: self.4.into_attributes(),
         }
+    }
+}
+
+#[allow(dead_code)]
+struct Loud<X>(X) where X: IntoEntry;
+impl<X: IntoEntry> IntoEntry for Loud<X> {
+    fn into_entry(self, text: &'static str) -> Entry {
+        Entry { instrumented: true, ..self.0.into_entry(text) }
     }
 }
 
@@ -460,12 +542,13 @@ pub struct Table {
 }
 
 impl Table {
-    pub fn find(&self,
+    pub(crate) fn find(&self,
+                a: Announce,
                 incoming: Option<(char, Direction)>,
                 curr: char,
                 outgoing: Option<(Direction, char)>) -> Option<(&str, &[(String, String)])> {
         for e in &self.entries {
-            if !e.loop_start && e.matches(incoming, curr, outgoing) {
+            if !e.loop_start && e.matches(a, incoming, curr, outgoing) {
                 return Some((&e.template, &e.include_attributes[..]));
             }
         }
@@ -473,12 +556,13 @@ impl Table {
         return None;
     }
 
-    pub fn find_loop(&self,
+    pub(crate) fn find_loop(&self,
+                     a: Announce,
                      incoming: (char, Direction),
                      curr: char,
                      outgoing: (Direction, char)) -> Option<(&str, &[(String, String)])> {
         for e in &self.entries {
-            if e.loop_start && e.matches(Some(incoming), curr, Some(outgoing)) {
+            if e.loop_start && e.matches(a, Some(incoming), curr, Some(outgoing)) {
                 return Some((&e.template, &e.include_attributes[..]));
             }
         }
@@ -557,12 +641,13 @@ impl Default for Table {
         use directions::Any as AnyDir;
         use directions::NonNorth;
         use directions::NonSouth;
-        const JOINTS: &'static str = ".'+";
+        const JOINTS: &'static str = ".'+o";
         const LINES: &'static str = "-|/\\:=";
-        const ZER_SLOPE: &'static str = r"-=.'+><";
-        const INF_SLOPE: &'static str = r"|:.'+^v";
-        const POS_SLOPE: &'static str =  r"/.'+";
-        const NEG_SLOPE: &'static str =  r"\.'+";
+        const LINES_AND_JOINTS: &'static str = r"-|/\:=.'+o";
+        const ZER_SLOPE: &'static str = r"-=.'+o><";
+        const INF_SLOPE: &'static str = r"|:.'+o^v";
+        const POS_SLOPE: &'static str =  r"/.'+o";
+        const NEG_SLOPE: &'static str =  r"\.'+o";
         Table {
             entries: entries! {
                 (Start, '-', E, Match::Any, "M {W} L {E}"),
@@ -580,6 +665,37 @@ impl Default for Table {
                 (Start, "'", E, NEG_SLOPE, "M {N}"),
                 (Start, "'", W, POS_SLOPE, "M {N}"),
 ```
+
+This block adds support for little circles along a line,
+via the elliptical arc command `A`.
+
+```rust
+                (LINES_AND_JOINTS, AnyDir, 'o', Finis,
+                 "L {I} A 2,2 360 1 0 {RI}  A 2,2 180 0 0 {I} M {RI}"),
+```
+
+Commented out code below is the same mistake I have
+made elsewhere: there
+are "natural" directions for characters like `/` and
+`\`, which I have encoded in the SLOPE classes above.
+But that means you cannot just match willy-nilly
+against all LINES or LINES_AND_JOINTS in the
+`next` component of the tuple; you need to put in
+a stricter filter.
+
+```rust
+                // Loud((LINES_AND_JOINTS, AnyDir, 'o', AnyDir, LINES_AND_JOINTS,
+                //      "L {I} A 2,2 360 1 0  {O}  A 2,2 180 0 0 {I} M {O}")),
+                (LINES_AND_JOINTS, AnyDir, 'o', (W,E), ZER_SLOPE,
+                      "L {I} A 2,2 360 1 0  {O}  A 2,2 180 0 0 {I} M {O}"),
+                (LINES_AND_JOINTS, AnyDir, 'o', (N,S), INF_SLOPE,
+                      "L {I} A 2,2 360 1 0  {O}  A 2,2 180 0 0 {I} M {O}"),
+                (LINES_AND_JOINTS, AnyDir, 'o', (NE,SW), POS_SLOPE,
+                      "L {I} A 2,2 360 1 0  {O}  A 2,2 180 0 0 {I} M {O}"),
+                (LINES_AND_JOINTS, AnyDir, 'o', (NW,SE), NEG_SLOPE,
+                      "L {I} A 2,2 360 1 0  {O}  A 2,2 180 0 0 {I} M {O}"),
+```
+
 
 This block is made of special cases for rendering horizontal
 lines with curve characters in "interesting" ways.
@@ -628,6 +744,10 @@ joints would imply).
                 (     r"/", NE, ')', NW, r"\", "Q {C} {NW}"),
                 (     r"\", SE, ')', SW, r"/", "Q {C} {SW}"),
                 (     r"\", NW, '(', NE, r"/", "Q {C} {NE}"),
+                (Match::Any, AnyDir, r"/", SW, '(', "L {SW}"),
+                (Match::Any, AnyDir, r"/", NE, ')', "L {NE}"),
+                (Match::Any, AnyDir, r"\", SE, ')', "L {SE}"),
+                (Match::Any, AnyDir, r"\", NW, '(', "L {NW}"),
 
                 (Match::Any, E, '-', May((E, ZER_SLOPE)), "L {E}"),
                 (Match::Any, W, '-', May((W, ZER_SLOPE)), "L {W}"),
@@ -644,6 +764,10 @@ joints would imply).
                 (Match::Any, S, ':', May((S, INF_SLOPE)), "L {S}", [("stroke-dasharray", "5,2")]),
 
                 (Start, '+', AnyDir, Match::Any, "M {C}"),
+                (Match::Any, AnyDir, '+', Finis, "L {C}"),
+                // Below is riskier than I actually want to take
+                // on right now.
+                // (LINES_AND_JOINTS, AnyDir, '+', May((AnyDir, JOINTS)), "L {C}"),
 
                 (Match::Any, NE, '/', May((NE, POS_SLOPE)), "L {NE}"),
                 (Match::Any, SW, '/', May((SW, POS_SLOPE)), "L {SW}"),
@@ -658,10 +782,10 @@ joints would imply).
                 (Match::Any, NE, '/',  W, JOINTS, "L {SE}"),
                 (Match::Any, SW, '/',  W, JOINTS, "L {SE}"),
 
-                ('>', E, '+', May((AnyDir, LINES)), "M {C}"),
-                ('<', W, '+', May((AnyDir, LINES)), "M {C}"),
-                ('^', N, '+', May((AnyDir, LINES)), "M {C}"),
-                ('v', S, '+', May((AnyDir, LINES)), "M {C}"),
+                ('>', E, '+', May((AnyDir, LINES_AND_JOINTS)), "M {C}"),
+                ('<', W, '+', May((AnyDir, LINES_AND_JOINTS)), "M {C}"),
+                ('^', N, '+', May((AnyDir, LINES_AND_JOINTS)), "M {C}"),
+                ('v', S, '+', May((AnyDir, LINES_AND_JOINTS)), "M {C}"),
                 ("-=", (E, W), '+', May(((E, W), ZER_SLOPE)), "L {C}"),
 
                 (LINES, AnyDir, Loop('+'), (N,S), INF_SLOPE, "M {C}"),
