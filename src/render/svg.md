@@ -65,7 +65,7 @@ for `x_scale` and `y_scale`.
 And since I'm adding state anyway, I might as well provide
 a place to include additional contextual information.
 ```rust
-    pub(crate) name: String,
+    pub name: String,
 }
 
 fn default<D: Default>() -> D { Default::default() }
