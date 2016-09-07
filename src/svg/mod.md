@@ -269,6 +269,7 @@ impl IntoElement for Text {
         e.insert_attribute("text-anchor", self.text_anchor.to_string());
         e.insert_attribute("fill", self.fill.into_string());
         e.insert_attribute("dominant-baseline", "middle".to_string());
+        e.insert_attribute("xml:space", "preserve".to_string());
         if let Some(id) = self.id {
             e.insert_attribute("id", id);
         }
