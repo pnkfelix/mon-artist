@@ -95,15 +95,15 @@ mod attrs {
     fn split_attr(attr: &str) -> Vec<(String, String)> {
         lazy_static! {
             static ref KV: Regex =
-                Regex::new(r#"([a-zA-Z0-9_-]*)='([^']*)'|([a-zA-Z0-9_-]*)="([^"]*)""#)
+                Regex::new(r#"([a-zA-Z0-9_-]*)=(?:'([^']*)'|"([^"]*)")"#)
                 .unwrap_or_else(|e| panic!("ill-formatted regex: {}", e));
         }
 
         let mut attrs = Vec::new();
         for cap in KV.captures_iter(attr) {
-            debug!("cap: '{:?}' cap.at(0): '{:?}'", cap, cap.at(0));
-            attrs.push((cap.at(1).unwrap().to_string(),
-                        cap.at(2).unwrap().to_string()));
+            debug!("cargo:warning=cap: '{:?}' cap.at(0): '{:?}'", cap, cap.at(0));
+            attrs.push((cap.at(1).unwrap_or_else(|| panic!("no cap at 1")).to_string(),
+                        cap.at(2).or(cap.at(3)).unwrap_or_else(|| panic!("no cap at 2/3")).to_string()));
         }
         attrs
     }
