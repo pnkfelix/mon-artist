@@ -642,6 +642,7 @@ impl Default for Table {
         const JOINTS: &'static str = ".'+o";
         const LINES: &'static str = "-|/\\:=";
         const LINES_AND_JOINTS: &'static str = r"-|/\:=.'+o";
+        const STRICT_LINES_AND_JOINTS: &'static str = r"-|/\:=+";
         const ZER_SLOPE: &'static str = r"-=.'+o><";
         const INF_SLOPE: &'static str = r"|:.'+o^v";
         const POS_SLOPE: &'static str =  r"/.'+o";
@@ -668,7 +669,7 @@ This block adds support for little circles along a line,
 via the elliptical arc command `A`.
 
 ```rust
-                (LINES_AND_JOINTS, AnyDir, 'o', Finis,
+                (STRICT_LINES_AND_JOINTS, AnyDir, 'o', Finis,
                  "L {I} A 2,2 360 1 0 {RI}  A 2,2 180 0 0 {I} M {RI}"),
 ```
 
@@ -684,13 +685,13 @@ a stricter filter.
 ```rust
                 // Loud((LINES_AND_JOINTS, AnyDir, 'o', AnyDir, LINES_AND_JOINTS,
                 //      "L {I} A 2,2 360 1 0  {O}  A 2,2 180 0 0 {I} M {O}")),
-                (LINES_AND_JOINTS, AnyDir, 'o', (W,E), ZER_SLOPE,
+                (LINES_AND_JOINTS, AnyDir, 'o', (W,E), r"-=+",
                       "L {I} A 2,2 360 1 0  {O}  A 2,2 180 0 0 {I} M {O}"),
-                (LINES_AND_JOINTS, AnyDir, 'o', (N,S), INF_SLOPE,
+                (LINES_AND_JOINTS, AnyDir, 'o', (N,S), r"|:+",
                       "L {I} A 2,2 360 1 0  {O}  A 2,2 180 0 0 {I} M {O}"),
-                (LINES_AND_JOINTS, AnyDir, 'o', (NE,SW), POS_SLOPE,
+                (LINES_AND_JOINTS, AnyDir, 'o', (NE,SW), r"/+",
                       "L {I} A 2,2 360 1 0  {O}  A 2,2 180 0 0 {I} M {O}"),
-                (LINES_AND_JOINTS, AnyDir, 'o', (NW,SE), NEG_SLOPE,
+                (LINES_AND_JOINTS, AnyDir, 'o', (NW,SE), r"\+",
                       "L {I} A 2,2 360 1 0  {O}  A 2,2 180 0 0 {I} M {O}"),
 ```
 
