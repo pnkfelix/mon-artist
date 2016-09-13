@@ -261,6 +261,10 @@ pub use self::text::Text;
 
 impl IntoElement for Text {
     fn into_element(self) -> Element {
+        // FIXME adhering to the grid layout is paramount for some
+        // text objects. I should add way for such objects to indicate
+        // that via an attached attribute.
+
         let mut e = Element::new("text");
         e.insert_attribute("x", self.x.to_string());
         e.insert_attribute("y", self.y.to_string());
