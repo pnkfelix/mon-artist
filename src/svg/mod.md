@@ -382,6 +382,17 @@ impl Svg {
         doc.insert_attribute("xmlns", "http://www.w3.org/2000/svg");
         doc.insert_attribute("width", width.to_string());
         doc.insert_attribute("height", height.to_string());
+```
+
+Using a `viewBox` ensures that the content will be rendered according to
+the width and height of the columns and rows in the original picture, even
+if it is being forcibly shrunk or zoomed by the width and height that we
+want the rendered SVG to fill.
+
+```rust
+        doc.insert_attribute("viewBox",
+                             format!("0 0 {} {}",
+                                     width.to_string(), height.to_string()));
         Svg { doc: doc }
     }
 
