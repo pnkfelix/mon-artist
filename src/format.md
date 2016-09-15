@@ -649,6 +649,14 @@ impl Default for Table {
         const NEG_SLOPE: &'static str =  r"\.'+o";
         Table {
             entries: entries! {
+                ('-', W, '-',  W, '-', ""),
+                ('-', E, '-',  E, '-', ""),
+                ('/', NE, '/', NE, '/', ""),
+                ('/', SW, '/', SW, '/', ""),
+                ('\\', NW, '\\', NW, '\\', ""),
+                ('\\', SE, '\\', SE, '\\', ""),
+                ('|', N, '|', N, '|', ""),
+                ('|', S, '|', S, '|', ""),
 ```
 
 As a *very* special case, I am removing the ability to start
