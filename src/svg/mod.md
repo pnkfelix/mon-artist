@@ -192,7 +192,7 @@ impl Fill {
         match self {
             Fill::Color(c) => c.into_string(),
             Fill::Pattern { def_id } => format!("url(#{})", def_id),
-            Fill::None => "None".to_string()
+            Fill::None => "none".to_string()
         }
     }
 }
