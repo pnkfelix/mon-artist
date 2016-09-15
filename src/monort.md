@@ -38,6 +38,7 @@ fn process(argument: &str) -> Result<(), Error> {
         x_scale: 8, y_scale: 13,
         font_family: "monospace".to_string(), font_size: 13,
         show_gridlines: false,
+        infer_rect_elements: false,
         name: argument.to_string(),
     };
     let svg = r.render_s(&s);

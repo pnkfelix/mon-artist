@@ -315,6 +315,7 @@ fn end_to_end_basics() {
             x_scale: 8, y_scale: 13,
             font_family: "Menlo".to_string(), font_size: 13,
             show_gridlines: true,
+            infer_rect_elements: true,
             name: name.to_string(),
         };
         html_body.children.push({

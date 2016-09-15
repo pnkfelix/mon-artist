@@ -62,6 +62,17 @@ for `x_scale` and `y_scale`.
     pub show_gridlines: bool,
 ```
 
+While the automatic rendering of rectangle-like closed paths
+into `<rect>` is a nice feature, it is a
+deviation from the core model that I want to describe
+(where nearly all of the interesting stuff is encoded in the format
+table).
+Therefore, allow a client to remove it so we can pretend it
+does not exist.
+```rust
+    pub infer_rect_elements: bool,
+```
+
 And since I'm adding state anyway, I might as well provide
 a place to include additional contextual information.
 ```rust
@@ -196,11 +207,13 @@ all clients would prefer the former when possible.
 
 ```rust
     debug!("rendering path: {:?} rectangular: {:?}", path, path.is_rectangular());
-    if let Some(corners) = path.is_rectangular() {
-        let opt_id = path.id.as_ref().map(|&(_, ref s)|s.clone());
-        match render_rectangle(svg, sr, opt_id, &path.attrs, corners) {
-            Ok(_) => return,
-            Err(_) => {} // fall through to general case below.
+    if sr.infer_rect_elements {
+        if let Some(corners) = path.is_rectangular() {
+            let opt_id = path.id.as_ref().map(|&(_, ref s)|s.clone());
+            match render_rectangle(svg, sr, opt_id, &path.attrs, corners) {
+                Ok(_) => return,
+                Err(_) => {} // fall through to general case below.
+            }
         }
     }
 ```
