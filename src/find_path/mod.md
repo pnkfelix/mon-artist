@@ -147,8 +147,10 @@ fn announce_fcp(x: String) { println!("find_closed_path {}", x); }
 fn announce_fcpf(x: String) { println!("find_closed_path_from {}", x); }
 
 impl<'a> FindUnclosedPaths<'a> {
-    fn find_unclosed_path(mut self, curr: Pt) -> Result<Path, Self> {
-        self.find.check_inspection(curr, announce_fup);
+    fn find_unclosed_path(mut self, curr: Pt) -> Result<Path, (Signal, Self)> {
+        if let Err(s @ Signal::CancelPath(_)) = self.find.check_neighbors(curr, announce_fup) {
+            return Err((s, self));
+        }
         // start the search proper
         self.find.steps.push(curr);
         for (j, &dir) in DIRECTIONS.iter().enumerate() {
@@ -176,27 +178,34 @@ not be able to start the rendering of the path.
 
             match self.fwd_ext(next, FindContext { prev: Some(curr), curr: next.0 })
             {
-                ret @ Ok(_) => return ret,
-                Err(s) => self = s,
+                Ok(p) => return Ok(p),
+                Err(s @ (Signal::CancelPath(_), _)) => {
+                    return Err(s);
+                }
+                Err((Signal::SearchFailure, s)) => {
+                    self = s;
+                }
             }
         }
         debug!("find_unclosed_path self: {:?} exhausted directions; giving up.", self);
-        return Err(self);
+        return Err((Signal::SearchFailure, self));
     }
 ```
 
 Attempts to extends the end of the path forward via `dv`.
 ```rust
-    fn fwd_ext(mut self, dv: DirVector, fc: FindContext) -> Result<Path, Self> {
+    fn fwd_ext(mut self, dv: DirVector, fc: FindContext) -> Result<Path, (Signal, Self)> {
         debug!("fwd_ext self: {:?} dv: {:?} {:?}", self, dv, fc);
         assert!(self.find.grid.holds(dv.0));
         assert!(!self.find.steps.contains(&dv.0));
         assert_eq!(dv.0, fc.curr());
-        self.find.check_inspection(fc.curr(), announce_fupfe);
+        if let Err(s @ Signal::CancelPath(_)) = self.find.check_neighbors(fc.curr(), announce_fupfe) {
+            return Err((s, self));
+        }
         let elem: Elem = self.find.grid[dv.0];
         debug!("fwd_ext elem: {:?}", elem);
         let _c: char = match elem {
-            Elem::Pad | Elem::Clear => return Err(self), // blank: Give up.
+            Elem::Pad | Elem::Clear => return Err((Signal::SearchFailure, self)), // blank: Give up.
             Elem::C(c) | Elem::Used(c) => c,
         };
 
@@ -225,9 +234,14 @@ Attempts to extends the end of the path forward via `dv`.
 
             match self.fwd_ext(next, FindContext { prev: Some(dv.0), curr: next.0 }) {
                 p @ Ok(_) => return p,
-                Err(s) => {
+                Err(s @ (Signal::CancelPath(_), _)) => {
+                    debug!("recursive search cancelled path for ({:?},{:?},{:?})",
+                           fc.prev, fc.curr, next.0);
+                    return Err(s)
+                }
+                Err((Signal::SearchFailure, s)) => {
                     debug!("recursive search failed for ({:?},{:?},{:?})",
-                             fc.prev, fc.curr, next.0);
+                           fc.prev, fc.curr, next.0);
                     self = s;
                     continue;
                 }
@@ -239,13 +253,13 @@ Attempts to extends the end of the path forward via `dv`.
         if self.find.matches_end(fc.prev, fc.curr) {
             debug!("fwd_ext self: {:?} exhausted turns; finished.", self);
 
-            Ok(self.rev_ext())
+            self.rev_ext()
         } else {
             debug!("fwd_ext self: {:?} cannot end here; aborting.", self);
             // undo addition of `curr` to path
             assert_eq!(self.find.steps.last(), Some(&dv.0));
             self.find.steps.pop();
-            Err(self)
+            Err((Signal::SearchFailure, self))
         }
     }
 }
@@ -265,9 +279,11 @@ prefix (if any) is a legal starting step for this path), and we
 are trying to see if any futher prefix exists.
 
 ```rust
-    fn rev_ext(mut self) -> Path {
+    fn rev_ext(mut self) -> Result<Path, (Signal, Self)> {
         let (curr, next) = self.first_two();
-        self.find.check_inspection(curr, announce_fupre);
+        if let Err(s @ Signal::CancelPath(_)) = self.find.check_neighbors(curr, announce_fupre) {
+            return Err((s, self));
+        }
         for (_j, &dir) in DIRECTIONS.iter().enumerate() {
             let prev = DirVector(curr, dir).steps(1);
 ```
@@ -276,8 +292,9 @@ Attempt to find a prefix following `dir`, returning it on success.
 
 ```rust
             match self.try_rev_ext(next, curr, prev) {
-                Ok(p) => return p,
-                Err(s) => self = s,
+                Ok(p) => return Ok(p),
+                Err(s @ (Signal::CancelPath(_), _)) => return Err(s),
+                Err((Signal::SearchFailure, s)) => self = s,
             }
         }
 ```
@@ -286,7 +303,7 @@ If we try all directions and none are usable, then just hand back
 the path we have.
 
 ```rust
-        self.to_path()
+        Ok(self.to_path())
     }
 
     fn to_path(self) -> Path {
@@ -312,15 +329,21 @@ the path we have.
         }
     }
 
-    fn try_rev_ext(mut self, next: Pt, curr: Pt, prev: DirVector) -> Result<Path, Self> {
-        self.find.check_inspection(curr, announce_fuptre);
+    fn search_failure<T>(self) -> Result<T, (Signal, Self)> {
+        Err((Signal::SearchFailure, self))
+    }
+
+    fn try_rev_ext(mut self, next: Pt, curr: Pt, prev: DirVector) -> Result<Path, (Signal, Self)> {
+        if let Err(s @ Signal::CancelPath(_)) = self.find.check_neighbors(curr, announce_fuptre) {
+            return Err((s, self));
+        }
 ```
 
 If we've gone off the grid, then obviously this direction is no good.
 
 ```rust
         if !self.find.grid.holds(prev.0) {
-            return Err(self);
+            return self.search_failure();
         }
 ```
 
@@ -329,7 +352,7 @@ need not explore it.
 
 ```rust
         if self.find.grid[prev.0].is_blank() {
-            return Err(self);
+            return self.search_failure();
         }
 ```
 
@@ -344,10 +367,10 @@ be a legal path. So we need to:
 ```rust
         // if self.contains(prev.0) {
         if self.prefix_rev.contains(&prev.0) {
-            return Err(self);
+            return self.search_failure();
         }
         if self.find.steps.contains(&prev.0) {
-            return Err(self);
+            return self.search_failure();
         }
 ```
 
@@ -355,7 +378,7 @@ be a legal path. So we need to:
 
 ```rust
         if !self.find.matches(Some(prev.0), curr, next) {
-            return Err(self);
+            return self.search_failure();
         }
 ```
 
@@ -371,7 +394,7 @@ so tentatively add it to the `prefix_rev`.)
 
 ```rust
         if self.is_start(prev.0, curr) {
-            return Ok(self.rev_ext());
+            return self.rev_ext();
         }
 ```
 
@@ -385,7 +408,8 @@ so tentatively add it to the `prefix_rev`.)
             let prev = DirVector(curr, dir).steps(1);
             match self.try_rev_ext(next, curr, prev) {
                 ret @ Ok(_) => return ret,
-                Err(s) => self = s,
+                Err(s @ (Signal::CancelPath(_), _)) => return Err(s),
+                Err((Signal::SearchFailure, s)) => self = s,
             }
         }
 ```
@@ -397,7 +421,7 @@ of `prev` and Err.
         assert_eq!(self.prefix_rev.last(), Some(&prev.0));
         self.prefix_rev.pop();
 
-        return Err(self);
+        return Err((Signal::SearchFailure, self));
     }
 
     fn is_start(&self, curr: Pt, next: Pt) -> bool {
@@ -447,7 +471,9 @@ impl<'a> FindClosedPaths<'a> {
     }
 
     fn find_closed_path(mut self, curr: Pt) -> Result<Path, Self> {
-        self.find.check_inspection(curr, announce_fcp);
+        if let Err(Signal::CancelPath(_)) = self.find.check_neighbors(curr, announce_fcp) {
+            return Err(self);
+        }
         let elem = self.find.grid[curr];
         // // Don't waste time on a search that starts on a non-corner.
         // // (all closed paths must have at least three corner elements,
@@ -493,7 +519,9 @@ impl<'a> FindClosedPaths<'a> {
         assert!(self.find.grid.holds(dv.0));
         assert!(!self.find.steps.contains(&dv.0));
         assert_eq!(dv.0, fc.curr);
-        self.find.check_inspection(fc.curr, announce_fcpf);
+        if let Err(Signal::CancelPath(_)) = self.find.check_neighbors(fc.curr, announce_fcpf) {
+            return Err(self);
+        }
         let elem: Elem = self.find.grid[dv.0];
         let c = match elem {
             Elem::Pad | Elem::Clear => return Err(self), // blank: Give up.
@@ -599,6 +627,11 @@ pub fn find_unclosed_path(grid: &Grid, format: &Table, pt: Pt) -> Option<Path> {
     ret
 }
 
+pub enum Signal {
+    CancelPath(Pt),
+    SearchFailure,
+}
+
 impl<'a> FindPaths<'a> {
     fn check_inspection_start_at(&self, pt: Pt, a: fn (String)) {
         if !self.grid.holds(pt) { return; }
@@ -614,6 +647,15 @@ impl<'a> FindPaths<'a> {
             println!("TURNING OFF ANNOUCER at {:?}", pt); 
             self.announce.set(silent);
         }
+    }
+
+    fn check_nonpath_xbones_at(&self, pt: Pt) -> Result<(), Signal> {
+        if !self.grid.holds(pt) { return Ok(()); }
+        if self.grid[pt].opt_char() == Some('☠') {
+            println!("CANCELLING PATH at {:?}", pt); 
+            return Err(Signal::CancelPath(pt));
+        }
+        return Ok(());
     }
 
     fn check_inspection_start(&self, curr: Pt, a: fn (String)) {
@@ -635,6 +677,20 @@ impl<'a> FindPaths<'a> {
     fn check_inspection(&self, curr: Pt, a: fn (String)) {
         self.check_inspection_start(curr, a);
         self.check_inspection_finis(curr);
+    }
+
+    fn check_nonpath(&self, curr: Pt) -> Result<(), Signal> {
+        try!(self.check_nonpath_xbones_at(curr));
+        for (_j, &dir) in DIRECTIONS.iter().enumerate() {
+            let nbor = DirVector(curr, dir).steps(1);
+            try!(self.check_nonpath_xbones_at(nbor.0));
+        }
+        return Ok(());
+    }
+
+    fn check_neighbors(&self, curr: Pt, a: fn (String)) -> Result<(), Signal> {
+        self.check_inspection(curr, a);
+        self.check_nonpath(curr)
     }
 
     fn find_entry(&self,

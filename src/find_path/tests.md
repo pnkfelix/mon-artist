@@ -450,6 +450,46 @@ fn basic_all_plus_single_box_upper_left() {
 }
 
 #[test]
+fn path_cancellation_to_east() {
+    let grid = "--☠".parse::<Grid>().unwrap();
+    let opt_p = super::find_unclosed_path_from(&grid,
+                                               &Default::default(),
+                                               DirVector(Pt(1,1), Direction::E));
+    assert!(opt_p.is_none());
+}
+
+#[test]
+fn path_cancellation_below_end() {
+    let grid = "---\n\
+                  ☠".parse::<Grid>().unwrap();
+    let opt_p = super::find_unclosed_path_from(&grid,
+                                               &Default::default(),
+                                               DirVector(Pt(1,1), Direction::E));
+    assert!(opt_p.is_none());
+}
+
+#[test]
+fn path_cancellation_below_middle() {
+    let grid = "----------\n\
+                  ☠".parse::<Grid>().unwrap();
+    let opt_p = super::find_unclosed_path_from(&grid,
+                                               &Default::default(),
+                                               DirVector(Pt(1,1), Direction::E));
+    assert!(opt_p.is_none());
+}
+
+#[test]
+fn path_cancellation_beside_prefix() {
+    let grid = "+---------\n\
+                |\n\
+                |☠".parse::<Grid>().unwrap();
+    let opt_p = super::find_unclosed_path_from(&grid,
+                                               &Default::default(),
+                                               DirVector(Pt(1,1), Direction::E));
+    assert!(opt_p.is_none());
+}
+
+#[test]
 fn issue_15_box_big_upper_left() {
     let grid = ISSUE_15_DESC.1.parse::<Grid>().unwrap();
     let pf = FindClosedPaths::new(&grid);
