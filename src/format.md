@@ -731,7 +731,7 @@ via the elliptical arc command `A`.
 
 ```rust
                 (STRICT_LINES_AND_JOINTS, AnyDir, 'o', Finis,
-                 "L {I/o} A 2,2 360 1 0 {RI/o}  A 2,2 180 0 0 {I/o} M {RI/o}"),
+                 "L {I/o} A 2,2 360 1 0 {RI/o}  A 2,2 180 0 0 {I/o} A 2,2 360 1 0 {RI/o}"),
 ```
 
 Commented out code below is the same mistake I have
@@ -747,15 +747,23 @@ a stricter filter.
                 // Loud((LINES_AND_JOINTS, AnyDir, 'o', AnyDir, LINES_AND_JOINTS,
                 //      "L {I} A 2,2 360 1 0  {O}  A 2,2 180 0 0 {I} M {O}")),
                 (LINES_AND_JOINTS, AnyDir, 'o', (W,E), r"-=+",
-                      "L {I/o} A 2,2 360 1 0  {O/o}  A 2,2 180 0 0 {I/o} M {O/o}"),
+                      "L {I/o} A 2,2 360 1 0  {O/o}  A 2,2 180 0 0 {I/o} A 2,2 360 1 0 {O/o}"),
                 (LINES_AND_JOINTS, AnyDir, 'o', (N,S), r"|:+",
-                      "L {I/o} A 2,2 360 1 0  {O/o}  A 2,2 180 0 0 {I/o} M {O/o}"),
+                      "L {I/o} A 2,2 360 1 0  {O/o}  A 2,2 180 0 0 {I/o} A 2,2 360 1 0 {O/o}"),
                 (LINES_AND_JOINTS, AnyDir, 'o', (NE,SW), r"/+",
-                      "L {I/o} A 2,2 360 1 0  {O/o}  A 2,2 180 0 0 {I/o} M {O/o}"),
+                      "L {I/o} A 2,2 360 1 0  {O/o}  A 2,2 180 0 0 {I/o} A 2,2 360 1 0 {O/o}"),
                 (LINES_AND_JOINTS, AnyDir, 'o', (NW,SE), r"\+",
-                      "L {I/o} A 2,2 360 1 0  {O/o}  A 2,2 180 0 0 {I/o} M {O/o}"),
-```
+                      "L {I/o} A 2,2 360 1 0  {O/o}  A 2,2 180 0 0 {I/o} A 2,2 360 1 0 {O/o}"),
 
+                (LINES_AND_JOINTS, AnyDir, Loop('o'), (W,E), r"-=+",
+                      "M {I} L {I/o} A 2,2 360 1 0  {O/o}  A 2,2 180 0 0 {I/o} A 2,2 360 1 0 {O/o}"),
+                (LINES_AND_JOINTS, AnyDir, Loop('o'), (N,S), r"|:+",
+                      "M {I} L {I/o} A 2,2 360 1 0  {O/o}  A 2,2 180 0 0 {I/o} A 2,2 360 1 0 {O/o}"),
+                (LINES_AND_JOINTS, AnyDir, Loop('o'), (NE,SW), r"/+",
+                      "M {I} L {I/o} A 2,2 360 1 0  {O/o}  A 2,2 180 0 0 {I/o} A 2,2 360 1 0 {O/o}"),
+                (LINES_AND_JOINTS, AnyDir, Loop('o'), (NW,SE), r"\+",
+                      "M {I} L {I/o} A 2,2 360 1 0  {O/o}  A 2,2 180 0 0 {I/o} A 2,2 360 1 0 {O/o}"),
+```
 
 This block is made of special cases for rendering horizontal
 lines with curve characters in "interesting" ways.
