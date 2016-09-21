@@ -215,6 +215,15 @@ impl<D1,D2,D3,D4> ToDirections for (D1, D2, D3, D4)
         union(&union(&self.0, &self.1), &union(&self.2, &self.3))
     }
 }
+impl<D1,D2,D3,D4,D5> ToDirections for (D1, D2, D3, D4, D5)
+    where D1: ToDirections, D2: ToDirections, D3: ToDirections, D4: ToDirections,
+    D5: ToDirections
+{
+    fn to_directions(&self) -> Vec<Direction> {
+        union(&union(&union(&self.0, &self.1), &union(&self.2, &self.3)),
+              &self.4)
+    }
+}
 
 macro_rules! to_dirs {
     ($I:ident) => {
