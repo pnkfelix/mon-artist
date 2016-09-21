@@ -21,6 +21,8 @@ defined at the top-level.
 use svg::{self, Color, Dim, Fill, Svg, Shape};
 
 use super::{Render, RenderS};
+
+use std::cmp;
 ```
 
 At first I had thought `SvgRender` did not need
@@ -364,6 +366,10 @@ impl<'a> PathRender<'a> {
     }
 }
 
+struct CompassPoints<T> {
+    n: T, s: T, e: T, w: T, ne: T, se: T, sw: T, nw: T
+}
+
 #[allow(warnings)]
 fn interpret_place(sr: &SvgRender,
                    place: &str,
@@ -397,14 +403,41 @@ fn interpret_place(sr: &SvgRender,
 
     // coordinates for actual compass points
     let c = (cx, cy);
-    let n = (cx, ny);
-    let s = (cx, sy);
-    let e = (ex, cy);
-    let w = (wx, cy);
-    let ne = (ex, ny);
-    let se = (ex, sy);
-    let nw = (wx, ny);
-    let sw = (wx, sy);
+
+    let grid = CompassPoints {
+        n: (cx, ny),
+        s: (cx, sy),
+        e: (ex, cy),
+        w: (wx, cy),
+        ne: (ex, ny),
+        se: (ex, sy),
+        nw: (wx, ny),
+        sw: (wx, sy),
+    };
+
+    // If we have a circle, then it is largest possible given bounds
+    // of each cell; its radius is half of the min of the two scales.
+    let radius = cmp::min(sr.x_scale, sr.y_scale) as f64 / 2.0;
+
+    // the diagonal corners, when projected onto the aforementioned
+    // circle, fall on points on a 45-45-90 triangle whose hypotenuse
+    // is the above radius, and thus the base and height of those
+    // 45-45-90 triangles is radius / sqrt(2).
+    let diagonal_on_circle_side = radius / (2.0f64).sqrt();
+
+    let circle = {
+        let d = diagonal_on_circle_side;
+        CompassPoints {
+            n: (cx, cy.subf(radius)),
+            s: (cx, cy.addf(radius)),
+            e: (cx.addf(radius), cy),
+            w: (cx.subf(radius), cy),
+            ne: (cx.addf(d), cy.subf(d)),
+            se: (cx.addf(d), cy.addf(d)),
+            sw: (cx.subf(d), cy.addf(d)),
+            nw: (cx.subf(d), cy.subf(d)),
+        }
+    };
 
     // FIXME: these cover the edge of the grid cell itself, but
     // another case that I want is the compass points along the
@@ -427,7 +460,18 @@ fn interpret_place(sr: &SvgRender,
     // But if I add "DIR/o", I might as well work on adding the other
     // forms like "DIR/2" etc, right?
 
-    match place {
+    let (numer, div) = match place.find("/") {
+        None => (place, None),
+        Some(i) => (&place[0..i], Some(&place[(i+1)..])),
+    };
+
+    let CompassPoints { n, s, e, w, ne, se, sw, nw } = match div {
+        None => grid,
+        Some("o") => circle,
+        Some(divisor) => panic!("unrecognized divisor: {}", divisor),
+    };
+
+    match numer {
         "C" => c, "N" => n, "S" => s, "E" => e, "W" => w,
         "NE" => ne, "SE" => se, "NW" => nw, "SW" => sw,
         "I" => match incoming.unwrap_or_else(||panic!("cannot use `I` when none incoming")) {
