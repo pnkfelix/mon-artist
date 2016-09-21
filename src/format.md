@@ -85,6 +85,16 @@ pub struct Entry {
     pub(crate) instrumented: bool,
 }
 
+impl Entry {
+    pub fn incoming(&self) -> Neighbor<(Match, Vec<Direction>)> {
+        self.incoming.clone()
+    }
+
+    pub fn outgoing(&self) -> Neighbor<(Vec<Direction>, Match)> {
+        self.outgoing.clone()
+    }
+}
+
 pub(crate) type Announce<'a> = &'a Fn(String);
 
 impl Entry {
@@ -540,6 +550,47 @@ pub struct Table {
 }
 
 impl Table {
+    pub fn demo() -> Self {
+        use directions::{N, S, E, W, NE, SE, SW, NW};
+        use directions::Any as AnyDir;
+        Table {
+            entries: entries! {
+                ("|-/\\", AnyDir, Loop('+'), (N,S), "|", "M {C}"),
+                ("|-/\\", AnyDir, Loop('+'), (E,W), "-", "M {C}"),
+
+                (Start,   '-', (E,W), "-+", "M {RO} L {O}"),
+                (Start,   '|', (N,S), "|+", "M {RO} L {O}"),
+                (Start,   '+', AnyDir, Match::Any, "M {C}"),
+
+                (Match::Any, (E,NE,N,NW,W), Loop('.'), (E,SE,S,SW,W), "-|\\/", "M {I} Q {C} {O}"),
+                (Match::Any, (E,SE,S,SW,W), Loop('\''), (E,NE,N,NW,W), "-|\\/", "Q {C} {O}"),
+
+                ("+-.'", (E, W), '-', May(((E, W), "-+.'>")), "L {O}"),
+                ("+|.'", (N, S), '|', May(((N, S), "|+.'")), "L {O}"),
+
+                (Match::Any, (E,NE,N,NW,W), '.', (E,SE,S,SW,W), "-|\\/", "Q {C} {O}"),
+                (Match::Any, (E,SE,S,SW,W), '\'', (E,NE,N,NW,W), "-|\\/", "Q {C} {O}"),
+
+                ("|-/\\>", AnyDir, '+', May(((N,S), "|")), "L {C}"),
+                ("|-/\\>", AnyDir, '+', May(((E,W), "-")), "L {C}"),
+                ("|-/\\>", AnyDir, '+', (NE,SW), "/", "L {C}"),
+                ("|-/\\>", AnyDir, '+', (NW,SE), "\\", "L {C}"),
+
+                (Match::Any, (NE, SW), '/', May(((NE, SW), "/+.'")), "L {O}"),
+                (Match::Any, (NW, SE), '\\', May(((NW, SE), "\\+.'")), "L {O}"),
+
+                ('-', E, '>', Finis, "L {C} l 3,0 m -3,-3 l 3,3 l -3,3 m 0,-3"),
+                ('-', E, '>', E, '+', "L {E} m -2,0 l 4,0 m -4,-3 l 4,3 l -4,3 m 0,-3 m  4,0"),
+                ('+', W, '>', W, '-', "M {E} m -2,0 l 4,0 m -4,-3 l 4,3 l -4,3 m 0,-3 m  4,0  M {E} L {C}"),
+
+            }
+        }
+    }
+}
+
+impl Table {
+    pub fn entries(&self) -> ::std::slice::Iter<Entry> { self.entries.iter() }
+
     pub(crate) fn find(&self,
                 a: Announce,
                 incoming: Option<(char, Direction)>,
