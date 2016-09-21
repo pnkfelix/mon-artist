@@ -731,7 +731,7 @@ via the elliptical arc command `A`.
 
 ```rust
                 (STRICT_LINES_AND_JOINTS, AnyDir, 'o', Finis,
-                 "L {I} A 2,2 360 1 0 {RI}  A 2,2 180 0 0 {I} M {RI}"),
+                 "L {I/o} A 2,2 360 1 0 {RI/o}  A 2,2 180 0 0 {I/o} M {RI/o}"),
 ```
 
 Commented out code below is the same mistake I have
@@ -747,13 +747,13 @@ a stricter filter.
                 // Loud((LINES_AND_JOINTS, AnyDir, 'o', AnyDir, LINES_AND_JOINTS,
                 //      "L {I} A 2,2 360 1 0  {O}  A 2,2 180 0 0 {I} M {O}")),
                 (LINES_AND_JOINTS, AnyDir, 'o', (W,E), r"-=+",
-                      "L {I} A 2,2 360 1 0  {O}  A 2,2 180 0 0 {I} M {O}"),
+                      "L {I/o} A 2,2 360 1 0  {O/o}  A 2,2 180 0 0 {I/o} M {O/o}"),
                 (LINES_AND_JOINTS, AnyDir, 'o', (N,S), r"|:+",
-                      "L {I} A 2,2 360 1 0  {O}  A 2,2 180 0 0 {I} M {O}"),
+                      "L {I/o} A 2,2 360 1 0  {O/o}  A 2,2 180 0 0 {I/o} M {O/o}"),
                 (LINES_AND_JOINTS, AnyDir, 'o', (NE,SW), r"/+",
-                      "L {I} A 2,2 360 1 0  {O}  A 2,2 180 0 0 {I} M {O}"),
+                      "L {I/o} A 2,2 360 1 0  {O/o}  A 2,2 180 0 0 {I/o} M {O/o}"),
                 (LINES_AND_JOINTS, AnyDir, 'o', (NW,SE), r"\+",
-                      "L {I} A 2,2 360 1 0  {O}  A 2,2 180 0 0 {I} M {O}"),
+                      "L {I/o} A 2,2 360 1 0  {O/o}  A 2,2 180 0 0 {I/o} M {O/o}"),
 ```
 
 
