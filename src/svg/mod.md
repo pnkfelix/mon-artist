@@ -87,7 +87,7 @@ impl Dec {
 
 /// `Dim` is a measure of dimension. They are meant to carry units,
 /// though it can be omitted via the `U` variant.
-#[derive(Copy, Clone, PartialEq, Eq, Debug)] // if we ever impl PartialOrd, do it explicitly.
+#[derive(Copy, Clone, PartialEq, Debug)] // if we ever impl PartialOrd, do it explicitly.
 pub enum Dim {
     /// Unit-less; e.g. U(50,1) is "50.1"
     U(u32, u32),
@@ -95,6 +95,10 @@ pub enum Dim {
     Px(u32),
     /// Pct stands for "Percent". e.g. Pc(50) is "50%"
     Pc(u32, u32),
+
+    // Unit-less computed floating-point value. Results from internal usage
+    // of things like sqrt.
+    FU(f64)
 }
 
 impl Default for Dim {
@@ -109,6 +113,7 @@ impl Dim {
             Dim::Px(s) => format!("{}px", s),
             Dim::Pc(s, 0) => format!("{}%", s),
             Dim::Pc(n, d) => format!("{}.{}%", n, d),
+            Dim::FU(x) => format!("{}", x),
         }
     }
 
@@ -117,6 +122,7 @@ impl Dim {
             Dim::U(s, f) => Dec(s, f),
             Dim::Px(_) => panic!("should never convert pixel dim to Dec"),
             Dim::Pc(s, f) => Dec(s, f),
+            Dim::FU(_) => panic!("should never convert computed float to Dec"),
         }
     }
 
@@ -126,6 +132,7 @@ impl Dim {
             Dim::U(..) => self.to_dec().add_half().to_u(),
             Dim::Px(_) => panic!("should never add half to pixel dim"),
             Dim::Pc(..) => self.to_dec().add_half().to_pc(),
+            Dim::FU(..) => panic!("should never add half to computed float"),
         }
     }
 
@@ -134,6 +141,7 @@ impl Dim {
             Dim::U(..) => self.to_dec().sub_half().to_u(),
             Dim::Px(_) => panic!("should never sub half from pixel dim"),
             Dim::Pc(..) => self.to_dec().sub_half().to_pc(),
+            Dim::FU(_) => panic!("should never sub half from computed float"),
         }
     }
 
@@ -152,6 +160,17 @@ impl Dim {
             _ => unimplemented!(),
         }
     }
+
+    pub(crate) fn addf(&self, x: f64) -> Dim {
+        match *self {
+            Dim::FU(y) => Dim::FU(y + x),
+            Dim::U(s, 0) => Dim::FU(s as f64 + x),
+            Dim::U(n, d) => Dim::FU(format!("{}.{}", n, d).parse::<f64>().unwrap() + x),
+            _ => unimplemented!(),
+        }
+    }
+
+    pub(crate) fn subf(&self, x: f64) -> Dim { self.addf(-x) }
 }
 
 trait ToDimU { fn to_u(&self) -> Dim; }
@@ -173,6 +192,7 @@ impl Mul<u32> for Dim {
             Dim::U(..)  => self.to_dec().scale(rhs).to_u(),
             Dim::Px(n)   => (n*rhs).to_px(),
             Dim::Pc(..) => self.to_dec().scale(rhs).to_pc(),
+            Dim::FU(x) => Dim::FU(x * (rhs as f64)),
         }
     }
 }
