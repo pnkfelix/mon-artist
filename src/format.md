@@ -708,18 +708,8 @@ impl Default for Table {
                 ('\\', SE, '\\', SE, '\\', ""),
                 ('|', N, '|', N, '|', ""),
                 ('|', S, '|', S, '|', ""),
-```
 
-As a *very* special case, I am removing the ability to start
-a line with just `->` because it is conflicting with my ability to
-put in Rust `->` function signatures in the text within a picture.
-
-I need a better way to handle this; e.g. maybe another extra character
-(or markdown style annotation) that indicates that if you encounter this
-along a path search, *give up* immediately as it is in fact not a path.
-```rust
-                // (Start, '-', E, Match::Any, "M {W} L {E}"),
-                (Start, '-', E, r"-=.'+o<", "M {W} L {E}"),
+                (Start, '-', E, Match::Any, "M {W} L {E}"),
 
                 (Start, '-', W, Match::Any, "M {E} L {W}"),
                 (Start, '|', N, Match::Any, "M {S} L {N}"),
@@ -900,11 +890,7 @@ joints would imply).
                 //
                 // horizontal arrow heads
                 ('-', E, '>', Finis, "L {C} l 3,0 m -3,-3 l 3,3 l -3,3 m 0,-3"),
-```
-See above note about the special case handling of `->` for Rust function 
-types embedded in diagrams.
-```rust
-                // (Start, '>', W, '-', "M {C} l 3,0 m -3,-3 l 3,3 l -3,3 m 0,-3"),
+                (Start, '>', W, '-', "M {C} l 3,0 m -3,-3 l 3,3 l -3,3 m 0,-3"),
                 ('-', W, '<', Finis, "L {C} l -3,0 m 3,-3 l -3,3 l 3,3 m 0,-3"),
                 (Start, '<', E, '-', "M {C} l -3,0 m 3,-3 l -3,3 l 3,3 m 0,-3"),
                 // vertical arrow heads
