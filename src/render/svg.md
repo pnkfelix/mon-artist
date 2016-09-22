@@ -431,7 +431,7 @@ fn render_loop_start(pr: &mut PathRender, prev: Step, curr: Step, next: Step)
     let incoming: (char, Direction) = (prev.1, prev.0.towards(curr.0));
     let outgoing: (Direction, char) = (curr.0.towards(next.0), next.1);
 
-    if let Some((template, attributes)) = t.find_loop(incoming, curr.1, outgoing) {
+    if let Some((template, attributes)) = t.find_loop(&|_| {}, incoming, curr.1, outgoing) {
         return (pr.substitute_placeholders(template,
                                            Some(incoming.1),
                                            curr,
@@ -453,7 +453,7 @@ fn render_step(pr: &mut PathRender, prev: Option<Step>, curr: Step, next: Option
     let incoming: Option<(char, Direction)> = to_incoming(prev, curr);
     let outgoing: Option<(Direction, char)> = to_outgoing(curr, next);
 
-    if let Some((template, attributes)) = t.find(incoming, curr.1, outgoing) {
+    if let Some((template, attributes)) = t.find(&|_|{}, incoming, curr.1, outgoing) {
         return (pr.substitute_placeholders(template,
                                            incoming.map(|t|t.1),
                                            curr,
