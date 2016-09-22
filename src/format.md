@@ -576,8 +576,8 @@ impl Table {
                 ("|-/\\>", AnyDir, '+', (NE,SW), "/", "L {C}"),
                 ("|-/\\>", AnyDir, '+', (NW,SE), "\\", "L {C}"),
 
-                (Match::Any, (NE, SW), '/', May(((NE, SW), "/+.'")), "L {O}"),
-                (Match::Any, (NW, SE), '\\', May(((NW, SE), "\\+.'")), "L {O}"),
+                (Match::Any, (NE, SW), '/', May(((NE, SW), "/+.'oO")), "L {O}"),
+                (Match::Any, (NW, SE), '\\', May(((NW, SE), "\\+.'oO")), "L {O}"),
 
                 ('-', E, '>', Finis, "L {C} l 3,0 m -3,-3 l 3,3 l -3,3 m 0,-3"),
                 ('-', E, '>', E, '+', "L {E} m -2,0 l 4,0 m -4,-3 l 4,3 l -4,3 m 0,-3 m  4,0"),
@@ -690,14 +690,14 @@ impl Default for Table {
         use directions::Any as AnyDir;
         use directions::NonNorth;
         use directions::NonSouth;
-        const JOINTS: &'static str = ".'+o";
+        const JOINTS: &'static str = ".'+oO";
         const LINES: &'static str = "-|/\\:=";
-        const LINES_AND_JOINTS: &'static str = r"-|/\:=.'+o";
+        const LINES_AND_JOINTS: &'static str = r"-|/\:=.'+oO";
         const STRICT_LINES_AND_JOINTS: &'static str = r"-|/\:=+";
-        const ZER_SLOPE: &'static str = r"-=.'+o><";
-        const INF_SLOPE: &'static str = r"|:.'+o^v";
-        const POS_SLOPE: &'static str =  r"/.'+o";
-        const NEG_SLOPE: &'static str =  r"\.'+o";
+        const ZER_SLOPE: &'static str = r"-=.'+oO><";
+        const INF_SLOPE: &'static str = r"|:.'+oO^v";
+        const POS_SLOPE: &'static str =  r"/.'+oO";
+        const NEG_SLOPE: &'static str =  r"\.'+oO";
         Table {
             entries: entries! {
                 ('-', W, '-',  W, '-', ""),
@@ -731,7 +731,7 @@ via the elliptical arc command `A`.
 
 ```rust
                 (STRICT_LINES_AND_JOINTS, AnyDir, 'o', Finis,
-                 "L {I/o} A 2,2 360 1 0 {RI/o}  A 2,2 180 0 0 {I/o} A 2,2 360 1 0 {RI/o}"),
+                 "L {I/o} A 2,2 0 1 0 {RI/o}  A 2,2 0 0 0 {I/o} A 2,2 0 1 0 {RI/o}"),
 ```
 
 Commented out code below is the same mistake I have
@@ -745,24 +745,52 @@ a stricter filter.
 
 ```rust
                 // Loud((LINES_AND_JOINTS, AnyDir, 'o', AnyDir, LINES_AND_JOINTS,
-                //      "L {I} A 2,2 360 1 0  {O}  A 2,2 180 0 0 {I} M {O}")),
+                //      "L {I} A 4,4 360 1 0  {O}  A 4,4 180 0 0 {I} M {O}")),
                 (LINES_AND_JOINTS, AnyDir, 'o', (W,E), r"-=+",
-                      "L {I/o} A 2,2 360 1 0  {O/o}  A 2,2 180 0 0 {I/o} A 2,2 360 1 0 {O/o}"),
+                      "L {I/o} A 2,2  0 1 0  {O/o}  A 2,2  0 0 0 {I/o} A 2,2 0 1 0 {O/o}"),
                 (LINES_AND_JOINTS, AnyDir, 'o', (N,S), r"|:+",
-                      "L {I/o} A 2,2 360 1 0  {O/o}  A 2,2 180 0 0 {I/o} A 2,2 360 1 0 {O/o}"),
+                      "L {I/o} A 2,2  0 1 0  {O/o}  A 2,2  0 0 0 {I/o} A 2,2 0 1 0 {O/o}"),
                 (LINES_AND_JOINTS, AnyDir, 'o', (NE,SW), r"/+",
-                      "L {I/o} A 2,2 360 1 0  {O/o}  A 2,2 180 0 0 {I/o} A 2,2 360 1 0 {O/o}"),
+                      "L {I/o} A 2,2  0 1 0  {O/o}  A 2,2  0 0 0 {I/o} A 2,2 0 1 0 {O/o}"),
                 (LINES_AND_JOINTS, AnyDir, 'o', (NW,SE), r"\+",
-                      "L {I/o} A 2,2 360 1 0  {O/o}  A 2,2 180 0 0 {I/o} A 2,2 360 1 0 {O/o}"),
+                      "L {I/o} A 2,2  0 1 0  {O/o}  A 2,2  0 0 0 {I/o} A 2,2 0 1 0 {O/o}"),
 
                 (LINES_AND_JOINTS, AnyDir, Loop('o'), (W,E), r"-=+",
-                      "M {I} L {I/o} A 2,2 360 1 0  {O/o}  A 2,2 180 0 0 {I/o} A 2,2 360 1 0 {O/o}"),
+                      "M {I} L {I/o} A 2,2 0 1 0  {O/o}  A 2,2 0 0 0 {I/o} A 2,2 0 1 0 {O/o}"),
                 (LINES_AND_JOINTS, AnyDir, Loop('o'), (N,S), r"|:+",
-                      "M {I} L {I/o} A 2,2 360 1 0  {O/o}  A 2,2 180 0 0 {I/o} A 2,2 360 1 0 {O/o}"),
+                      "M {I} L {I/o} A 2,2 0 1 0  {O/o}  A 2,2 0 0 0 {I/o} A 2,2 0 1 0 {O/o}"),
                 (LINES_AND_JOINTS, AnyDir, Loop('o'), (NE,SW), r"/+",
-                      "M {I} L {I/o} A 2,2 360 1 0  {O/o}  A 2,2 180 0 0 {I/o} A 2,2 360 1 0 {O/o}"),
+                      "M {I} L {I/o} A 2,2 0 1 0  {O/o}  A 2,2 0 0 0 {I/o} A 2,2 0 1 0 {O/o}"),
                 (LINES_AND_JOINTS, AnyDir, Loop('o'), (NW,SE), r"\+",
-                      "M {I} L {I/o} A 2,2 360 1 0  {O/o}  A 2,2 180 0 0 {I/o} A 2,2 360 1 0 {O/o}"),
+                      "M {I} L {I/o} A 2,2 0 1 0  {O/o}  A 2,2 0 0 0 {I/o} A 2,2 0 1 0 {O/o}"),
+```
+
+These are similar to all the circle rules above, but the above rules will sometimes
+yield small circles when joining pair of lines at a thin angle. Sometimes that's
+the right thing, but when you want the circle sizes to be regular, you can use this
+instead.
+
+```rust
+                (STRICT_LINES_AND_JOINTS, AnyDir, 'O', Finis,
+                 "L {I/o} A 4,4 0 1 0 {RI/o}  A 4,4 0 0 0 {I/o} A 4,4 0 1 0 {RI/o}"),
+
+                (LINES_AND_JOINTS, AnyDir, 'O', (W,E), r"-=+",
+                      "L {I/o} A 4,4  0 1 0  {O/o}  A 4,4  0 0 0 {I/o} A 4,4 0 1 0 {O/o}"),
+                (LINES_AND_JOINTS, AnyDir, 'O', (N,S), r"|:+",
+                      "L {I/o} A 4,4  0 1 0  {O/o}  A 4,4  0 0 0 {I/o} A 4,4 0 1 0 {O/o}"),
+                (LINES_AND_JOINTS, AnyDir, 'O', (NE,SW), r"/+",
+                      "L {I/o} A 4,4  0 1 0  {O/o}  A 4,4  0 0 0 {I/o} A 4,4 0 1 0 {O/o}"),
+                (LINES_AND_JOINTS, AnyDir, 'O', (NW,SE), r"\+",
+                      "L {I/o} A 4,4  0 1 0  {O/o}  A 4,4  0 0 0 {I/o} A 4,4 0 1 0 {O/o}"),
+
+                (LINES_AND_JOINTS, AnyDir, Loop('O'), (W,E), r"-=+",
+                      "M {I} L {I/o} A 4,4 0 1 0  {O/o}  A 4,4 0 0 0 {I/o} A 4,4 0 1 0 {O/o}"),
+                (LINES_AND_JOINTS, AnyDir, Loop('O'), (N,S), r"|:+",
+                      "M {I} L {I/o} A 4,4 0 1 0  {O/o}  A 4,4 0 0 0 {I/o} A 4,4 0 1 0 {O/o}"),
+                (LINES_AND_JOINTS, AnyDir, Loop('O'), (NE,SW), r"/+",
+                      "M {I} L {I/o} A 4,4 0 1 0  {O/o}  A 4,4 0 0 0 {I/o} A 4,4 0 1 0 {O/o}"),
+                (LINES_AND_JOINTS, AnyDir, Loop('O'), (NW,SE), r"\+",
+                      "M {I} L {I/o} A 4,4 0 1 0  {O/o}  A 4,4 0 0 0 {I/o} A 4,4 0 1 0 {O/o}"),
 ```
 
 This block is made of special cases for rendering horizontal
