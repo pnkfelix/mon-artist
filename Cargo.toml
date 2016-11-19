@@ -12,7 +12,8 @@ tango = "0.5.0"
 # `[lib]` section (which then requires an explicit name).
 
 [lib]
-name = "lib"
+name = "mon_artiste"
+path = "src/lib.rs"
 
 [dependencies]
 treexml = "0.3.0"
