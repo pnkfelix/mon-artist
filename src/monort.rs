@@ -1,6 +1,3 @@
-```rust
-#![feature(question_mark)]
-
 extern crate mon_artiste;
 
 use mon_artiste::render::svg::{SvgRender};
@@ -84,4 +81,3 @@ fn process(table: &str, in_file: &str, out_file: &str) -> Result<(), Error> {
     let mut output = File::create(out_file)?;
     Ok(write!(&mut output, "{}", svg)?)
 }
-```

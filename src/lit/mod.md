@@ -12,18 +12,7 @@ This means that if you have a particular layout in your ASCII art,
 such as positioning objects to be lined up with each other, that
 layout will be maintained in the generated picture.
 
-## The `lib` root
-
-### Features
-
-
-```rust
-#![feature(pub_restricted)]
-#![feature(inclusive_range_syntax, inclusive_range)]
-#![feature(type_ascription)]
-#![feature(slice_patterns)]
-```
-
+## The `mod` root
 
 ### External crates
 
@@ -38,8 +27,13 @@ And efficient use of regexps requires defining them via the
 [regex docs]: https://doc.rust-lang.org/regex/regex/index.html#example-avoid-compiling-the-same-regex-in-a-loop
 
 ```rust
-#[macro_use] extern crate lazy_static;
-extern crate regex;
+// (Since it is importing macros via `#[macro_use]`, the `extern crate
+// lazy_static` needs to be with the crate root, and thus could not
+// come along when this code moved into the `mod lit`.
+//
+// #[macro_use] extern crate lazy_static;
+
+pub extern crate regex;
 ```
 
 Since the output format is SVG, it makes some amount of sense for us to
@@ -50,16 +44,15 @@ Building up an XML document means choosing a representation for such documents.
 `treexml` is the first thing I found on [crates.io][] that seemed to fit.
 
 ```rust
-extern crate treexml;
+pub extern crate treexml;
 ```
 
 TODO say something about logging here.
 At the very least, note that one needs to write `::env_logger::init();` explicitly in unit tests when one wants that.
 
 ```rust
-#[macro_use]
-extern crate log;
-extern crate env_logger;
+// #[macro_use] extern crate log;
+pub extern crate env_logger;
 ```
 
 Once we have the external crates declared, we can jump into our own
@@ -89,7 +82,7 @@ and manipulating the key=value attributes that one sees in XML
 elements.
 
 ```rust
-mod attrs {
+pub mod attrs {
     use regex::Regex;
 
     fn split_attr(attr: &str) -> Vec<(String, String)> {
@@ -160,7 +153,7 @@ fonts, each character occupies more space vertically than
 horizontally.
 
 ```rust
-mod scene {
+pub mod scene {
     use path::{Path};
     use format;
     use grid::{Grid};
@@ -240,7 +233,7 @@ mod scene {
         }
     }
 }
-pub use scene::Scene;
+pub use self::scene::Scene;
 
 use treexml::{Element};
 use svg::{ToElement};

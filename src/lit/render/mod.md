@@ -1,5 +1,5 @@
 ```rust
-use Scene;
+use super::scene::Scene;
 ```
 
 All rendering engines expose an instance of the object-safe `Render` trait.

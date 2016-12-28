@@ -446,7 +446,7 @@ impl Grid {
 #[cfg(test)]
 mod tests {
     use super::Grid;
-    use test_data;
+    use super::super::test_data;
 
     #[test]
     fn basics() {

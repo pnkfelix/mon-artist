@@ -6,7 +6,7 @@ A drawing is essentially a set of paths on a backdrop.
 
 ```rust
 use directions::Direction;
-use Scene;
+use super::Scene;
 use path::{self, Closed, Path};
 use grid::{Pt};
 
