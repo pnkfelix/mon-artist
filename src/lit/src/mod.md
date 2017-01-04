@@ -94,9 +94,9 @@ pub mod attrs {
 
         let mut attrs = Vec::new();
         for cap in KV.captures_iter(attr) {
-            debug!("cargo:warning=cap: '{:?}' cap.at(0): '{:?}'", cap, cap.at(0));
-            attrs.push((cap.at(1).unwrap_or_else(|| panic!("no cap at 1")).to_string(),
-                        cap.at(2).or(cap.at(3)).unwrap_or_else(|| panic!("no cap at 2/3")).to_string()));
+            debug!("cargo:warning=cap: '{:?}' cap.get(0): '{:?}'", cap, cap.get(0));
+            attrs.push((cap.get(1).unwrap_or_else(|| panic!("no cap at 1")).as_str().to_string(),
+                        cap.get(2).or(cap.get(3)).unwrap_or_else(|| panic!("no cap at 2/3")).as_str().to_string()));
         }
         attrs
     }
