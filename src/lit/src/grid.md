@@ -361,7 +361,7 @@ impl FromStr for Grid {
             .filter_map(|line| {
                 MD_RE.captures(line)
                     .map(|caps| {
-                        (caps.at(1).unwrap().to_string(), caps.at(2).unwrap().to_string())
+                        (caps.get(1).unwrap().as_str().to_string(), caps.get(2).unwrap().as_str().to_string())
                     })
             })
             .collect();
