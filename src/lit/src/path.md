@@ -46,7 +46,7 @@ of the object in question, as demonstrated here:
 The identifier can be used to attach attributes to the
 path, via an end-note notation of the form
 
-o```
+```
 [ident]: { "name": "value", "name2": "value2" }
 ```
 
