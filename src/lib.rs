@@ -3,6 +3,8 @@
 #![feature(type_ascription)]
 #![feature(slice_patterns)]
 
+#![allow(unreachable_patterns)]
+
 /// (Macro imports need to appear at the crate root.)
 #[macro_use] extern crate lazy_static;
 
