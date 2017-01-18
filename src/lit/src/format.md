@@ -700,6 +700,31 @@ impl Default for Table {
         const NEG_SLOPE: &'static str =  r"\.'+oO";
         Table {
             entries: entries! {
+                (Start, "│", AnyDir, Match::Any, "M {N} L {S}"),
+                (Start, "─", AnyDir, Match::Any, "M {W} L {E}"),
+                (Start, "┌", AnyDir, Match::Any, "M {S} L {C} L {E}"),
+                (Start, "┐", AnyDir, Match::Any, "M {W} L {C} L {S}"),
+                (Start, "└", AnyDir, Match::Any, "M {N} L {C} L {E}"),
+                (Start, "┘", AnyDir, Match::Any, "M {W} L {C} L {N}"),
+                (Start, "├", AnyDir, Match::Any, "M {N} L {C} L {E} L {C} L {S}"),
+                (Start, "┤", AnyDir, Match::Any, "M {N} L {C} L {W} L {C} L {S}"),
+                (Start, "┬", AnyDir, Match::Any, "M {W} L {C} L {S} L {C} L {E}"),
+                (Start, "┴", AnyDir, Match::Any, "M {W} L {C} L {N} L {C} L {E}"),
+                (Start, "┼", AnyDir, Match::Any, "M {W} L {C} L {N} L {C} L {E} L {C} L {S}"),
+
+                (Match::Any, AnyDir, "│", May((AnyDir, Match::Any)), "M {N} L {S}"),
+                (Match::Any, AnyDir, "─", May((AnyDir, Match::Any)), "M {W} L {E}"),
+                (Match::Any, AnyDir, "┌", May((AnyDir, Match::Any)), "M {S} L {C} L {E}"),
+                (Match::Any, AnyDir, "┐", May((AnyDir, Match::Any)), "M {W} L {C} L {S}"),
+                (Match::Any, AnyDir, "└", May((AnyDir, Match::Any)), "M {N} L {C} L {E}"),
+                (Match::Any, AnyDir, "┘", May((AnyDir, Match::Any)), "M {W} L {C} L {N}"),
+                (Match::Any, AnyDir, "├", May((AnyDir, Match::Any)), "M {N} L {C} L {E} L {C} L {S}"),
+                (Match::Any, AnyDir, "┤", May((AnyDir, Match::Any)), "M {N} L {C} L {W} L {C} L {S}"),
+                (Match::Any, AnyDir, "┬", May((AnyDir, Match::Any)), "M {W} L {C} L {S} L {C} L {E}"),
+                (Match::Any, AnyDir, "┴", May((AnyDir, Match::Any)), "M {W} L {C} L {N} L {C} L {E}"),
+                (Match::Any, AnyDir, "┼", May((AnyDir, Match::Any)), "M {W} L {C} L {N} L {C} L {E} L {C} L {S}"),
+
+/*
                 ('-', W, '-',  W, '-', ""),
                 ('-', E, '-',  E, '-', ""),
                 ('/', NE, '/', NE, '/', ""),
@@ -708,7 +733,7 @@ impl Default for Table {
                 ('\\', SE, '\\', SE, '\\', ""),
                 ('|', N, '|', N, '|', ""),
                 ('|', S, '|', S, '|', ""),
-
+*/
                 (Start, '-', E, Match::Any, "M {W} L {E}"),
 
                 (Start, '-', W, Match::Any, "M {E} L {W}"),
