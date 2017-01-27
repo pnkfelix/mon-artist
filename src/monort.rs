@@ -1,8 +1,8 @@
-extern crate mon_artiste;
+extern crate mon_artist;
 
-use mon_artiste::render::svg::{SvgRender};
-use mon_artiste::render::{RenderS};
-use mon_artiste::grid::{Grid, ParseError};
+use mon_artist::render::svg::{SvgRender};
+use mon_artist::render::{RenderS};
+use mon_artist::grid::{Grid, ParseError};
 
 use std::convert::From;
 use std::env;
@@ -24,7 +24,7 @@ fn main() {
 
 #[allow(dead_code)]
 fn describe_table() {
-    use mon_artiste::format::{Table, Neighbor};
+    use mon_artist::format::{Table, Neighbor};
 
     let t: Table = Default::default();
     let mut may_both_count = 0;
@@ -54,7 +54,7 @@ enum Error {
 impl From<io::Error> for Error { fn from(e: io::Error) -> Self { Error::IO(e) } }
 impl From<ParseError> for Error { fn from(e: ParseError) -> Self { Error::Parse(e) } }
 
-use mon_artiste::format::Table;
+use mon_artist::format::Table;
 
 fn get_table(table: &str) -> Table {
     match table {

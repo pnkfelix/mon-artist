@@ -1,5 +1,5 @@
 [package]
-name = "mon-artiste"
+name = "mon-artist"
 version = "0.1.0"
 authors = ["pnkfelix"]
 build = "tango-build.rs"
@@ -13,7 +13,7 @@ lalrpop = "0.12.4"
 # `[lib]` section (which then requires an explicit name).
 
 [lib]
-name = "mon_artiste"
+name = "mon_artist"
 path = "src/lib.rs"
 
 [[bin]]
