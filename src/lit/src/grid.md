@@ -334,6 +334,7 @@ impl Index<Pt> for Grid {
 
 #[derive(Debug)]
 pub enum ParseError {
+    MalformedGrid
 }
 
 impl FromStr for Grid {
