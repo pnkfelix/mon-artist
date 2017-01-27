@@ -17,8 +17,8 @@ name = "mon_artist"
 path = "src/lib.rs"
 
 [[bin]]
-name = "monort"
-path = "src/monort.rs"
+name = "mona"
+path = "src/mona.rs"
 
 [dependencies]
 treexml = "0.3.0"
