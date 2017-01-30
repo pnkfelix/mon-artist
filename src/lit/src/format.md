@@ -21,9 +21,12 @@ for constructing, all of which come from the `grammar` module.
 
 ```rust
 #[allow(unused_imports)]
-use grammar::{Rule, Rendering, CharSet, Dir};
+use grammar::{self, Rendering, CharSet};
 #[allow(unused_imports)]
+use grammar::Dirs as GrammarDirs;
+use grammar::Dir as GrammarDir;
 use grammar::Match as GrammarMatch;
+use grammar::Rule as GrammarRule;
 ```
 
 Now, when this code was first written, there was no external text
@@ -693,6 +696,128 @@ struct Loud<X>(X) where X: IntoEntry;
 impl<X: IntoEntry> IntoEntry for Loud<X> {
     fn into_entry(self, text: &'static str) -> Entry {
         Entry { instrumented: true, ..self.0.into_entry(text) }
+    }
+}
+```
+
+At this point, we *do* have a real grammar and a real parser, so even though
+there's all that preceding support code for directly writing entries in
+Rust source, we also want to support the front-end syntax.
+
+The plan: use the existing `IntoEntry` infrastructure, and just
+add a new impl that converts a `grammar::Rule` into a local `Entry`.
+
+(I'm not yet sure how I am going to supply the source text; I know
+LalrPop has ways to observe left- and right-hand cursors tracking
+the span of the input that was parsed. Maybe I will just need to use
+that in tandem with tracking the original input string slice. Though
+none of that will work until `entry_text` is generalized to `Cow<'static, str>`
+so that I will have the option to clone the input into a String
+when it has less than static lifetime.)
+
+```rust
+trait IntoNeighbor<T> { fn into_neighbor(self) -> Neighbor<T>; }
+
+fn conv_dirs(gds: GrammarDirs) -> Vec<Direction> {
+    macro_rules! match_dirs {
+        ($dir: expr, $($id:ident),*) => {
+            match $dir {
+                $(
+                    GrammarDir::$id => directions::Direction::$id,
+                )*
+            }
+        }
+    }
+    gds.0.into_iter()
+        .map(|d| match_dirs!(d, N, NE, E, SE, S, SW, W, NW))
+        .collect()
+}
+
+impl IntoNeighbor<(Match, Vec<Direction>)> for (CharSet, GrammarDirs) {
+    fn into_neighbor(self) -> Neighbor<(Match, Vec<Direction>)> {
+        let (chars, dirs) = self;
+        Neighbor::Must((chars.into_match(), conv_dirs(dirs)))
+    }
+}
+
+impl IntoNeighbor<(Vec<Direction>, Match)> for (GrammarDirs, CharSet) {
+    fn into_neighbor(self) -> Neighbor<(Vec<Direction>, Match)> {
+        let (dirs, chars) = self;
+        Neighbor::Must((conv_dirs(dirs), chars.into_match()))
+    }
+}
+
+impl IntoMatch for CharSet {
+    fn into_match(self) -> Match {
+        match self {
+            CharSet::Char(c) => Match::One(c),
+            CharSet::String(s) => Match::Chars(s.chars().collect()),
+            CharSet::Any => Match::Any,
+        }
+    }
+}
+
+impl IntoEntry for GrammarRule {
+    fn into_entry(self, text: &'static str) -> Entry {
+        let GrammarRule { pat, render } = self;
+        let mut loop_start: bool = false;
+
+        let incoming: Neighbor<(Match, Vec<Direction>)>;
+        let curr: Match;
+        let outgoing: Neighbor<(Vec<Direction>, Match)>;
+        let template: String = render.0;
+        // FIXME: not yet supported
+        let include_attributes: Vec<(String, String)> = vec![];
+        // FIXME: not yet supported
+        let instrumented: bool = false;
+
+        match pat {
+            GrammarMatch::Loop(prev, p_dirs, loop_curr, n_dirs, next) => {
+                loop_start = true;
+                incoming = (prev, p_dirs).into_neighbor();
+                curr = loop_curr.into_match();
+                outgoing = (n_dirs, next).into_neighbor();
+            }
+            GrammarMatch::Step(prev, p_dirs, step_curr, n_dirs, next) => {
+                incoming = (prev, p_dirs).into_neighbor();
+                curr = step_curr.into_match();
+                outgoing = (n_dirs, next).into_neighbor();
+            }
+            GrammarMatch::Start(start_curr, dirs, next) => {
+                incoming = Neighbor::Blank;
+                curr = start_curr.into_match();
+                outgoing = (dirs, next).into_neighbor();
+            }
+            GrammarMatch::End(prev, dirs, end_curr) => {
+                incoming = (prev, dirs).into_neighbor();
+                curr = end_curr.into_match();
+                outgoing = Neighbor::Blank;
+            }
+        }
+        Entry {
+            entry_text: text,
+            loop_start: loop_start,
+            incoming: incoming,
+            curr: curr,
+            outgoing: outgoing,
+            template: template,
+            include_attributes: include_attributes,
+            instrumented: instrumented,
+        }
+    }
+}
+```
+
+Of course we still need to test that the above integration works.
+As a most basic sanity check, lets at least run the conversion on the
+sample grammar I included in the `mod grammar`.
+
+```rust
+#[test]
+fn convert_sample_grammar() {
+    let rules = grammar::parse_rules(grammar::SAMPLE_GRAMMAR).unwrap();
+    for rule in rules {
+        rule.into_entry(""); // FIXME make `fn into_entry` more flexible about its input.
     }
 }
 ```

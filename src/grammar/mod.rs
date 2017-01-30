@@ -7,8 +7,8 @@ mod rules;
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
 pub struct Rule {
-    pat: Match,
-    render: Rendering,
+    pub pat: Match,
+    pub render: Rendering,
 }
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
@@ -66,16 +66,12 @@ macro_rules! assert_ok {
 }
 
 
-#[test]
-fn sanity_check_1() {
-    assert_ok!(parse_rules(r#"loop "|-/\" ANY "+" (N,S) "|" draw "M {C}" "#));
-
-
-    // Below is the sample grammar from PADL 2017 paper, re-adapted slight to the original
-    // syntax I had intended (where we do not have any \-escapes; instead you are intended
-    // to resort to raw-strings if that is actually necessary, which is not the case here
-    // because `"` is not a character we ever use in the diagram for that paper.
-    assert_ok!(parse_rules(r#"
+// Below is the sample grammar from PADL 2017 paper, re-adapted slight to the original
+// syntax I had intended (where we do not have any \-escapes; instead you are intended
+// to resort to raw-strings if that is actually necessary, which is not the case here
+// because `"` is not a character we ever use in the diagram for that paper.
+#[cfg(test)]
+pub(crate) const SAMPLE_GRAMMAR: &'static str = r#"
 loop  "|-/\" ANY '+' (N,S) "|" draw "M {C}"
 loop  "|-/\" ANY '+' (E,W) "-" draw "M {C}"
 
@@ -111,6 +107,12 @@ step ANY (E,SE,S,SW,W) "'" (E,NE,N,NW,W) "-|\/" draw "Q {C} {O}"
 # end  '-' E '>'      draw "L {C} l 3,0 m -3,-3 l 3,3 l -3,3 m 0,-3"
 # step '-' E '>' E '+' draw "L {E} m -2,0 l 4,0 m -4,-3 l 4,3 l -4,3 m 0,-3 m 4,0"
 # step '+' W '>' W '-' draw "M {E} m -2,0 l 4,0 m -4,-3 l 4,3 l -4,3 m 0,-3 m 4,0 M {E} L {C}"
-"#));
+"#;
 
+#[test]
+fn sanity_check_1() {
+    assert_ok!(parse_rules(r#"loop "|-/\" ANY "+" (N,S) "|" draw "M {C}" "#));
+
+
+    assert_ok!(parse_rules(SAMPLE_GRAMMAR));
 }
