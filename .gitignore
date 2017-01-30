@@ -3,3 +3,4 @@ Cargo.lock
 tango.stamp
 *~
 src/lit/**/*.rs
+src/grammar/rules.rs
