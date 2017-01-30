@@ -931,14 +931,28 @@ impl Table {
 }
 ```
 
-
-Here is the default table. It encodes the crazy stuff that I think is
-very interesting but probably not worth other people trying to make
-sense of.
+`struct Table` implements the `Default` trait. This is what dictates
+the default set of rules for our clients, so its important that they
+be impressive! (It is also important that they be predictable and
+sane, goals which I arguably have not spent as much time on at the
+moment.)
 
 ```rust
 impl Default for Table {
     fn default() -> Self {
+        // FIXME: switch to dynamically parsing based on formal grammar.
+        Self::original_default()
+    }
+}
+```
+
+Here is the original default table. It uses the crazy encoding
+and also encodes the crazy stuff that I think is interesting
+but probably not worth other people trying to make sense of.
+
+```rust
+impl Table {
+    fn original_default() -> Self {
         use directions::{N, S, E, W, NE, SE, SW, NW};
         use directions::Any as AnyDir;
         use directions::NonNorth;
