@@ -1,6 +1,42 @@
+Overview:
+
+Path search and rendering is table-driven. That means that there is a
+table of rules that defines how we find paths, and then other
+components of those same rules dictate how to render those paths we
+have found.
+
+
+
+
+We have various imports.
+
+First, there is the compass directions abstraction.
+
 ```rust
 use directions::{self, Direction, ToDirections};
+```
 
+Then there are various structures that the parsing code is responsible
+for constructing, all of which come from the `grammar` module.
+
+```rust
+#[allow(unused_imports)]
+use grammar::{Rule, Rendering, CharSet, Dir};
+#[allow(unused_imports)]
+use grammar::Match as GrammarMatch;
+```
+
+Now, when this code was first written, there was no external text
+format for the path search and rendering rules. Instead, I built up
+the rule structures directly. This meant that I tried to make them
+somewhat readable (but even then it was too painful to write out the
+specifications by hand, which led me to make some macro wrappers).
+
+Anyway, `Match` is one of the record structures I made from the
+outset.  It is actually quite similar to the `CharSet` structure from
+the `grammar` module.
+
+```rust
 #[derive(Clone, Debug)]
 pub enum Match {
     One(char),
@@ -20,7 +56,17 @@ impl Match {
         }
     }
 }
+```
 
+As mentioned above, I tried to make inputting the rules as painless as
+possible. To support this, I wanted to make it convenient to use various
+syntax for matching things: a single character if that's the only thing,
+or a vector of characters, or a string literal...
+
+To support this, I made a trait that can convert any of the above into
+the `Match` structure.
+
+```rust
 pub trait IntoMatch { fn into_match(self) -> Match; }
 
 impl IntoMatch for Match { fn into_match(self) -> Match { self } }
@@ -32,7 +78,12 @@ impl<'a> IntoMatch for &'a str {
 impl IntoMatch for String {
     fn into_match(self) -> Match { (self[..]).into_match() }
 }
+```
 
+Next I had ways to specify in the rules about what the neighbors have
+to look like.
+
+```rust
 #[derive(Clone, Debug)]
 pub enum Neighbor<T> {
     /// no neighbor allowed (i.e. pattern for some end of the path).
@@ -42,7 +93,13 @@ pub enum Neighbor<T> {
     /// may match some non-blank neighbor, but also matches an end of the path.
     May(T),
 }
+```
 
+An `Entry` is a path search and rendering rule. (It is called an
+"Entry" because the whole set of rules is called a "Table"; its a
+table made up of many entries.)
+
+```rust
 /// Each Entry describes how to render a character along a path,
 /// based on the context in which it appears.
 #[derive(Clone, Debug)]
@@ -94,10 +151,28 @@ impl Entry {
         self.outgoing.clone()
     }
 }
+```
 
+The `Announce` type is a simple callback. The intention is that when
+instrumentation is supported, you pass the instrumentation result (a
+string) to the announce-callback.
+
+```rust
 pub(crate) type Announce<'a> = &'a Fn(String);
+```
 
+The `Entry` type supports a slew of methods.
+
+```rust
 impl Entry {
+```
+
+Note that `fn matches_curr` is not the same as `fn matches` (it is
+calling `matches` on `self.curr`, not `self`). This basically just
+asks: does this rule even match the character we are currently
+pointing at on the grid.
+
+```rust
     pub(crate) fn matches_curr(&self, _a: Announce, curr: char) -> bool {
         let ret = self.curr.matches(curr);
         // if self.instrumented {
@@ -106,7 +181,15 @@ impl Entry {
         // }
         ret
     }
+```
 
+`fn matches_incoming` checks if the current rule applies given the
+"incoming character" (which is coupled with the direction that matches
+the trajectory from the incoming character to the current character).
+(The incoming character is `None` when this is the first step on a
+hypothetical path.)
+
+```rust
     fn matches_incoming(&self, _a: Announce, incoming: Option<(char, Direction)>) -> bool {
         use self::Neighbor::{Blank, Must, May};
         let ret = match (&self.incoming, &incoming) {
@@ -128,7 +211,15 @@ impl Entry {
         // }
         ret
     }
+```
 
+`fn matches_outgoing` checks if the current rule applies given the
+"outgoing character" (which is coupled with the direction that matches
+the trajectory from the current character to the outgoing character).
+(The outgoing character is `None` when this is the last step on a
+hypothetical non-loop path.)
+
+```rust
     fn matches_outgoing(&self, _a: Announce, outgoing: Option<(Direction, char)>) -> bool {
         use self::Neighbor::{Blank, Must, May};
         let ret = match (&self.outgoing, &outgoing) {
@@ -150,7 +241,15 @@ impl Entry {
         // }
         ret
     }
+```
 
+`fn matches` gathers all three of the above checks:
+
+  1. does the incoming trajectory match,
+  2. does the current character match, and
+  3. does the outgoing trajectory match?
+
+```rust
     pub(crate) fn matches(&self,
                           a: Announce,
                           incoming: Option<(char, Direction)>,
@@ -170,7 +269,12 @@ impl Entry {
         }
         ret
     }
+```
 
+`fn matches_start` handles matching for *just* the start rule, which 
+dictates how non-loop paths start.
+
+```rust
     pub(crate) fn matches_start(&self,
                                 a: Announce,
                                 curr: char,
@@ -194,7 +298,12 @@ impl Entry {
         }
         ret
     }
+```
 
+`fn matches_end` handles matching for *just* the end rule, which 
+dictates how non-loop paths end.
+
+```rust
     pub(crate) fn matches_end(&self,
                               a: Announce,
                               incoming: Option<(char, Direction)>,
@@ -217,7 +326,14 @@ impl Entry {
         ret
     }
 }
+```
 
+When we are searching for a path and we loop all the way around to the
+start again, then we double-check that there exist two distinct
+neighbors that work for the incoming and outgoing parts of the loop
+rule.
+
+```rust
 impl Entry {
     pub(crate) fn corner_incoming(&self) -> (Match, Vec<Direction>) {
         match self.incoming {
@@ -233,7 +349,13 @@ impl Entry {
         }
     }
 }
+```
 
+The `IntoAttributes` and `IntoEntry` traits are hacks similar to
+`IntoMatch` to ease direct input of the rule specification, prior to
+my adding a proper grammar to the system.
+
+```rust
 pub trait IntoAttributes { fn into_attributes(self) -> Vec<(String, String)>; }
 impl IntoAttributes for () { fn into_attributes(self) -> Vec<(String, String)> { vec![] } }
 impl IntoAttributes for [(&'static str, &'static str); 1] {
@@ -245,7 +367,12 @@ impl IntoAttributes for [(&'static str, &'static str); 1] {
 pub trait IntoEntry { fn into_entry(self, text: &'static str) -> Entry; }
 
 pub trait IntoCurr: IntoMatch { fn is_loop(&self) -> bool { false } }
+```
 
+I defined the nullary `All` and unary `May`/`Loop` structures again as
+ways to ease direct entry of rule specifications.
+
+```rust
 /// Use `All` to match either the end of the path or any non-blank character.
 pub struct All;
 
@@ -254,8 +381,14 @@ pub struct May<C>(C);
 
 /// Use `Loop` to match a corner for a closed polygon.
 pub struct Loop<C>(C);
+```
+
+Here we implement the various traits above to specify how to convert
+the specification as written in source code into a rule structure that
+the system can interpret.
 
 
+```rust
 impl<C:IntoMatch> IntoMatch for Loop<C> {
     fn into_match(self) -> Match { self.0.into_match() }
 
@@ -419,7 +552,12 @@ impl<'a, C0, D0, C1, D1, C2, A> IntoEntry for (May<(C0, D0)>, C1, May<(D1, C2)>,
         }
     }
 }
+```
 
+The `struct Start` and `struct Finis` were my old ways of directly
+encoding the "start" and "end" rules that are now in the grammar.
+
+```rust
 pub struct Start;
 pub struct Finis;
 
@@ -494,7 +632,20 @@ impl<'a, C0, D0, C1, A> IntoEntry for (C0, D0, C1, Finis, &'a str, A)
         }
     }
 }
+```
 
+Originally I had expected to be writing a number of rules where the
+rendering was the same for *any* preceding or succeeding character.
+Thus you have `IntoEntry` impls like these two, where its saying
+`(All, C, All, "<path data>")` for some `C`.
+
+However, it seems in practice that these forms were never actually
+used in the final tables that I end up employing; probably because
+such rules are actually far too broad.
+
+TODO: Maybe I should just remove the `struct All` entirely.
+
+```rust
 impl<'a, C1> IntoEntry for (All, C1, All, &'a str) where
     C1: IntoCurr,
 {
@@ -530,7 +681,13 @@ impl<'a, C1, A> IntoEntry for (All, C1, All, &'a str, A) where
         }
     }
 }
+```
 
+The `struct Loud` was a bit of a trick to embed instrumentation code
+into the rule structure. It is what would set the `.instrumented` bit
+on an entry.
+
+```rust
 #[allow(dead_code)]
 struct Loud<X>(X) where X: IntoEntry;
 impl<X: IntoEntry> IntoEntry for Loud<X> {
@@ -538,17 +695,38 @@ impl<X: IntoEntry> IntoEntry for Loud<X> {
         Entry { instrumented: true, ..self.0.into_entry(text) }
     }
 }
+```
 
+The `entries!` macro is a convenience wrapper that effectively maps a
+slew of calls to into_entry on the inputs. It is also stringifying
+those same inputs, so that the instrumentation can actually report
+which original rule (using the syntax that was originally employed to
+write the rule) is being processed at the moment.
+
+```rust
 macro_rules! entries {
     ($($e:expr),* $(,)*) => { vec![$($e.into_entry(stringify!($e)),)*] }
 }
+```
 
+Our rules are just a `Table` of entries.
+
+```rust
 #[allow(dead_code)]
 #[derive(Clone)]
 pub struct Table {
     pub(crate) entries: Vec<Entry>,
 }
+```
 
+Here is a demo version of the `Table`. I believe I used this for proof
+of concept work that ended up being embedded into the PADL paper
+(after I hand transcribed it into the grammar as specified in that
+paper). That was I was actually able to run the demo table on a sample
+input (where the input and output were both included in the PADL paper
+as well).
+
+```rust
 impl Table {
     pub fn demo() -> Self {
         use directions::{N, S, E, W, NE, SE, SW, NW};
@@ -587,7 +765,14 @@ impl Table {
         }
     }
 }
+```
 
+Some basic operation on `Table`: What are the entries? Can you find a
+relevant entry for a given predecessor, current character, and
+successor?  And (as a separate special case), can you find a loop for
+a given predecessor, current character, and successor.
+
+```rust
 impl Table {
     pub fn entries(&self) -> ::std::slice::Iter<Entry> { self.entries.iter() }
 
@@ -621,67 +806,10 @@ impl Table {
 }
 ```
 
-The template string is perhaps the most important part of the `format`
-module. It is the domain-specific language for describing how to render
-a given character.
 
-It uses SVG path data syntax, with special placeholder components for
-describing values that need to be plugged in.
-
-The format of the plugged in values is either:
-
-* A primitive point, or
-* A point along the line connecting any of the two of the above nine points.
-  (note: this still remains to be implemented).
-
-where a primitive point is either
-
-* The center of the current grid cell, or
-* One of the eight compass oriented extremities on the edge around
-  the current grid cell.
-
-(At some point I may add support for other primitive points, such
-as points on the predecessor or successor grid cell. But for now
-the intention is to only make it easy to describe paths relative
-to the current grid cell.)
-
-The syntax for specifying a placeholder value is bracket delimited.
-
-For the nine primitive point cases (i.e. center or edge), one may write
-one of the following as appropriate:
-
-`{C}`, `{N}`, `{NE}`, `{E}`, `{SE}`, `{S}`, `{SW}, `{W}`, `{NW}`,
-
-In addition, one can refer to an edge defined in terms of the
-incoming (`I`) or outgoing (`O`) node using one of the following:
-
-`{I}`, `{O}`, `{RI}`, `{RO}`
-
-`{I}` is the edge from which we came; likewise `{O}` is the outgoing
-neighbor. `{RI}` and `{RO}` are the *reflections* of those points.
-
-* For example, if the incoming neighbor is to the northeast, then `{I}`
-  is the same as `{NE}` and `{RI}` is the same as `{SW}`.
-
-(Unimplemented:)
-For a point along a line, one writes a decimal number in the range
-[0,1] (followed by optional non-linebreak whitespace), followed by
-two of the above base cases, delimited by a `-` mark (and again one
-is allowed to include non-linebreak whitespace before and after the
-`-`).
-
-* For example, the point that is 3/10 of the way along the path from
-  the center to the north-east corner could be written `{.3 C-NE}`.
-
-The substituted value for the placeholder will be the absolute x,y
-coordinates for the described point. Note that this means that one
-should usually use the capital letter commands, which take absolute
-coordinates as inputs, in tandem with placeholders.
-
-TODO: it might be a good idea to add lower-case analogous placeholders
-that are then just ways to compute based on the width or height of the
-grid cell. E.g. `{n}` would be replaced with `0,-6` if the cell
-height is 12.
+Here is the default table. It encodes the crazy stuff that I think is
+very interesting but probably not worth other people trying to make
+sense of.
 
 ```rust
 impl Default for Table {

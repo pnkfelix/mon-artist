@@ -369,7 +369,72 @@ impl<'a> PathRender<'a> {
 struct CompassPoints<T> {
     n: T, s: T, e: T, w: T, ne: T, se: T, sw: T, nw: T
 }
+```
 
+The template string in a path-search-and-rendering rule is built from
+a domain-specific language for describing how to render a given
+character.
+
+It uses SVG path data syntax, with special placeholder components for
+describing values that need to be plugged in.
+
+The format of the plugged in values is either:
+
+* A primitive point, or
+* A point along the line connecting any of the two of the above nine points.
+  (note: this still remains to be implemented).
+
+where a primitive point is either
+
+* The center of the current grid cell, or
+* One of the eight compass oriented extremities on the edge around
+  the current grid cell.
+
+(At some point I may add support for other primitive points, such
+as points on the predecessor or successor grid cell. But for now
+the intention is to only make it easy to describe paths relative
+to the current grid cell.)
+
+The syntax for specifying a placeholder value is bracket delimited.
+
+For the nine primitive point cases (i.e. center or edge), one may write
+one of the following as appropriate:
+
+`{C}`, `{N}`, `{NE}`, `{E}`, `{SE}`, `{S}`, `{SW}, `{W}`, `{NW}`,
+
+In addition, one can refer to an edge defined in terms of the
+incoming (`I`) or outgoing (`O`) node using one of the following:
+
+`{I}`, `{O}`, `{RI}`, `{RO}`
+
+`{I}` is the edge from which we came; likewise `{O}` is the outgoing
+neighbor. `{RI}` and `{RO}` are the *reflections* of those points.
+
+* For example, if the incoming neighbor is to the northeast, then `{I}`
+  is the same as `{NE}` and `{RI}` is the same as `{SW}`.
+
+(Unimplemented:)
+For a point along a line, one writes a decimal number in the range
+[0,1] (followed by optional non-linebreak whitespace), followed by
+two of the above base cases, delimited by a `-` mark (and again one
+is allowed to include non-linebreak whitespace before and after the
+`-`).
+
+* For example, the point that is 3/10 of the way along the path from
+  the center to the north-east corner could be written `{.3 C-NE}`.
+
+The substituted value for the placeholder will be the absolute x,y
+coordinates for the described point. Note that this means that one
+should usually use the capital letter commands, which take absolute
+coordinates as inputs, in tandem with placeholders.
+
+TODO: it might be a good idea to add lower-case analogous placeholders
+that are then just ways to compute based on the width or height of the
+grid cell. E.g. `{n}` would be replaced with `0,-6` if the cell
+height is 12.
+
+
+```rust
 #[allow(warnings)]
 fn interpret_place(sr: &SvgRender,
                    place: &str,
