@@ -1,0 +1,72 @@
+use super::*;
+
+grammar;
+
+pub Rules: Vec<Rule> = <v: (<Line>)*> => {
+    v.into_iter()
+        .filter(|l| l.as_ref().is_some())
+        .map(|l| l.unwrap())
+        .collect()
+};
+
+Line: Option<Rule> = {
+    r"#.*" => None,
+    <m: Match> "draw" <r: Rendering> => Some(Rule { pat: m, render: r })
+};
+
+pub Match: Match = {
+    "loop" <prev: CharSet> <d1: Dirs> <curr: CharSet> <d2: Dirs> <next: CharSet> =>
+        Match::Loop(prev, d1, curr, d2, next),
+    "step" <prev: CharSet> <d1: Dirs> <curr: CharSet> <d2: Dirs> <next: CharSet> =>
+        Match::Step(prev, d1, curr, d2, next),
+    "start" <curr: CharSet> <d: Dirs> <next: CharSet> =>
+        Match::Start(curr, d, next),
+    "end" <prev: CharSet> <d: Dirs> <curr: CharSet> =>
+        Match::End(prev, d, curr),
+};
+
+Rendering: Rendering = {
+    <s:r#""[^"]*""#> => Rendering(s[1..s.len()-1].to_owned()),
+};
+
+pub CharSet: CharSet = {
+    <c:r#"'[^']'"#> => {
+        assert!(c.chars().count() == 3);
+        CharSet::Char(c.chars().skip(1).next().unwrap())
+    },
+
+    <s:r#""[^"]*""#> => CharSet::String(s[1..s.len()-1].to_owned()),
+
+    "ANY" => CharSet::Any,
+
+    // TODO: We want raw strings, but cannot express that in
+    // context-free grammar. Will have to write special lexer to
+    // support that, I think.
+};
+
+Dirs: Dirs = {
+    "ANY" => Dirs(ALL_DIRS.iter().cloned().collect()),
+    "(" <dirs: Comma<Dir>> ")" => Dirs(dirs),
+};
+
+Dir: Dir = {
+    "N" => Dir::N,
+    "NE" => Dir::NE,
+    "E" => Dir::E,
+    "SE" => Dir::SE,
+    "S" => Dir::S,
+    "SW" => Dir::SW,
+    "W" => Dir::W,
+    "NW" => Dir::NW,
+};
+
+Comma<T>: Vec<T> = {
+    <v:(<T> ",")*> <e:T?> => match e {
+        None => v,
+        Some(e) => {
+            let mut v = v;
+            v.push(e);
+            v
+        }
+    }
+};

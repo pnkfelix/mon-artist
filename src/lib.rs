@@ -11,6 +11,8 @@
 #[macro_use]
 extern crate log;
 
+extern crate lalrpop_util;
+
 /// Literate programming stuff goes in `mod lit`.
 #[path="lit/src/mod.rs"]
 mod lit;
@@ -28,3 +30,5 @@ pub use lit::Scene;
 
 /// LalrPop grammar and its generated goes in `mod grammar`.
 mod grammar;
+
+pub use grammar::parse_rules;
