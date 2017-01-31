@@ -24,7 +24,10 @@ pub enum Match {
 }
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
-pub struct Rendering(pub String);
+pub struct Rendering {
+    pub draw: String,
+    pub attrs: Option<Vec<(String, String)>>,
+}
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
 pub enum CharSet {
@@ -72,47 +75,54 @@ macro_rules! assert_ok {
 // because `"` is not a character we ever use in the diagram for that paper.
 #[cfg(test)]
 pub(crate) const SAMPLE_GRAMMAR: &'static str = r#"
-loop  "|-/\" ANY '+' (N,S) "|" draw "M {C}"
-loop  "|-/\" ANY '+' (E,W) "-" draw "M {C}"
+loop  "|-/\" ANY '+' (N,S) "|" draw "M {C}";
+loop  "|-/\" ANY '+' (E,W) "-" draw "M {C}";
 
 # ‘-‘, ‘|‘, and ‘+‘ can start if next works. Draw line across.
-start            '-' (E,W) "-+" draw "M {RO} L {O}"
-start            '|' (N,S) "|+" draw "M {RO} L {O}"
-start            '+' ANY   ANY  draw "M {C}"
+start            '-' (E,W) "-+" draw "M {RO} L {O}";
+start            '|' (N,S) "|+" draw "M {RO} L {O}";
+start            '+' ANY   ANY  draw "M {C}";
 
 # ‘.‘ and ‘’‘ make rounded corners. Draw curve through center.
-step ANY (E,NE,N,NW,W) '.'  (E,SE,S,SW,W) "-|\/" draw "Q {C} {O}"
-step ANY (E,SE,S,SW,W) "'" (E,NE,N,NW,W) "-|\/" draw "Q {C} {O}"
+step ANY (E,NE,N,NW,W) '.'  (E,SE,S,SW,W) "-|\/" draw "Q {C} {O}";
+step ANY (E,SE,S,SW,W) "'" (E,NE,N,NW,W) "-|\/" draw "Q {C} {O}";
 
 # ... for a loop, draw curve from incoming edge to outgoing one.
-# loop ANY (E,NE,N,NW,W) '.'  (E,SE,S,SW,W) "-|\/" draw "M {I} Q {C} {O}"
-# loop ANY (E,SE,S,SW,W) ''' (E,NE,N,NW,W) "-|\/" draw "M {I} Q {C} {O}"
+# loop ANY (E,NE,N,NW,W) '.'  (E,SE,S,SW,W) "-|\/" draw "M {I} Q {C} {O}";
+# loop ANY (E,SE,S,SW,W) ''' (E,NE,N,NW,W) "-|\/" draw "M {I} Q {C} {O}";
 
 # `-` and `|` connect w/ most things. Draw line to outgoing edge.
-# step  "+-.'" (E, W)     '-'  (maybe (E, W)   "-+.'>") draw "L {O}"
-# step  "+|.'" (N, S)     '|'  (maybe (N, S)   "|+.'" ) draw "L {O}"
+# step  "+-.'" (E, W)     '-'  (maybe (E, W)   "-+.'>") draw "L {O}";
+# step  "+|.'" (N, S)     '|'  (maybe (N, S)   "|+.'" ) draw "L {O}";
 
 # `+` is a corner; ensure compatible. Just draw line to center
 # (the rest of corner is handled by next character, if present).
-# step "|-/\>" ANY          '+'  (maybe (N,S) "|")     draw "L {C}"
-# step "|-/\>" ANY          '+'  (maybe (E,W) "-")     draw "L {C}"
-# step "|-/\>" ANY          '+'         (NE,SW) "/")   draw "L {C}"
-# step "|-/\>" ANY          '+'         (NW,SE) "\")  draw "L {C}"
+# step "|-/\>" ANY          '+'  (maybe (N,S) "|")     draw "L {C}";
+# step "|-/\>" ANY          '+'  (maybe (E,W) "-")     draw "L {C}";
+# step "|-/\>" ANY          '+'         (NE,SW) "/")   draw "L {C}";
+# step "|-/\>" ANY          '+'         (NW,SE) "\")  draw "L {C}";
 
 # `/`, `\` are diagonals. Draw line to outgoing corner.
-# step ANY (NE, SW) '/'  (maybe (NE, SW) "/+.'")   draw "L {O}"
-# step ANY (NW, SE) '\' (maybe (NW, SE) "\+.'")  draw "L {O}"
+# step ANY (NE, SW) '/'  (maybe (NE, SW) "/+.'")   draw "L {O}";
+# step ANY (NW, SE) '\' (maybe (NW, SE) "\+.'")  draw "L {O}";
 
 # Special case arrowhead code (1st does not touch; 2nd + 3rd do)
-# end  '-' E '>'      draw "L {C} l 3,0 m -3,-3 l 3,3 l -3,3 m 0,-3"
-# step '-' E '>' E '+' draw "L {E} m -2,0 l 4,0 m -4,-3 l 4,3 l -4,3 m 0,-3 m 4,0"
-# step '+' W '>' W '-' draw "M {E} m -2,0 l 4,0 m -4,-3 l 4,3 l -4,3 m 0,-3 m 4,0 M {E} L {C}"
+# end  '-' E '>'      draw "L {C} l 3,0 m -3,-3 l 3,3 l -3,3 m 0,-3";
+# step '-' E '>' E '+' draw "L {E} m -2,0 l 4,0 m -4,-3 l 4,3 l -4,3 m 0,-3 m 4,0";
+# step '+' W '>' W '-' draw "M {E} m -2,0 l 4,0 m -4,-3 l 4,3 l -4,3 m 0,-3 m 4,0 M {E} L {C}";
 "#;
 
 #[test]
 fn sanity_check_1() {
-    assert_ok!(parse_rules(r#"loop "|-/\" ANY "+" (N,S) "|" draw "M {C}" "#));
+    assert_ok!(parse_rules(r#"loop "|-/\" ANY "+" (N,S) "|" draw "M {C}"; "#));
 
 
     assert_ok!(parse_rules(SAMPLE_GRAMMAR));
+}
+
+#[test]
+fn are_attributes_supported() {
+    assert_ok!(parse_rules(r#"
+start '^' (S) ':' draw "M {C} l 0,-5 m -3,5 l 3,-5 l 3, 5 m -3,0" attrs [("stroke-dasharray", "5,2")];
+"#));
 }

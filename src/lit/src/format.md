@@ -765,9 +765,11 @@ impl IntoEntry for GrammarRule {
         let incoming: Neighbor<(Match, Vec<Direction>)>;
         let curr: Match;
         let outgoing: Neighbor<(Vec<Direction>, Match)>;
-        let template: String = render.0;
-        // FIXME: not yet supported
-        let include_attributes: Vec<(String, String)> = vec![];
+        let template: String = render.draw;
+        let include_attributes: Vec<(String, String)> = match render.attrs {
+            None => vec![],
+            Some(vec) => vec,
+        };
         // FIXME: not yet supported
         let instrumented: bool = false;
 
@@ -941,7 +943,7 @@ moment.)
 impl Default for Table {
     fn default() -> Self {
         // FIXME: switch to grammars_default once it is done.
-        Self::original_default()
+        Self::grammars_default()
     }
 }
 

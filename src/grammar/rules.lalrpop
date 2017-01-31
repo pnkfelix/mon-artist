@@ -11,7 +11,7 @@ pub Rules: Vec<Rule> = <v: (<Line>)*> => {
 
 Line: Option<Rule> = {
     r"#.*" => None,
-    <m: Match> "draw" <r: Rendering> => Some(Rule { pat: m, render: r })
+    <m: Match> <r: Rendering> => Some(Rule { pat: m, render: r })
 };
 
 pub Match: Match = {
@@ -25,8 +25,25 @@ pub Match: Match = {
         Match::End(prev, d, curr),
 };
 
-Rendering: Rendering = {
-    <s:r#""[^"]*""#> => Rendering(s[1..s.len()-1].to_owned()),
+pub Rendering: Rendering = {
+    "draw" <s:Template> ";" => Rendering { draw: s, attrs: None },
+    "draw" <s:Template> "attrs" <a:Attributes> ";" => Rendering { draw: s, attrs: Some(a) },
+};
+
+pub Template: String = {
+    <s:r#""[^"]*""#> => s[1..s.len()-1].to_owned()
+};
+
+pub StringLiteral: String = {
+    <s:r#""[^"]*""#> => s[1..s.len()-1].to_owned()
+};
+
+pub Attributes: Vec<(String, String)> = {
+    "[" <attrs: Comma<Attr>> "]" => { attrs }
+};
+
+pub Attr: (String, String) = {
+    "(" <k:StringLiteral> "," <v:StringLiteral> ")" => (k, v)
 };
 
 pub CharSet: CharSet = {
