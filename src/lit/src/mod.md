@@ -280,6 +280,7 @@ eventually I want it to drive the input parsing as well
 
 ```rust
 pub mod format;
+pub mod default_input;
 ```
 
 The `render` module holds the core routines for rendering grids.
