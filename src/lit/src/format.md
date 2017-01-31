@@ -940,8 +940,34 @@ moment.)
 ```rust
 impl Default for Table {
     fn default() -> Self {
-        // FIXME: switch to dynamically parsing based on formal grammar.
+        // FIXME: switch to grammars_default once it is done.
         Self::original_default()
+    }
+}
+
+impl Table {
+    fn grammars_default() -> Self {
+        use super::default_input::DEFAULT_INPUT;
+        // FIXME: switch to dynamically parsing based on formal grammar.
+        let mut entries = Vec::new();
+        for (j, line) in DEFAULT_INPUT.lines().enumerate() {
+            let j = j + 1; // report lines as 1-indexed.
+            let rule = match grammar::parse_rules(line) {
+                Err(parse_err) => {
+                    panic!("Error parsing line {} `{}`: {:?}", j, line, parse_err);
+                }
+                Ok(rules) => {
+                    match rules.len() {
+                        0 => continue,
+                        1 => rules[0].clone(),
+                        x => panic!("more than one rule found on line {} `{}`", j, line),
+                    }
+                }
+            };
+            entries.push(rule.into_entry(line));
+        }
+
+        Table { entries: entries }
     }
 }
 ```
