@@ -29,6 +29,14 @@ use grammar::Match as GrammarMatch;
 use grammar::Rule as GrammarRule;
 ```
 
+
+We pull in `std::io` so that we can reference `io::Result`
+for the input lines defining a table.
+
+```rust
+use std::io;
+```
+
 Now, when this code was first written, there was no external text
 format for the path search and rendering rules. Instead, I built up
 the rule structures directly. This meant that I tried to make them
@@ -107,7 +115,7 @@ table made up of many entries.)
 /// based on the context in which it appears.
 #[derive(Clone, Debug)]
 pub struct Entry {
-    entry_text: &'static str,
+    entry_text: String,
 
     /// `loop_start` is true if this entry represents a starting point
     /// for a closed polygon, e.g. a corner `+` is one such character.
@@ -367,7 +375,7 @@ impl IntoAttributes for [(&'static str, &'static str); 1] {
     }
 }
 
-pub trait IntoEntry { fn into_entry(self, text: &'static str) -> Entry; }
+pub trait IntoEntry { fn into_entry(self, text: &str) -> Entry; }
 
 pub trait IntoCurr: IntoMatch { fn is_loop(&self) -> bool { false } }
 ```
@@ -409,11 +417,11 @@ impl IntoCurr for String { }
 impl<'a, C0, D0, C1, D1, C2> IntoEntry for (C0, D0, C1, D1, C2, &'a str) where
     C0: IntoMatch, D0: ToDirections, C1: IntoCurr, D1: ToDirections, C2: IntoMatch
 {
-    fn into_entry(self, text: &'static str) -> Entry {
+    fn into_entry(self, text: &str) -> Entry {
         use self::Neighbor::{Must};
         Entry {
             instrumented: false,
-            entry_text: text,
+            entry_text: text.to_owned(),
             loop_start: self.2.is_loop(),
             incoming: Must((self.0.into_match(), self.1.to_directions())),
             curr: self.2.into_match(),
@@ -427,11 +435,11 @@ impl<'a, C0, D0, C1, D1, C2> IntoEntry for (C0, D0, C1, D1, C2, &'a str) where
 impl<'a, C0, D0, C1, D1, C2, A> IntoEntry for (C0, D0, C1, D1, C2, &'a str, A) where
     C0: IntoMatch, D0: ToDirections, C1: IntoCurr, D1: ToDirections, C2: IntoMatch, A: IntoAttributes
 {
-    fn into_entry(self, text: &'static str) -> Entry {
+    fn into_entry(self, text: &str) -> Entry {
         use self::Neighbor::{Must};
         Entry {
             instrumented: false,
-            entry_text: text,
+            entry_text: text.to_owned(),
             loop_start: self.2.is_loop(),
             incoming: Must((self.0.into_match(), self.1.to_directions())),
             curr: self.2.into_match(),
@@ -445,11 +453,11 @@ impl<'a, C0, D0, C1, D1, C2, A> IntoEntry for (C0, D0, C1, D1, C2, &'a str, A) w
 impl<'a, C0, D0, C1, D1, C2> IntoEntry for (May<(C0, D0)>, C1, D1, C2, &'a str) where
     C0: IntoMatch, D0: ToDirections, C1: IntoCurr, D1: ToDirections, C2: IntoMatch
 {
-    fn into_entry(self, text: &'static str) -> Entry {
+    fn into_entry(self, text: &str) -> Entry {
         use self::Neighbor::{Must, May};
         Entry {
             instrumented: false,
-            entry_text: text,
+            entry_text: text.to_owned(),
             loop_start: self.1.is_loop(),
             incoming: May((((self.0).0).0.into_match(),
                            ((self.0).0).1.to_directions())),
@@ -464,11 +472,11 @@ impl<'a, C0, D0, C1, D1, C2> IntoEntry for (May<(C0, D0)>, C1, D1, C2, &'a str) 
 impl<'a, C0, D0, C1, D1, C2, A> IntoEntry for (May<(C0, D0)>, C1, D1, C2, &'a str, A) where
     C0: IntoMatch, D0: ToDirections, C1: IntoCurr, D1: ToDirections, C2: IntoMatch, A: IntoAttributes
 {
-    fn into_entry(self, text: &'static str) -> Entry {
+    fn into_entry(self, text: &str) -> Entry {
         use self::Neighbor::{Must, May};
         Entry {
             instrumented: false,
-            entry_text: text,
+            entry_text: text.to_owned(),
             loop_start: self.1.is_loop(),
             incoming: May((((self.0).0).0.into_match(),
                            ((self.0).0).1.to_directions())),
@@ -483,11 +491,11 @@ impl<'a, C0, D0, C1, D1, C2, A> IntoEntry for (May<(C0, D0)>, C1, D1, C2, &'a st
 impl<'a, C0, D0, C1, D1, C2> IntoEntry for (C0, D0, C1, May<(D1, C2)>, &'a str) where
     C0: IntoMatch, D0: ToDirections, C1: IntoCurr, D1: ToDirections, C2: IntoMatch
 {
-    fn into_entry(self, text: &'static str) -> Entry {
+    fn into_entry(self, text: &str) -> Entry {
         use self::Neighbor::{Must, May};
         Entry {
             instrumented: false,
-            entry_text: text,
+            entry_text: text.to_owned(),
             loop_start: self.2.is_loop(),
             incoming: Must((self.0.into_match(), self.1.to_directions())),
             curr: self.2.into_match(),
@@ -502,11 +510,11 @@ impl<'a, C0, D0, C1, D1, C2> IntoEntry for (C0, D0, C1, May<(D1, C2)>, &'a str) 
 impl<'a, C0, D0, C1, D1, C2, A> IntoEntry for (C0, D0, C1, May<(D1, C2)>, &'a str, A) where
     C0: IntoMatch, D0: ToDirections, C1: IntoCurr, D1: ToDirections, C2: IntoMatch, A: IntoAttributes
 {
-    fn into_entry(self, text: &'static str) -> Entry {
+    fn into_entry(self, text: &str) -> Entry {
         use self::Neighbor::{Must, May};
         Entry {
             instrumented: false,
-            entry_text: text,
+            entry_text: text.to_owned(),
             loop_start: self.2.is_loop(),
             incoming: Must((self.0.into_match(), self.1.to_directions())),
             curr: self.2.into_match(),
@@ -522,11 +530,11 @@ impl<'a, C0, D0, C1, D1, C2> IntoEntry for (May<(C0, D0)>, C1, May<(D1, C2)>, &'
     where
     C0: IntoMatch, D0: ToDirections, C1: IntoCurr, D1: ToDirections, C2: IntoMatch
 {
-    fn into_entry(self, text: &'static str) -> Entry {
+    fn into_entry(self, text: &str) -> Entry {
         use self::Neighbor::{May};
         Entry {
             instrumented: false,
-            entry_text: text,
+            entry_text: text.to_owned(),
             loop_start: self.1.is_loop(),
             incoming: May((((self.0).0).0.into_match(), ((self.0).0).1.to_directions())),
             curr: self.1.into_match(),
@@ -541,11 +549,11 @@ impl<'a, C0, D0, C1, D1, C2, A> IntoEntry for (May<(C0, D0)>, C1, May<(D1, C2)>,
     where
     C0: IntoMatch, D0: ToDirections, C1: IntoCurr, D1: ToDirections, C2: IntoMatch, A: IntoAttributes,
 {
-    fn into_entry(self, text: &'static str) -> Entry {
+    fn into_entry(self, text: &str) -> Entry {
         use self::Neighbor::{May};
         Entry {
             instrumented: false,
-            entry_text: text,
+            entry_text: text.to_owned(),
             loop_start: self.1.is_loop(),
             incoming: May((((self.0).0).0.into_match(), ((self.0).0).1.to_directions())),
             curr: self.1.into_match(),
@@ -567,11 +575,11 @@ pub struct Finis;
 impl<'a, C1, D1, C2> IntoEntry for (Start, C1, D1, C2, &'a str)
     where C1: IntoMatch, D1: ToDirections, C2: IntoMatch
 {
-    fn into_entry(self, text: &'static str) -> Entry {
+    fn into_entry(self, text: &str) -> Entry {
         use self::Neighbor::{Blank, Must};
         Entry {
             instrumented: false,
-            entry_text: text,
+            entry_text: text.to_owned(),
             loop_start: false,
             incoming: Blank,
             curr: self.1.into_match(),
@@ -585,11 +593,11 @@ impl<'a, C1, D1, C2> IntoEntry for (Start, C1, D1, C2, &'a str)
 impl<'a, C1, D1, C2, A> IntoEntry for (Start, C1, D1, C2, &'a str, A)
     where C1: IntoMatch, D1: ToDirections, C2: IntoMatch, A: IntoAttributes,
 {
-    fn into_entry(self, text: &'static str) -> Entry {
+    fn into_entry(self, text: &str) -> Entry {
         use self::Neighbor::{Blank, Must};
         Entry {
             instrumented: false,
-            entry_text: text,
+            entry_text: text.to_owned(),
             loop_start: false,
             incoming: Blank,
             curr: self.1.into_match(),
@@ -603,11 +611,11 @@ impl<'a, C1, D1, C2, A> IntoEntry for (Start, C1, D1, C2, &'a str, A)
 impl<'a, C0, D0, C1> IntoEntry for (C0, D0, C1, Finis, &'a str)
     where C0: IntoMatch, D0: ToDirections, C1: IntoMatch
 {
-    fn into_entry(self, text: &'static str) -> Entry {
+    fn into_entry(self, text: &str) -> Entry {
         use self::Neighbor::{Blank, Must};
         Entry {
             instrumented: false,
-            entry_text: text,
+            entry_text: text.to_owned(),
             loop_start: false,
             incoming: Must((self.0.into_match(), self.1.to_directions())),
             curr: self.2.into_match(),
@@ -621,11 +629,11 @@ impl<'a, C0, D0, C1> IntoEntry for (C0, D0, C1, Finis, &'a str)
 impl<'a, C0, D0, C1, A> IntoEntry for (C0, D0, C1, Finis, &'a str, A)
     where C0: IntoMatch, D0: ToDirections, C1: IntoMatch, A: IntoAttributes
 {
-    fn into_entry(self, text: &'static str) -> Entry {
+    fn into_entry(self, text: &str) -> Entry {
         use self::Neighbor::{Blank, Must};
         Entry {
             instrumented: false,
-            entry_text: text,
+            entry_text: text.to_owned(),
             loop_start: false,
             incoming: Must((self.0.into_match(), self.1.to_directions())),
             curr: self.2.into_match(),
@@ -652,11 +660,11 @@ TODO: Maybe I should just remove the `struct All` entirely.
 impl<'a, C1> IntoEntry for (All, C1, All, &'a str) where
     C1: IntoCurr,
 {
-    fn into_entry(self, text: &'static str) -> Entry {
+    fn into_entry(self, text: &str) -> Entry {
         use self::Neighbor::{May};
         Entry {
             instrumented: false,
-            entry_text: text,
+            entry_text: text.to_owned(),
             loop_start: self.1.is_loop(),
             incoming: May((Match::Any, directions::Any.to_directions())),
             curr: self.1.into_match(),
@@ -670,11 +678,11 @@ impl<'a, C1> IntoEntry for (All, C1, All, &'a str) where
 impl<'a, C1, A> IntoEntry for (All, C1, All, &'a str, A) where
     C1: IntoCurr, A: IntoAttributes
 {
-    fn into_entry(self, text: &'static str) -> Entry {
+    fn into_entry(self, text: &str) -> Entry {
         use self::Neighbor::{May};
         Entry {
             instrumented: false,
-            entry_text: text,
+            entry_text: text.to_owned(),
             loop_start: self.1.is_loop(),
             incoming: May((Match::Any, directions::Any.to_directions())),
             curr: self.1.into_match(),
@@ -694,7 +702,7 @@ on an entry.
 #[allow(dead_code)]
 struct Loud<X>(X) where X: IntoEntry;
 impl<X: IntoEntry> IntoEntry for Loud<X> {
-    fn into_entry(self, text: &'static str) -> Entry {
+    fn into_entry(self, text: &str) -> Entry {
         Entry { instrumented: true, ..self.0.into_entry(text) }
     }
 }
@@ -758,7 +766,7 @@ impl IntoMatch for CharSet {
 }
 
 impl IntoEntry for GrammarRule {
-    fn into_entry(self, text: &'static str) -> Entry {
+    fn into_entry(self, text: &str) -> Entry {
         let GrammarRule { pat, render } = self;
         let mut loop_start: bool = false;
 
@@ -797,7 +805,7 @@ impl IntoEntry for GrammarRule {
             }
         }
         Entry {
-            entry_text: text,
+            entry_text: text.to_owned(),
             loop_start: loop_start,
             incoming: incoming,
             curr: curr,
@@ -950,23 +958,39 @@ impl Default for Table {
 impl Table {
     fn grammars_default() -> Self {
         use super::default_input::DEFAULT_INPUT;
-        // FIXME: switch to dynamically parsing based on formal grammar.
+        Table::from_lines(DEFAULT_INPUT.lines().map(|s|Ok(s.to_owned())))
+    }
+}
+```
+
+We want to be able to read tables from user input.
+This accomplishes that, by treating the input as
+an iterator of lines that we need to parse.
+```rust
+impl Table {
+    pub fn from_lines<'a, I:Iterator<Item=io::Result<String>>>(i: I) -> Self {
         let mut entries = Vec::new();
-        for (j, line) in DEFAULT_INPUT.lines().enumerate() {
+        for (j, line) in i.enumerate() {
             let j = j + 1; // report lines as 1-indexed.
-            let rule = match grammar::parse_rules(line) {
+            let line = match line {
+                Ok(l) => l,
+                Err(io_err) => {
+                    panic!("Error reading item {}: {:?}", j, io_err)
+                }
+            };
+            let rule = match grammar::parse_rules(&line) {
                 Err(parse_err) => {
-                    panic!("Error parsing line {} `{}`: {:?}", j, line, parse_err);
+                    panic!("Error parsing item {} `{}`: {:?}", j, line, parse_err);
                 }
                 Ok(rules) => {
                     match rules.len() {
                         0 => continue,
                         1 => rules[0].clone(),
-                        x => panic!("more than one rule found on line {} `{}`", j, line),
+                        _ => panic!("more than one rule found on item {} `{}`", j, line),
                     }
                 }
             };
-            entries.push(rule.into_entry(line));
+            entries.push(rule.into_entry(&line));
         }
 
         Table { entries: entries }
