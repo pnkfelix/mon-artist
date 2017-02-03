@@ -7,7 +7,7 @@ use mon_artist::grid::{Grid, ParseError};
 use std::convert::From;
 use std::env;
 use std::fs::File;
-use std::io::{self, Read, Write};
+use std::io::{self, BufRead, BufReader, Read, Write};
 
 fn main() {
     let mut args = env::args();
@@ -16,7 +16,7 @@ fn main() {
         let table = if let Some(arg) = args.next() { arg } else { break; };
         let in_file =  if let Some(arg) = args.next() { arg } else { break; };
         let out_file =  if let Some(arg) = args.next() { arg } else { break; };
-        println!("processing {} to {}", in_file, out_file);
+        println!("processing {} to {} via {}", in_file, out_file, table);
         process(&table, &in_file, &out_file).unwrap();
     }
     // describe_table();
@@ -57,10 +57,13 @@ impl From<ParseError> for Error { fn from(e: ParseError) -> Self { Error::Parse(
 use mon_artist::format::Table;
 
 fn get_table(table: &str) -> Table {
-    match table {
-        "default" => Table::default(),
-        "demo"    => Table::demo(),
-        _ => panic!("Unknown table name: {}", table),
+    match File::open(table) {
+        Ok(input) => Table::from_lines(BufReader::new(input).lines()),
+        Err(err) => match table {
+            "default" => Table::default(),
+            "demo"    => Table::demo(),
+            _ => panic!("Unknown table name: {}, file err: {:?}", table, err),
+        },
     }
 }
 
