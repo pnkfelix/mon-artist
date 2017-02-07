@@ -160,8 +160,13 @@ pub mod scene {
     use text::{Text};
 
     pub struct SceneOpts {
-        path_infer_id: bool,
-        text_infer_id: bool,
+        pub path_infer_id: bool,
+        pub text_infer_id: bool,
+        pub unforged: Unforgeable,
+    }
+
+    pub struct Unforgeable {
+        _hidden: ()
     }
 
     impl Default for SceneOpts {
@@ -169,6 +174,7 @@ pub mod scene {
             SceneOpts {
                 path_infer_id: true,
                 text_infer_id: true,
+                unforged: Unforgeable { _hidden: () },
             }
         }
     }
@@ -345,7 +351,8 @@ fn end_to_end_basics() {
             e.text = Some(format!("{}", d));
             e
         });
-        let s = d.parse::<Grid>().unwrap().into_scene(&Default::default());
+        let s = d.parse::<Grid>().unwrap().into_scene(&Default::default(),
+                                                      Default::default());
 
         if PRINT_INTERMEDIATE_SCENE_STRUCTURE {
             html_body.children.push(s.to_element());
