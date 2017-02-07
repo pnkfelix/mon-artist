@@ -1004,6 +1004,7 @@ but probably not worth other people trying to make sense of.
 
 ```rust
 impl Table {
+    #[allow(dead_code)]
     fn original_default() -> Self {
         use directions::{N, S, E, W, NE, SE, SW, NW};
         use directions::Any as AnyDir;
