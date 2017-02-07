@@ -1,5 +1,6 @@
 ```rust
 use directions::{Direction};
+use format::{Table};
 use grid::{Grid, Pt, DirVector};
 use grid::{PtRangeIter, PtCharIntoIterator}; // import methods on Pt...Pt and (Pt,char)
 use test_data::{BASIC, BASIC_WO_BOX, BASIC_UL_PLUS, BASIC_UR_PLUS, BASIC_ALL_PLUS};
@@ -487,6 +488,80 @@ fn path_cancellation_beside_prefix() {
                                                &Default::default(),
                                                DirVector(Pt(1,1), Direction::E));
     assert!(opt_p.is_none());
+}
+
+#[test]
+fn underscore_pipe_from_top_short() {
+    let grid = "_\n\
+                |".parse::<Grid>().unwrap();
+    let table = Table::from_lines(r#"
+start         '_' (S) '|' draw "M {SE} L {SW} L {S}";
+  end '_' (S) '|'         draw "L {S}";
+"#.lines().map(|line| Ok(line.to_owned())));
+    let opt_p = super::find_unclosed_path_from(&grid,
+                                               &table,
+                                               DirVector(Pt(1,1), Direction::S));
+    assert_eq!(opt_p.unwrap(),
+               Path::open((Pt(1,1), '_').into_iter()
+                          .chain((Pt(1,2), '|').into_iter())
+                          .collect()));
+}
+
+#[test]
+fn underscore_pipe_from_top_long() {
+    let grid = "_\n\
+                |\n\
+                |".parse::<Grid>().unwrap();
+    let table = Table::from_lines(r#"
+start         '_' (S) '|' draw "M {SE} L {SW} L {S}";
+ step ANY (S) '|' (S) ANY draw "L {S}";
+  end '|' (S) '|'         draw "L {S}";
+"#.lines().map(|line| Ok(line.to_owned())));
+    let opt_p = super::find_unclosed_path_from(&grid,
+                                               &table,
+                                               DirVector(Pt(1,1), Direction::S));
+    assert_eq!(opt_p.unwrap(),
+               Path::open((Pt(1,1), '_').into_iter()
+                          .chain((Pt(1,2), '|').into_iter())
+                          .chain((Pt(1,3), '|').into_iter())
+                          .collect()));
+}
+
+#[test]
+fn underscore_pipe_from_bottom_long() {
+    let grid = "_\n\
+                |\n\
+                |".parse::<Grid>().unwrap();
+    let table = Table::from_lines(r#"
+  end '|' (N) '_'         draw "L {S} L {SE} L {SW}";
+ step ANY (N) '|' (N) ANY draw "L {S}";
+start         '|' (N) ANY draw "M {S} L {N}";
+"#.lines().map(|line| Ok(line.to_owned())));
+    let opt_p = super::find_unclosed_path_from(&grid,
+                                               &table,
+                                               DirVector(Pt(1,3), Direction::N));
+    assert_eq!(opt_p.unwrap(),
+               Path::open((Pt(1,3), '|').into_iter()
+                          .chain((Pt(1,2), '|').into_iter())
+                          .chain((Pt(1,1), '_').into_iter())
+                          .collect()));
+}
+
+#[test]
+fn underscore_pipe_from_bottom_short() {
+    let grid = "_\n\
+                |".parse::<Grid>().unwrap();
+    let table = Table::from_lines(r#"
+  end '|' (N) '_'         draw "L {S} L {SE} L {SW}";
+start         '|' (N) ANY draw "M {S} L {N}";
+"#.lines().map(|line| Ok(line.to_owned())));
+    let opt_p = super::find_unclosed_path_from(&grid,
+                                               &table,
+                                               DirVector(Pt(1,2), Direction::N));
+    assert_eq!(opt_p.unwrap(),
+               Path::open((Pt(1,2), '|').into_iter()
+                          .chain((Pt(1,1), '_').into_iter())
+                          .collect()));
 }
 
 #[test]
