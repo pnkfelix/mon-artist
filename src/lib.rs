@@ -26,7 +26,7 @@ pub use lit::{render, svg, text, test_data};
 use lit::{env_logger};
 use lit::{regex, treexml};
 
-pub use lit::Scene;
+pub use lit::scene::{Scene, SceneOpts};
 
 /// LalrPop grammar and its generated goes in `mod grammar`.
 mod grammar;

@@ -159,6 +159,20 @@ pub mod scene {
     use grid::{Grid};
     use text::{Text};
 
+    pub struct SceneOpts {
+        path_infer_id: bool,
+        text_infer_id: bool,
+    }
+
+    impl Default for SceneOpts {
+        fn default() -> Self {
+            SceneOpts {
+                path_infer_id: true,
+                text_infer_id: true,
+            }
+        }
+    }
+
     pub struct Scene {
         paths: Vec<Path>,
         texts: Vec<Text>,
@@ -175,10 +189,11 @@ pub mod scene {
     }
 
     impl Grid {
-        pub fn into_scene(mut self, format: &format::Table) -> Scene {
+        pub fn into_scene(mut self, format: &format::Table, opts: Option<SceneOpts>) -> Scene {
             use find_path::{find_closed_path, find_unclosed_path};
             use find_text::{find_text};
             use grid::{Pt};
+            let opts = opts.unwrap_or(Default::default());
             let mut paths = vec![];
             let mut texts = vec![];
             for row in 1...self.height {
@@ -186,7 +201,9 @@ pub mod scene {
                     loop {
                         let pt = Pt(col as i32, row as i32);
                         if let Some(mut p) = find_closed_path(&self, format, pt) {
-                            p.infer_id(&self);
+                            if opts.path_infer_id {
+                                p.infer_id(&self);
+                            }
                             p.attach_attributes(pt, &self);
                             debug!("pt {:?} => closed path {:?}", pt, p);
                             self.remove_path(&p);
@@ -202,7 +219,9 @@ pub mod scene {
                     loop {
                         let pt = Pt(col as i32, row as i32);
                         if let Some(mut p) = find_unclosed_path(&self, format, pt) {
-                            p.infer_id(&self);
+                            if opts.path_infer_id {
+                                p.infer_id(&self);
+                            }
                             p.attach_attributes(pt, &self);
                             debug!("pt {:?} => unclosed path {:?}", pt, p);
                             self.remove_path(&p);
@@ -218,7 +237,9 @@ pub mod scene {
                     loop {
                         let pt = Pt(col as i32, row as i32);
                         if let Some(mut txt) = find_text(&self, pt) {
-                            txt.infer_id(&self);
+                            if opts.text_infer_id {
+                                txt.infer_id(&self);
+                            }
                             txt.attach_attributes(pt, &self);
                             debug!("txt {:?} => text {:?}", pt, txt);
                             self.remove_text(&txt);

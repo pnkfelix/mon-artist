@@ -3,6 +3,7 @@ extern crate mon_artist;
 use mon_artist::render::svg::{SvgRender};
 use mon_artist::render::{RenderS};
 use mon_artist::grid::{Grid, ParseError};
+use mon_artist::{SceneOpts};
 
 use std::convert::From;
 use std::env;
@@ -72,7 +73,9 @@ fn process(table: &str, in_file: &str, out_file: &str) -> Result<(), Error> {
     let mut content = String::new();
     input.read_to_string(&mut content)?;
     let table = get_table(table);
-    let s = content.parse::<Grid>()?.into_scene(&table);
+    let s = content.parse::<Grid>()?.into_scene(
+        &table,
+        Some(SceneOpts { text_infer_id: false, ..Default::default() }));
     let r = SvgRender {
         x_scale: 8, y_scale: 13,
         font_family: "monospace".to_string(), font_size: 13,
