@@ -28,6 +28,8 @@ use lit::{regex, treexml};
 
 pub use lit::scene::{Scene, SceneOpts};
 
+pub use lit::default_input::DEFAULT_INPUT as DEFAULT_RULES;
+
 /// LalrPop grammar and its generated goes in `mod grammar`.
 mod grammar;
 
