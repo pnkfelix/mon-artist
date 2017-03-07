@@ -82,6 +82,7 @@ fn process(table: &str, in_file: &str, out_file: &str) -> Result<(), Error> {
         show_gridlines: false,
         infer_rect_elements: false,
         name: in_file.to_string(),
+        format_table: table,
     };
     let svg = r.render_s(&s);
     let mut output = File::create(out_file)?;
