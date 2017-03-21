@@ -5,6 +5,7 @@ authors = ["pnkfelix"]
 build = "tango-build.rs"
 description = "Render ASCII art to SVG, with user-customizable rendering rules."
 license = "MIT/Apache-2.0"
+repository = "https://github.com/pnkfelix/mon-artist"
 
 [build-dependencies]
 tango = "0.5.0"
