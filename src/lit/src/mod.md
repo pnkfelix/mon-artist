@@ -338,6 +338,7 @@ fn end_to_end_basics() {
             show_gridlines: true,
             infer_rect_elements: true,
             name: name.to_string(),
+            format_table: Default::default(),
         };
         html_body.children.push({
             let mut e = Element::new("h3");
