@@ -64,6 +64,13 @@ for `x_scale` and `y_scale`.
     pub show_gridlines: bool,
 ```
 
+A late addition: I think I initially wrote this code before
+the format::Table even existed, and I managed to overlook
+the need to pass it through here to the `PathRender`.
+```rust
+    pub format_table: format::Table,
+```
+
 While the automatic rendering of rectangle-like closed paths
 into `<rect>` is a nice feature, it is a
 deviation from the core model that I want to describe
@@ -86,17 +93,17 @@ fn default<D: Default>() -> D { Default::default() }
 impl RenderS for SvgRender {
     type Out = Svg;
     fn render_s(&self, scene: &Scene) -> Svg {
-        render_svg(self, scene)
+        render_svg(self, scene, &self.format_table)
     }
 }
 
 impl Render for SvgRender {
     fn render(&self, scene: &Scene) -> String {
-        format!("{}", render_svg(self, scene))
+        format!("{}", render_svg(self, scene, &self.format_table))
     }
 }
 
-fn render_svg(sr: &SvgRender, scene: &Scene) -> Svg {
+fn render_svg(sr: &SvgRender, scene: &Scene, format_table: &format::Table) -> Svg {
     let mut svg = Svg::new(scene.width() * sr.x_scale,
                            scene.height() * sr.y_scale);
     if sr.show_gridlines {
@@ -105,7 +112,7 @@ fn render_svg(sr: &SvgRender, scene: &Scene) -> Svg {
 
     debug!("rendering paths: {:?}", scene.paths());
     for path in scene.paths() {
-        render_path(&mut svg, sr, path);
+        render_path(&mut svg, sr, path, format_table.clone());
     }
 
     debug!("rendering texts: {:?}", scene.texts());
@@ -198,7 +205,10 @@ corresponding to that pt." But that is actually not the right thing;
 
 
 ```rust
-fn render_path(svg: &mut Svg, sr: &SvgRender, path: &Path) {
+fn render_path(svg: &mut Svg,
+               sr: &SvgRender,
+               path: &Path,
+               format_table: format::Table) {
     #![allow(unused_parens)]
 ```
 
@@ -233,7 +243,7 @@ to figure out how to render the middle (or edge) step.
     let mut pr = PathRender { sr: sr, last: Pt(0,0),
                               dashed: false,
                               cmd: String::new(),
-                              format_table: Default::default(),
+                              format_table: format_table,
                               attrs: Vec::new(),
     };
 
