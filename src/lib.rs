@@ -1,4 +1,3 @@
-#![feature(pub_restricted)]
 #![feature(inclusive_range_syntax, inclusive_range)]
 #![feature(type_ascription)]
 #![feature(slice_patterns)]
