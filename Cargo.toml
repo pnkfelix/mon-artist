@@ -1,11 +1,12 @@
 [package]
-name = "mon-artist"
+name = "reduction"
 version = "0.1.1"
 authors = ["pnkfelix"]
 build = "tango-build.rs"
 description = "Render ASCII art to SVG, with user-customizable rendering rules."
 license = "MIT/Apache-2.0"
 repository = "https://github.com/pnkfelix/mon-artist"
+include = ["src/**/*.rs", "src/**/*.md", "tango-build.rs", "Cargo.toml"]
 
 [build-dependencies]
 tango = "0.6"
@@ -19,14 +20,10 @@ lalrpop = "0.13"
 name = "mon_artist"
 path = "src/lib.rs"
 
-[[bin]]
-name = "mona"
-path = "src/mona.rs"
-
-[dependencies]
-treexml = "0.3.0"
-regex = "0.2"
-lazy_static = "0.2"
-log = "0.3"
-env_logger = "0.4"
-lalrpop-util = "0.13"
+# [dependencies]
+# treexml = "0.3.0"
+# regex = "0.2"
+# lazy_static = "0.2"
+# log = "0.3"
+# env_logger = "0.4"
+# lalrpop-util = "0.13"
