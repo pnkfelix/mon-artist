@@ -3,14 +3,10 @@ name = "reduction"
 version = "0.1.1"
 authors = ["pnkfelix"]
 build = "tango-build.rs"
-description = "Render ASCII art to SVG, with user-customizable rendering rules."
+description = "Reduction of bug observed in mon-artist builds"
 license = "MIT/Apache-2.0"
 repository = "https://github.com/pnkfelix/mon-artist"
 include = ["src/**/*.rs", "src/**/*.md", "tango-build.rs", "Cargo.toml"]
-
-[build-dependencies]
-tango = "0.6"
-lalrpop = "0.13"
 
 # Since the lib starts as a tango file stored in `src/lib.md`,
 # explicitly specify that this is a library project with a
@@ -19,11 +15,3 @@ lalrpop = "0.13"
 [lib]
 name = "mon_artist"
 path = "src/lib.rs"
-
-# [dependencies]
-# treexml = "0.3.0"
-# regex = "0.2"
-# lazy_static = "0.2"
-# log = "0.3"
-# env_logger = "0.4"
-# lalrpop-util = "0.13"
