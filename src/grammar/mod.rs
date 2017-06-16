@@ -61,6 +61,7 @@ pub fn parse_rules(s: &str) -> Result<Vec<Rule>, ParseError> {
     rules::parse_Rules(s).map_err(|e| ParseError(e))
 }
 
+#[cfg(test)]
 macro_rules! assert_ok {
     ($r: expr) => {
         let r;
