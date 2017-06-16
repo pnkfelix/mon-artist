@@ -110,13 +110,7 @@ use std::ops::RangeInclusive;
 impl PtRangeIter for RangeInclusive<Pt> {
     fn iter(&self) -> PtRangeIterator {
         match *self {
-            RangeInclusive::Empty { at } => PtRangeIterator {
-                dv: DirVector(at, Direction::N),
-                limit: at,
-                incl: true,
-                done: true,
-            },
-            RangeInclusive::NonEmpty { start, end } => PtRangeIterator {
+            RangeInclusive { start, end } => PtRangeIterator {
                 dv: DirVector(start, start.towards(end)),
                 limit: end,
                 incl: true,
