@@ -21,6 +21,12 @@ fn main() {
     env::set_current_dir(grammar).unwrap();
     lalrpop::process_root().unwrap();
 
-    env::set_current_dir(lit).unwrap();
-    tango::process_root().unwrap();
+    env::set_current_dir(&lit).unwrap();
+    match tango::process_root() {
+        Ok(_) => {}
+        Err(e) => {
+            println!("error: {:?}", e);
+            panic!("error with tango::process_root in lit {}", lit.display());
+        }
+    }
 }
