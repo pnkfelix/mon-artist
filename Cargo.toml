@@ -7,6 +7,10 @@ description = "Render ASCII art to SVG, with user-customizable rendering rules."
 license = "MIT/Apache-2.0"
 repository = "https://github.com/pnkfelix/mon-artist"
 
+# .gitignore will ignore the tango-generated files, but we actually
+# treat them as inputs. (See related discussion on cargo/#4135.)
+include = ["src/lit/**/*.rs"]
+
 [build-dependencies]
 tango = "0.6"
 lalrpop = "0.13"

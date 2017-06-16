@@ -2,5 +2,6 @@ target
 Cargo.lock
 tango.stamp
 *~
-src/lit/**/*.rs
+# Work around cargo/#4135. When that is fixed, we can put this back in.
+# src/lit/**/*.rs
 src/grammar/rules.rs
