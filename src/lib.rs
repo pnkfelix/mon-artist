@@ -21,7 +21,7 @@ pub use lit::{directions, find_text, find_path, format};
 pub use lit::{grid, path};
 pub use lit::{render, svg, text, test_data};
 
-#[cfg(test)]
+#[cfg(all(test, build = "release"))]
 use lit::{env_logger};
 use lit::{regex, treexml};
 

@@ -315,6 +315,9 @@ The `render` module holds the core routines for rendering grids.
 ```rust
 pub mod render;
 
+// for some reason, this test is taking 145 seconds in debug mode
+// (and ~6 seconds in release mode).
+#[cfg(build = "release")]
 #[test]
 fn end_to_end_basics() {
     const PRINT_INTERMEDIATE_SCENE_STRUCTURE: bool = false;

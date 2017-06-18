@@ -1,6 +1,6 @@
 [package]
 name = "mon-artist"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["pnkfelix"]
 build = "tango-build.rs"
 description = "Render ASCII art to SVG, with user-customizable rendering rules."
