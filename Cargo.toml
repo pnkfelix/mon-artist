@@ -9,7 +9,7 @@ repository = "https://github.com/pnkfelix/mon-artist"
 
 # .gitignore will ignore the tango-generated files, but we actually
 # treat them as inputs. (See related discussion on cargo/#4135.)
-include = ["src/lit/**/*.rs"]
+include = ["src/**/*.rs", "src/**/*.lalrpop", "Cargo.toml", "tango-build.rs"]
 
 [build-dependencies]
 tango = "0.6"
