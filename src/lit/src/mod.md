@@ -202,8 +202,8 @@ pub mod scene {
             let opts = opts.unwrap_or(Default::default());
             let mut paths = vec![];
             let mut texts = vec![];
-            for row in 1...self.height {
-                for col in 1...self.width {
+            for row in 1..=self.height {
+                for col in 1..=self.width {
                     loop {
                         let pt = Pt(col as i32, row as i32);
                         if let Some(mut p) = find_closed_path(&self, format, pt) {
@@ -220,8 +220,8 @@ pub mod scene {
                     }
                 }
             }
-            for row in 1...self.height {
-                for col in 1...self.width {
+            for row in 1..=self.height {
+                for col in 1..=self.width {
                     loop {
                         let pt = Pt(col as i32, row as i32);
                         if let Some(mut p) = find_unclosed_path(&self, format, pt) {
@@ -238,8 +238,8 @@ pub mod scene {
                     }
                 }
             }
-            for row in 1...self.height {
-                for col in 1...self.width {
+            for row in 1..=self.height {
+                for col in 1..=self.width {
                     loop {
                         let pt = Pt(col as i32, row as i32);
                         if let Some(mut txt) = find_text(&self, pt) {
