@@ -25,7 +25,7 @@ fn trivial_path_east() {
                                                &Default::default(),
                                                DirVector(Pt(1,1), Direction::E));
     assert_eq!(opt_p.unwrap(),
-               Path::open((Pt(1,1)...Pt(3,1)).iter_char('-').collect()));
+               Path::open((Pt(1,1)..=Pt(3,1)).iter_char('-').collect()));
 }
 
 #[test]
@@ -35,7 +35,7 @@ fn trivial_path_west() {
                                                &Default::default(),
                                                DirVector(Pt(3,1), Direction::W));
     assert_eq!(opt_p.unwrap(),
-               Path::open((Pt(3,1)...Pt(1,1)).iter_char('-').collect()));
+               Path::open((Pt(3,1)..=Pt(1,1)).iter_char('-').collect()));
 }
 
 #[test]
@@ -108,7 +108,7 @@ fn rev_extension_horizontal() {
                                                &Default::default(),
                                                DirVector(Pt(2,1), Direction::E));
     assert_eq!(opt_p.unwrap(),
-               Path::open((Pt(1,1)...Pt(3,1)).iter_char('-').collect()));
+               Path::open((Pt(1,1)..=Pt(3,1)).iter_char('-').collect()));
 }
 
 #[test]
@@ -247,7 +247,7 @@ fn eastward_arrow() {
                                                &Default::default(),
                                                DirVector(Pt(1,1), Direction::E));
     assert_eq!(opt_p.unwrap(),
-               Path::open((Pt(1,1)...Pt(2,1)).iter_char('-')
+               Path::open((Pt(1,1)..=Pt(2,1)).iter_char('-')
                           .chain((Pt(3,1), '>').into_iter())
                           .collect()));
 }
@@ -260,7 +260,7 @@ fn reverse_westward_arrow() {
                                                DirVector(Pt(1,1), Direction::E));
     assert_eq!(opt_p.unwrap(),
                Path::open((Pt(1,1), '<').into_iter()
-                          .chain((Pt(2,1)...Pt(3,1)).iter_char('-'))
+                          .chain((Pt(2,1)..=Pt(3,1)).iter_char('-'))
                           .collect()));
 }
 
@@ -271,7 +271,7 @@ fn westward_arrow() {
                                                &Default::default(),
                                                DirVector(Pt(3,1), Direction::W));
     assert_eq!(opt_p.unwrap(),
-               Path::open((Pt(3,1)...Pt(2,1)).iter_char('-')
+               Path::open((Pt(3,1)..=Pt(2,1)).iter_char('-')
                           .chain((Pt(1,1), '<').into_iter())
                           .collect()));
 }
@@ -284,7 +284,7 @@ fn reverse_eastward_arrow() {
                                                DirVector(Pt(3,1), Direction::W));
     assert_eq!(opt_p.unwrap(),
                Path::open((Pt(3,1), '>').into_iter()
-                          .chain((Pt(2,1)...Pt(1,1)).iter_char('-'))
+                          .chain((Pt(2,1)..=Pt(1,1)).iter_char('-'))
                           .collect()));
 }
 
@@ -296,7 +296,7 @@ fn reverse_northward_arrow() {
                                                DirVector(Pt(1,1), Direction::S));
     assert_eq!(opt_p.unwrap(),
                Path::open((Pt(1,1), '^').into_iter()
-                          .chain((Pt(1,2)...Pt(1,3)).iter_char('|'))
+                          .chain((Pt(1,2)..=Pt(1,3)).iter_char('|'))
                           .collect()));
 }
 
@@ -307,7 +307,7 @@ fn southward_arrow() {
                                                &Default::default(),
                                                DirVector(Pt(1,1), Direction::S));
     assert_eq!(opt_p.unwrap(),
-               Path::open((Pt(1,1)...Pt(1,2)).iter_char('|')
+               Path::open((Pt(1,1)..=Pt(1,2)).iter_char('|')
                           .chain((Pt(1,3), 'v').into_iter())
                           .collect()));
 }
@@ -320,7 +320,7 @@ fn reverse_southward_arrow() {
                                                DirVector(Pt(1,3), Direction::N));
     assert_eq!(opt_p.unwrap(),
                Path::open((Pt(1,3), 'v').into_iter()
-                          .chain((Pt(1,2)...Pt(1,1)).iter_char('|'))
+                          .chain((Pt(1,2)..=Pt(1,1)).iter_char('|'))
                           .collect()));
 }
 
@@ -331,7 +331,7 @@ fn eastward_arrow_to_joiner() {
                                                &Default::default(),
                                                DirVector(Pt(1,1), Direction::E));
     assert_eq!(opt_p.unwrap(),
-               Path::open((Pt(1,1)...Pt(2,1)).iter_char('-')
+               Path::open((Pt(1,1)..=Pt(2,1)).iter_char('-')
                           .chain((Pt(3,1), '>').into_iter())
                           .chain((Pt(4,1), '+').into_iter())
                           .collect()));
