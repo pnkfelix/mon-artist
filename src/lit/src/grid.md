@@ -109,16 +109,14 @@ use std::ops::RangeInclusive;
 
 impl PtRangeIter for RangeInclusive<Pt> {
     fn iter(&self) -> PtRangeIterator {
-        match *self {
-            RangeInclusive { start, end } => {
-                assert!(start != end, "failed start == end, start: {:?} end: {:?}", start, end);
-                PtRangeIterator {
-                    dv: DirVector(start, start.towards(end)),
-                    limit: end,
-                    incl: true,
-                    done: false,
-                }
-            }
+        let start = *self.start();
+        let end = *self.end();
+        assert!(start != end, "failed start == end, start: {:?} end: {:?}", start, end);
+        PtRangeIterator {
+            dv: DirVector(start, start.towards(end)),
+            limit: end,
+            incl: true,
+            done: false,
         }
     }
 }
