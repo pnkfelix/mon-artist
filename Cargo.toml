@@ -12,7 +12,7 @@ repository = "https://github.com/pnkfelix/mon-artist"
 include = ["src/**/*.rs", "src/**/*.lalrpop", "Cargo.toml", "tango-build.rs"]
 
 [build-dependencies]
-tango = "0.6"
+tango = "0.8"
 lalrpop = "0.13"
 
 # Since the lib starts as a tango file stored in `src/lib.md`,
